@@ -1,0 +1,271 @@
+{
+  "version": "1.0.0",
+  "theme": "modern-tech-gradient-dark",
+  "colors": {
+    "primary": {
+      "indigo": "oklch(0.58 0.22 264)",
+      "pink": "oklch(0.64 0.24 350)",
+      "orange": "oklch(0.68 0.20 35)"
+    },
+    "secondary": {
+      "purple": "oklch(0.60 0.24 295)",
+      "cyan": "oklch(0.78 0.18 195)"
+    },
+    "background": {
+      "base": "oklch(0.15 0.02 264)",
+      "elevated": "oklch(0.18 0.02 264)",
+      "glass": "oklch(0.20 0.02 264 / 0.6)",
+      "glass_hover": "oklch(0.22 0.02 264 / 0.7)"
+    },
+    "text": {
+      "primary": "oklch(0.95 0.01 264)",
+      "secondary": "oklch(0.75 0.02 264)",
+      "tertiary": "oklch(0.60 0.02 264)",
+      "on_primary": "oklch(0.98 0.01 264)"
+    },
+    "border": {
+      "default": "oklch(0.30 0.02 264 / 0.3)",
+      "glass": "oklch(0.50 0.05 264 / 0.2)",
+      "focus": "oklch(0.58 0.22 264)"
+    },
+    "status": {
+      "success": "oklch(0.70 0.18 145)",
+      "warning": "oklch(0.75 0.18 85)",
+      "error": "oklch(0.62 0.24 25)",
+      "info": "oklch(0.78 0.18 195)"
+    }
+  },
+  "gradients": {
+    "background": {
+      "primary": "linear-gradient(135deg, oklch(0.12 0.04 264) 0%, oklch(0.15 0.03 295) 50%, oklch(0.13 0.03 350) 100%)",
+      "secondary": "radial-gradient(ellipse at top right, oklch(0.20 0.08 264 / 0.3) 0%, transparent 50%)",
+      "accent": "radial-gradient(ellipse at bottom left, oklch(0.18 0.06 350 / 0.2) 0%, transparent 50%)"
+    },
+    "card": {
+      "default": "linear-gradient(135deg, oklch(0.20 0.02 264 / 0.6) 0%, oklch(0.18 0.02 295 / 0.5) 100%)",
+      "hover": "linear-gradient(135deg, oklch(0.22 0.03 264 / 0.7) 0%, oklch(0.20 0.03 295 / 0.6) 100%)"
+    },
+    "button": {
+      "primary": "linear-gradient(135deg, oklch(0.58 0.22 264) 0%, oklch(0.60 0.24 295) 100%)",
+      "secondary": "linear-gradient(135deg, oklch(0.64 0.24 350) 0%, oklch(0.68 0.20 35) 100%)",
+      "accent": "linear-gradient(135deg, oklch(0.60 0.24 295) 0%, oklch(0.78 0.18 195) 100%)"
+    }
+  },
+  "typography": {
+    "font_family": {
+      "sans": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace"
+    },
+    "font_size": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem"
+    },
+    "font_weight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "line_height": {
+      "tight": "1.25",
+      "normal": "1.5",
+      "relaxed": "1.75"
+    }
+  },
+  "spacing": {
+    "0": "0",
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "5": "1.25rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem",
+    "20": "5rem"
+  },
+  "border_radius": {
+    "none": "0",
+    "sm": "0.25rem",
+    "base": "0.5rem",
+    "md": "0.75rem",
+    "lg": "1rem",
+    "xl": "1.5rem",
+    "2xl": "2rem",
+    "full": "9999px"
+  },
+  "shadows": {
+    "sm": "0 1px 2px 0 oklch(0 0 0 / 0.05)",
+    "base": "0 1px 3px 0 oklch(0 0 0 / 0.1), 0 1px 2px -1px oklch(0 0 0 / 0.1)",
+    "md": "0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1)",
+    "lg": "0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1)",
+    "xl": "0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1)",
+    "glass": "0 8px 32px 0 oklch(0 0 0 / 0.37)",
+    "glow_indigo": "0 0 20px oklch(0.58 0.22 264 / 0.3), 0 0 40px oklch(0.58 0.22 264 / 0.1)",
+    "glow_pink": "0 0 20px oklch(0.64 0.24 350 / 0.3), 0 0 40px oklch(0.64 0.24 350 / 0.1)",
+    "inner": "inset 0 2px 4px 0 oklch(0 0 0 / 0.05)"
+  },
+  "backdrop_blur": {
+    "none": "0",
+    "sm": "4px",
+    "base": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "24px"
+  },
+  "transitions": {
+    "fast": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+    "base": "200ms cubic-bezier(0.4, 0, 0.2, 1)",
+    "slow": "300ms cubic-bezier(0.4, 0, 0.2, 1)",
+    "bounce": "500ms cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+  },
+  "component_styles": {
+    "button": {
+      "primary": {
+        "background": "linear-gradient(135deg, oklch(0.58 0.22 264) 0%, oklch(0.60 0.24 295) 100%)",
+        "color": "oklch(0.98 0.01 264)",
+        "padding": "0.75rem 1.5rem",
+        "border_radius": "0.75rem",
+        "font_weight": "600",
+        "box_shadow": "0 4px 6px -1px oklch(0 0 0 / 0.1), 0 0 20px oklch(0.58 0.22 264 / 0.3)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "hover": {
+          "transform": "translateY(-2px)",
+          "box_shadow": "0 10px 15px -3px oklch(0 0 0 / 0.1), 0 0 30px oklch(0.58 0.22 264 / 0.4)"
+        }
+      },
+      "secondary": {
+        "background": "oklch(0.20 0.02 264 / 0.6)",
+        "color": "oklch(0.95 0.01 264)",
+        "padding": "0.75rem 1.5rem",
+        "border_radius": "0.75rem",
+        "border": "1px solid oklch(0.50 0.05 264 / 0.2)",
+        "font_weight": "600",
+        "backdrop_filter": "blur(8px)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "hover": {
+          "background": "oklch(0.22 0.03 264 / 0.7)",
+          "border_color": "oklch(0.58 0.22 264 / 0.5)"
+        }
+      },
+      "ghost": {
+        "background": "transparent",
+        "color": "oklch(0.75 0.02 264)",
+        "padding": "0.75rem 1.5rem",
+        "border_radius": "0.75rem",
+        "font_weight": "600",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "hover": {
+          "background": "oklch(0.20 0.02 264 / 0.4)",
+          "color": "oklch(0.95 0.01 264)"
+        }
+      }
+    },
+    "card": {
+      "glass": {
+        "background": "linear-gradient(135deg, oklch(0.20 0.02 264 / 0.6) 0%, oklch(0.18 0.02 295 / 0.5) 100%)",
+        "border": "1px solid oklch(0.50 0.05 264 / 0.2)",
+        "border_radius": "1rem",
+        "padding": "1.5rem",
+        "backdrop_filter": "blur(12px)",
+        "box_shadow": "0 8px 32px 0 oklch(0 0 0 / 0.37)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "hover": {
+          "background": "linear-gradient(135deg, oklch(0.22 0.03 264 / 0.7) 0%, oklch(0.20 0.03 295 / 0.6) 100%)",
+          "border_color": "oklch(0.58 0.22 264 / 0.3)",
+          "transform": "translateY(-2px)",
+          "box_shadow": "0 12px 40px 0 oklch(0 0 0 / 0.4)"
+        }
+      },
+      "elevated": {
+        "background": "oklch(0.18 0.02 264)",
+        "border": "1px solid oklch(0.30 0.02 264 / 0.3)",
+        "border_radius": "1rem",
+        "padding": "1.5rem",
+        "box_shadow": "0 4px 6px -1px oklch(0 0 0 / 0.1)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+      }
+    },
+    "input": {
+      "default": {
+        "background": "oklch(0.18 0.02 264 / 0.8)",
+        "color": "oklch(0.95 0.01 264)",
+        "border": "1px solid oklch(0.30 0.02 264 / 0.3)",
+        "border_radius": "0.75rem",
+        "padding": "0.75rem 1rem",
+        "font_size": "1rem",
+        "backdrop_filter": "blur(8px)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "placeholder_color": "oklch(0.60 0.02 264)",
+        "focus": {
+          "border_color": "oklch(0.58 0.22 264)",
+          "box_shadow": "0 0 0 3px oklch(0.58 0.22 264 / 0.2)",
+          "outline": "none"
+        }
+      },
+      "glass": {
+        "background": "oklch(0.20 0.02 264 / 0.4)",
+        "color": "oklch(0.95 0.01 264)",
+        "border": "1px solid oklch(0.50 0.05 264 / 0.2)",
+        "border_radius": "0.75rem",
+        "padding": "0.75rem 1rem",
+        "font_size": "1rem",
+        "backdrop_filter": "blur(12px)",
+        "transition": "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "placeholder_color": "oklch(0.60 0.02 264)",
+        "focus": {
+          "background": "oklch(0.22 0.02 264 / 0.5)",
+          "border_color": "oklch(0.58 0.22 264)",
+          "box_shadow": "0 0 0 3px oklch(0.58 0.22 264 / 0.2)"
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "wcag_aa_compliance": true,
+    "contrast_ratios": {
+      "text_primary_on_background": "14.5:1",
+      "text_secondary_on_background": "7.2:1",
+      "text_on_primary_button": "12.8:1",
+      "text_on_glass_card": "13.1:1"
+    },
+    "focus_indicators": {
+      "visible": true,
+      "color": "oklch(0.58 0.22 264)",
+      "width": "3px",
+      "style": "solid"
+    }
+  },
+  "animations": {
+    "fade_in": {
+      "keyframes": "opacity 0 to 1",
+      "duration": "300ms",
+      "timing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "slide_up": {
+      "keyframes": "transform translateY(20px) to translateY(0), opacity 0 to 1",
+      "duration": "400ms",
+      "timing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "scale_in": {
+      "keyframes": "transform scale(0.95) to scale(1), opacity 0 to 1",
+      "duration": "200ms",
+      "timing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "glow_pulse": {
+      "keyframes": "box-shadow alternate between normal and enhanced glow",
+      "duration": "2000ms",
+      "timing": "ease-in-out",
+      "iteration": "infinite"
+    }
+  }
+}
+

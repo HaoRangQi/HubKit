@@ -1,0 +1,8 @@
+{"timestamp":"2026-05-22T00:00:00Z","event":"session_start","session_id":"20260522-execute-P1.1-module-protocol","plan_path":".workflow/scratch/phase-1.1-module-protocol","total_tasks":5,"total_waves":3}
+{"timestamp":"2026-05-22T00:00:01Z","event":"wave_start","wave":1,"tasks":["TASK-001"],"mode":"serial"}
+{"timestamp":"2026-05-22T00:01:00Z","event":"wave_complete","wave":1,"status":"success","completed_tasks":["TASK-001"]}
+{"timestamp":"2026-05-22T00:01:01Z","event":"wave_start","wave":2,"tasks":["TASK-002","TASK-003","TASK-004"],"mode":"parallel"}
+{"timestamp":"2026-05-22T00:02:00Z","event":"wave_complete","wave":2,"status":"success","completed_tasks":["TASK-002","TASK-003","TASK-004"]}
+{"timestamp":"2026-05-22T00:02:01Z","event":"wave_start","wave":3,"tasks":["TASK-005"],"mode":"serial"}
+{"timestamp":"2026-05-22T00:08:00Z","event":"wave_complete","wave":3,"status":"success","completed_tasks":["TASK-005"]}
+{"timestamp":"2026-05-22T00:08:01Z","event":"session_complete","status":"success","total_tasks":5,"completed_tasks":5,"failed_tasks":0}

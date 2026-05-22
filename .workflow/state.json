@@ -1,0 +1,68 @@
+{
+  "version": "2.0",
+  "project_name": "个人自动化中控台",
+  "status": "active",
+  "current_milestone": "M1",
+  "current_task_id": null,
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "核心基础",
+      "description": "中控台 CLI 框架、模块协议定义、配置系统",
+      "status": "pending",
+      "phases": ["1"],
+      "duration_weeks": 2,
+      "dependencies": []
+    },
+    {
+      "id": "M2",
+      "name": "模块管理",
+      "description": "模块注册表、启停控制、状态查询",
+      "status": "pending",
+      "phases": ["2"],
+      "duration_weeks": 1.5,
+      "dependencies": ["M1"]
+    },
+    {
+      "id": "M3",
+      "name": "执行编排",
+      "description": "按需执行、依赖编排、日志监控",
+      "status": "pending",
+      "phases": ["3"],
+      "duration_weeks": 2,
+      "dependencies": ["M2"]
+    },
+    {
+      "id": "M4",
+      "name": "系统集成",
+      "description": "LaunchAgents 集成、基础 UI、文档",
+      "status": "pending",
+      "phases": ["4"],
+      "duration_weeks": 1.5,
+      "dependencies": ["M3"]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "PLAN-001",
+      "type": "plan",
+      "milestone": "M1",
+      "phase": "1.1",
+      "scope": "phase",
+      "path": "scratch/phase-1.1-module-protocol",
+      "status": "completed",
+      "depends_on": [],
+      "harvested": false,
+      "created_at": "2026-05-22T03:30:00.000Z",
+      "completed_at": "2026-05-22T03:30:00.000Z"
+    }
+  ],
+  "last_updated": "2026-05-21T15:10:00.000Z",
+  "accumulated_context": {
+    "key_decisions": [],
+    "blockers": [],
+    "deferred": []
+  },
+  "transition_history": [],
+  "milestone_history": []
+}

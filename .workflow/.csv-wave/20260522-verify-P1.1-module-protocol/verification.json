@@ -1,0 +1,135 @@
+{
+  "phase": "1.1",
+  "status": "passed",
+  "verified_at": "2026-05-22T12:12:00+08:00",
+  "verifier": "csv-wave-verifier",
+  "must_haves": {
+    "truths": [
+      {
+        "claim": "模块协议支持五个标准方法",
+        "status": "verified",
+        "evidence": "src/types/module.ts 定义了 ModuleProtocol 接口，包含 status/start/stop/logs/getSettings/setSetting 方法（6个方法，超过要求的5个）"
+      },
+      {
+        "claim": "三种适配器可以管理进程生命周期",
+        "status": "verified",
+        "evidence": "NodeJSAdapter/PythonAdapter/ShellAdapter 都继承 BaseAdapter 并实现 ModuleProtocol 接口，支持启动、停止和查询状态"
+      },
+      {
+        "claim": "文档和示例完整可用",
+        "status": "verified",
+        "evidence": "docs/getting-started.md 存在（3180字节），examples/ 包含 nodejs-module/python-module/shell-module 三种示例"
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "docs/module-protocol.md",
+        "status": "exists",
+        "substantive": true,
+        "size": "15118 bytes",
+        "lines": 603
+      },
+      {
+        "path": "src/types/module.ts",
+        "status": "exists",
+        "substantive": true,
+        "size": "136 lines",
+        "details": "定义了 ModuleStatus/ModuleStatusInfo/ModuleSetting/LogEntry/ModuleProtocol/ModuleMetadata"
+      },
+      {
+        "path": "src/adapters/base-adapter.ts",
+        "status": "exists",
+        "substantive": true,
+        "size": "276 lines",
+        "details": "实现了 ModuleProtocol 接口的抽象基类"
+      },
+      {
+        "path": "src/adapters/nodejs-adapter.ts",
+        "status": "exists",
+        "substantive": true,
+        "size": "58 lines"
+      },
+      {
+        "path": "src/adapters/python-adapter.ts",
+        "status": "exists",
+        "substantive": true,
+        "size": "65 lines"
+      },
+      {
+        "path": "src/adapters/shell-adapter.ts",
+        "status": "exists",
+        "substantive": true,
+        "size": "68 lines"
+      },
+      {
+        "path": "docs/getting-started.md",
+        "status": "exists",
+        "substantive": true,
+        "size": "3180 bytes"
+      },
+      {
+        "path": "examples/nodejs-module/",
+        "status": "exists",
+        "substantive": true
+      },
+      {
+        "path": "examples/python-module/",
+        "status": "exists",
+        "substantive": true
+      },
+      {
+        "path": "examples/shell-module/",
+        "status": "exists",
+        "substantive": true
+      }
+    ],
+    "key_links": [
+      {
+        "from": "nodejs-adapter.ts",
+        "to": "base-adapter.ts",
+        "status": "wired",
+        "evidence": "import { BaseAdapter } from './base-adapter'; extends BaseAdapter"
+      },
+      {
+        "from": "python-adapter.ts",
+        "to": "base-adapter.ts",
+        "status": "wired",
+        "evidence": "import { BaseAdapter } from './base-adapter'; extends BaseAdapter"
+      },
+      {
+        "from": "shell-adapter.ts",
+        "to": "base-adapter.ts",
+        "status": "wired",
+        "evidence": "import { BaseAdapter } from './base-adapter'; extends BaseAdapter"
+      },
+      {
+        "from": "base-adapter.ts",
+        "to": "ModuleProtocol",
+        "status": "wired",
+        "evidence": "implements ModuleProtocol"
+      }
+    ]
+  },
+  "gaps": [],
+  "antipatterns": [],
+  "fix_plans": [],
+  "human_verification": [],
+  "coverage_score": null,
+  "compilation": {
+    "status": "passed",
+    "command": "npm run build",
+    "output_dir": "dist/",
+    "notes": "TypeScript 编译成功，生成了 dist/adapters/ 和 dist/types/ 目录"
+  },
+  "summary": {
+    "truths_verified": 3,
+    "truths_total": 3,
+    "artifacts_verified": 10,
+    "artifacts_total": 10,
+    "key_links_wired": 4,
+    "key_links_total": 4,
+    "blocker_count": 0,
+    "warning_count": 0,
+    "critical_gaps": 0
+  }
+}

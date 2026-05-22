@@ -1,0 +1,30 @@
+{
+  "id": "TASK-005",
+  "title": "编写协议文档和示例",
+  "description": "编写完整的协议文档，包含接入指南和示例代码，帮助用户快速接入新模块",
+  "status": "completed",
+  "wave": 3,
+  "depends_on": ["TASK-002", "TASK-003", "TASK-004"],
+  "files": [
+    "docs/getting-started.md",
+    "examples/nodejs-module/",
+    "examples/python-module/",
+    "examples/shell-module/"
+  ],
+  "convergence": {
+    "criteria": [
+      "docs/getting-started.md 包含完整的接入指南",
+      "examples/ 目录包含三种类型的示例模块",
+      "示例可以正常运行"
+    ]
+  },
+  "hints": [
+    "文档应该简洁易懂",
+    "示例应该覆盖常见场景",
+    "提供快速开始模板"
+  ],
+  "execution_directives": [
+    "检查文档和示例文件是否创建",
+    "运行示例验证可用性"
+  ]
+}

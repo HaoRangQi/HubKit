@@ -1,0 +1,26 @@
+{
+  "id": "TASK-003",
+  "title": "实现 Python 脚本适配器",
+  "description": "实现 Python 脚本的适配器，支持通过模块协议调用 Python 脚本的 status/start/stop 等方法",
+  "status": "completed",
+  "wave": 2,
+  "depends_on": ["TASK-001"],
+  "files": [
+    "src/adapters/python-adapter.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "src/adapters/python-adapter.ts 实现了 ModuleProtocol 接口",
+      "可以启动和停止 Python 进程",
+      "可以查询 Python 进程状态"
+    ]
+  },
+  "hints": [
+    "继承 base-adapter 基础类",
+    "处理 Python 虚拟环境",
+    "支持 python/python3 命令"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过"
+  ]
+}

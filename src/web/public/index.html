@@ -1,0 +1,3152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubKit Dashboard</title>
+  <script>
+    (function applyInitialTheme() {
+      const storageKey = 'hubkit-theme-mode';
+      const root = document.documentElement;
+      const savedMode = localStorage.getItem(storageKey);
+      const themeMode = savedMode === 'light' || savedMode === 'dark' || savedMode === 'auto'
+        ? savedMode
+        : 'auto';
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const resolvedTheme = themeMode === 'auto' ? (prefersDark ? 'dark' : 'light') : themeMode;
+      root.dataset.themeMode = themeMode;
+      root.dataset.themeResolved = resolvedTheme;
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+
+      --md-source: #3f6758;
+      --md-primary: #2f6b56;
+      --md-on-primary: #ffffff;
+      --md-primary-container: #b3f1d7;
+      --md-on-primary-container: #002116;
+      --md-secondary: #4d6358;
+      --md-on-secondary: #ffffff;
+      --md-secondary-container: #d0e8da;
+      --md-on-secondary-container: #0a1f17;
+      --md-tertiary: #3d6374;
+      --md-on-tertiary: #ffffff;
+      --md-tertiary-container: #c1e8fc;
+      --md-on-tertiary-container: #001f2a;
+      --md-error: #ba1a1a;
+      --md-on-error: #ffffff;
+      --md-error-container: #ffdad6;
+      --md-on-error-container: #410002;
+      --md-warning: #765a00;
+      --md-warning-container: #ffdf8a;
+      --md-on-warning-container: #251a00;
+      --md-success: #246b45;
+      --md-success-container: #a8f2c2;
+      --md-on-success-container: #00210e;
+      --md-background: #fbfdf8;
+      --md-on-background: #191c1a;
+      --md-surface: #fbfdf8;
+      --md-surface-dim: #dbe5dd;
+      --md-surface-bright: #fbfdf8;
+      --md-surface-container-lowest: #ffffff;
+      --md-surface-container-low: #f4f7f1;
+      --md-surface-container: #eef1eb;
+      --md-surface-container-high: #e8ebe5;
+      --md-surface-container-highest: #e2e5df;
+      --md-on-surface: #191c1a;
+      --md-on-surface-variant: #414942;
+      --md-outline: #717970;
+      --md-outline-variant: #c1c9bf;
+      --md-scrim: #000000;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", "Roboto Mono", Consolas, monospace;
+      --shape-xs: 4px;
+      --shape-sm: 8px;
+      --shape-md: 12px;
+      --shape-lg: 16px;
+      --shape-xl: 24px;
+      --shape-pill: 999px;
+      --elevation-1: 0 1px 2px rgb(0 0 0 / 0.14), 0 1px 3px 1px rgb(0 0 0 / 0.08);
+      --elevation-2: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+      --elevation-3: 0 4px 8px 3px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+      --motion-standard: 200ms cubic-bezier(0.2, 0, 0, 1);
+      --motion-emphasized: 300ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :root[data-theme-resolved="dark"] {
+      color-scheme: dark;
+      --md-primary: #98d4bc;
+      --md-on-primary: #003829;
+      --md-primary-container: #13513f;
+      --md-on-primary-container: #b3f1d7;
+      --md-secondary: #b4ccbf;
+      --md-on-secondary: #20352c;
+      --md-secondary-container: #364b41;
+      --md-on-secondary-container: #d0e8da;
+      --md-tertiary: #a5ccdf;
+      --md-on-tertiary: #073544;
+      --md-tertiary-container: #244c5b;
+      --md-on-tertiary-container: #c1e8fc;
+      --md-error: #ffb4ab;
+      --md-on-error: #690005;
+      --md-error-container: #93000a;
+      --md-on-error-container: #ffdad6;
+      --md-warning: #e8c450;
+      --md-warning-container: #5a4300;
+      --md-on-warning-container: #ffdf8a;
+      --md-success: #8ad7a7;
+      --md-success-container: #07522e;
+      --md-on-success-container: #a8f2c2;
+      --md-background: #111411;
+      --md-on-background: #e2e5df;
+      --md-surface: #111411;
+      --md-surface-dim: #111411;
+      --md-surface-bright: #373a36;
+      --md-surface-container-lowest: #0c0f0c;
+      --md-surface-container-low: #191c1a;
+      --md-surface-container: #1d201e;
+      --md-surface-container-high: #272b28;
+      --md-surface-container-highest: #323633;
+      --md-on-surface: #e2e5df;
+      --md-on-surface-variant: #c1c9bf;
+      --md-outline: #8b9389;
+      --md-outline-variant: #414942;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--md-background);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--md-primary-container) 28%, transparent) 0, transparent 340px),
+        var(--md-background);
+      color: var(--md-on-background);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wallpaper-layer {
+      position: fixed;
+      inset: -6%;
+      z-index: 0;
+      display: none;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      opacity: 0.38;
+      filter: blur(var(--wallpaper-blur, 0px));
+      transform: scale(1.06);
+      pointer-events: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: currentColor;
+      fill: currentColor;
+      vertical-align: -4px;
+    }
+
+    .shell {
+      width: min(1480px, 100%);
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .top-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 76px;
+      margin: -20px -20px 18px;
+      padding: 16px 20px;
+      background: color-mix(in srgb, var(--md-surface) 92%, transparent);
+      border-bottom: 1px solid var(--md-outline-variant);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: var(--shape-lg);
+      background: var(--md-primary-container);
+      color: var(--md-on-primary-container);
+      box-shadow: var(--elevation-1);
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 2px 0 0;
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .bar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .theme-switcher {
+      display: grid;
+      gap: 0;
+      justify-items: end;
+      min-width: 0;
+    }
+
+    .theme-tabs {
+      display: inline-grid;
+      grid-auto-flow: column;
+      gap: 0;
+      height: 44px;
+      padding: 2px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-low);
+      overflow: hidden;
+    }
+
+    .theme-btn {
+      display: inline-flex;
+      min-width: 72px;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: var(--shape-pill);
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background var(--motion-standard), color var(--motion-standard), box-shadow var(--motion-standard);
+      white-space: nowrap;
+    }
+
+    .theme-btn:hover {
+      background: color-mix(in srgb, var(--md-on-surface) 8%, transparent);
+      color: var(--md-on-surface);
+    }
+
+    .theme-btn.active {
+      background: var(--md-primary-container);
+      color: var(--md-on-primary-container);
+      box-shadow: var(--elevation-1);
+    }
+
+    .connection-chip {
+      display: inline-flex;
+      height: 44px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-low);
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .connection-chip.connected {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+      border-color: transparent;
+    }
+
+    .connection-chip.disconnected {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+      border-color: transparent;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .connection-chip.connected .status-indicator {
+      animation: pulse 1600ms cubic-bezier(0.2, 0, 0, 1) infinite;
+    }
+
+    .view-tabs {
+      display: inline-grid;
+      grid-auto-flow: column;
+      gap: 0;
+      height: 44px;
+      padding: 2px;
+      border: 1px solid var(--md-outline);
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-surface-container) 65%, transparent);
+      overflow: hidden;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      min-width: 108px;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: var(--shape-pill);
+      background: transparent;
+      color: var(--md-on-surface);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background var(--motion-standard), color var(--motion-standard);
+    }
+
+    .nav-btn:hover {
+      background: color-mix(in srgb, var(--md-on-surface) 8%, transparent);
+    }
+
+    .nav-btn.active {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+
+    .dashboard-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 14px;
+    }
+
+    .summary-item {
+      position: relative;
+      overflow: hidden;
+      min-height: 112px;
+      padding: 18px 18px 16px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-lg);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-surface-container-lowest) 88%, transparent),
+        var(--md-surface-container-low)
+      );
+      box-shadow: var(--elevation-1);
+    }
+
+    .summary-item::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 4px;
+      background: var(--summary-accent, var(--md-primary));
+    }
+
+    .summary-label {
+      display: block;
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .summary-value {
+      display: block;
+      margin-top: 8px;
+      color: var(--md-on-surface);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .summary-note {
+      display: block;
+      margin-top: 10px;
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .summary-inline-action {
+      display: inline-flex;
+      margin-top: 10px;
+      min-height: 30px;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 10px;
+      border: 1px solid color-mix(in srgb, var(--md-success) 45%, var(--md-outline));
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-success-container) 65%, transparent);
+      color: color-mix(in srgb, var(--md-on-success-container) 85%, var(--md-on-surface));
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .summary-inline-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .summary-item[data-summary-tone="all"] {
+      --summary-accent: var(--md-primary);
+    }
+
+    .summary-item[data-summary-tone="running"] {
+      --summary-accent: var(--md-success);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-success-container) 34%, var(--md-surface-container-lowest)),
+        var(--md-surface-container-low)
+      );
+    }
+
+    .summary-item[data-summary-tone="running"] .summary-value {
+      color: var(--md-success);
+      text-shadow: 0 1px 0 color-mix(in srgb, var(--md-success-container) 55%, transparent);
+    }
+
+    .summary-item[data-summary-tone="stopped"] {
+      --summary-accent: var(--md-outline);
+    }
+
+    .summary-item[data-summary-tone="update"] {
+      --summary-accent: var(--md-warning);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-warning-container) 44%, var(--md-surface-container-lowest)),
+        var(--md-surface-container-low)
+      );
+    }
+
+    .summary-item[data-summary-tone="update"] .summary-value {
+      color: color-mix(in srgb, var(--md-warning) 88%, var(--md-on-surface));
+      text-shadow: 0 1px 0 color-mix(in srgb, var(--md-warning-container) 60%, transparent);
+    }
+
+    .dashboard-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .module-card {
+      display: flex;
+      min-height: 312px;
+      flex-direction: column;
+      gap: 16px;
+      padding: 18px 18px 16px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 86%, transparent);
+      border-radius: var(--shape-lg);
+      background: var(--md-surface-container-low);
+      box-shadow: none;
+      transition:
+        background var(--motion-standard),
+        border-color var(--motion-standard),
+        box-shadow var(--motion-standard),
+        transform var(--motion-standard);
+    }
+
+    .module-card:hover {
+      background: var(--md-surface-container);
+      border-color: color-mix(in srgb, var(--md-primary) 42%, var(--md-outline-variant));
+      box-shadow: var(--elevation-1);
+      transform: translateY(-1px);
+    }
+
+    .module-card.running {
+      border-color: color-mix(in srgb, var(--md-success) 30%, var(--md-outline-variant));
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-success-container) 18%, var(--md-surface-container-low)),
+        var(--md-surface-container-low)
+      );
+    }
+
+    .module-card.error {
+      border-color: color-mix(in srgb, var(--md-error) 36%, var(--md-outline-variant));
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-error-container) 20%, var(--md-surface-container-low)),
+        var(--md-surface-container-low)
+      );
+    }
+
+    .module-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .module-title {
+      min-width: 0;
+    }
+
+    .module-title h3 {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .module-id {
+      display: inline-flex;
+      max-width: 100%;
+      margin-top: 6px;
+      color: var(--md-on-surface-variant);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .state-badge {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      gap: 7px;
+      padding: 0 14px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .state-badge.running {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .state-badge.error {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .state-badge.starting,
+    .state-badge.stopping {
+      background: var(--md-tertiary-container);
+      color: var(--md-on-tertiary-container);
+    }
+
+    .state-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .module-description {
+      min-height: 36px;
+      margin: -4px 0 0;
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .module-primary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-high) 78%, transparent);
+    }
+
+    .module-primary-meta {
+      min-width: 0;
+    }
+
+    .module-kicker {
+      display: block;
+      color: var(--md-on-surface-variant);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .module-emphasis {
+      display: block;
+      margin-top: 2px;
+      color: var(--md-on-surface);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 11px 10px;
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-surface-container) 88%, transparent);
+    }
+
+    .metric-label {
+      display: block;
+      color: var(--md-on-surface-variant);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 4px;
+      color: var(--md-on-surface);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .process-mini {
+      display: grid;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-high) 80%, transparent);
+    }
+
+    .process-mini.collapsed {
+      gap: 6px;
+    }
+
+    .process-mini.collapsed .process-badges,
+    .process-mini.collapsed .process-kv {
+      display: none;
+    }
+
+    .process-mini-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .process-mini-title {
+      color: var(--md-on-surface);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .process-mini-time {
+      color: var(--md-on-surface-variant);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .process-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .proc-badge {
+      display: inline-flex;
+      min-height: 26px;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-highest);
+      color: var(--md-on-surface-variant);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .proc-badge.running {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .proc-badge.warn {
+      background: var(--md-warning-container);
+      color: var(--md-on-warning-container);
+    }
+
+    .proc-badge.error {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .process-kv {
+      display: grid;
+      gap: 4px;
+    }
+
+    .process-kv-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .process-kv-key {
+      color: var(--md-on-surface-variant);
+      white-space: nowrap;
+    }
+
+    .process-kv-value {
+      min-width: 0;
+      color: var(--md-on-surface);
+      font-family: var(--font-mono);
+      overflow-wrap: anywhere;
+    }
+
+    .process-mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .process-mini-actions .btn {
+      flex: 1 1 132px;
+    }
+
+    .module-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .module-actions .btn-filled,
+    .module-actions .btn-error {
+      flex: 1 1 148px;
+    }
+
+    .module-actions .btn-tonal,
+    .module-actions .btn-tertiary,
+    .module-actions .btn-text,
+    .module-actions .btn-outlined {
+      flex: 1 1 128px;
+    }
+
+    .btn {
+      position: relative;
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: var(--shape-pill);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0;
+      overflow: hidden;
+      text-decoration: none;
+      transition:
+        background var(--motion-standard),
+        box-shadow var(--motion-standard),
+        color var(--motion-standard),
+        transform var(--motion-standard);
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      box-shadow: var(--elevation-1);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .btn-filled {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+    }
+
+    .btn-tonal {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+
+    .btn-tertiary {
+      background: var(--md-tertiary-container);
+      color: var(--md-on-tertiary-container);
+    }
+
+    .btn-error {
+      background: var(--md-error);
+      color: var(--md-on-error);
+    }
+
+    .btn-warning {
+      background: var(--md-warning-container);
+      color: var(--md-on-warning-container);
+    }
+
+    .btn-text {
+      background: transparent;
+      color: var(--md-primary);
+      padding-inline: 12px;
+    }
+
+    .btn-text:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+      box-shadow: none;
+    }
+
+    .btn-outlined {
+      border: 1px solid var(--md-outline);
+      background: transparent;
+      color: var(--md-primary);
+    }
+
+    .btn-sm {
+      min-height: 34px;
+      padding-inline: 14px;
+      font-size: 13px;
+    }
+
+    .icon-btn {
+      display: inline-grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      cursor: pointer;
+      transition: background var(--motion-standard), color var(--motion-standard);
+    }
+
+    .icon-btn:hover {
+      background: color-mix(in srgb, var(--md-on-surface) 10%, transparent);
+      color: var(--md-on-surface);
+    }
+
+    .settings-container {
+      display: grid;
+      gap: 26px;
+      width: min(980px, 100%);
+    }
+
+    .settings-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .settings-panel {
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-lg);
+      background: var(--md-surface-container-low);
+      overflow: hidden;
+    }
+
+    .settings-panel[open] {
+      box-shadow: var(--elevation-1);
+    }
+
+    .settings-panel-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+    }
+
+    .settings-panel-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .settings-panel-summary .section-heading {
+      padding-inline: 0;
+    }
+
+    .panel-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: var(--md-on-surface-variant);
+      transition: transform var(--motion-standard), background var(--motion-standard);
+    }
+
+    .settings-panel[open] .panel-chevron {
+      transform: rotate(180deg);
+    }
+
+    .settings-panel-summary:hover .panel-chevron {
+      background: color-mix(in srgb, var(--md-on-surface) 10%, transparent);
+    }
+
+    .settings-panel-content {
+      padding: 0 14px 14px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding-inline: 4px;
+    }
+
+    .settings-section-title {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .settings-section-desc {
+      margin: 4px 0 0;
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+    }
+
+    .settings-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .settings-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      min-height: 72px;
+      padding: 12px 14px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-lg);
+      background: var(--md-surface-container-low);
+      transition: background var(--motion-standard), border-color var(--motion-standard), transform var(--motion-standard);
+    }
+
+    .settings-item:hover {
+      background: var(--md-surface-container);
+    }
+
+    .settings-item.dragging {
+      opacity: 0.58;
+      transform: scale(0.99);
+    }
+
+    .settings-item.drag-over {
+      border-color: var(--md-primary);
+      background: color-mix(in srgb, var(--md-primary-container) 54%, var(--md-surface-container));
+    }
+
+    .drag-handle {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--md-on-surface-variant);
+      cursor: grab;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .settings-item-info {
+      min-width: 0;
+    }
+
+    .settings-item-name {
+      display: block;
+      color: var(--md-on-surface);
+      font-size: 16px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .settings-item-id {
+      display: block;
+      margin-top: 2px;
+      color: var(--md-on-surface-variant);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .settings-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .order-badge {
+      display: inline-flex;
+      min-width: 38px;
+      min-height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 52px;
+      height: 32px;
+      flex: 0 0 auto;
+      align-items: center;
+    }
+
+    .switch input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--md-outline);
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-highest);
+      cursor: pointer;
+      transition: background var(--motion-standard), border-color var(--motion-standard);
+    }
+
+    .switch-track::before {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--md-outline);
+      transition:
+        width var(--motion-standard),
+        height var(--motion-standard),
+        transform var(--motion-standard),
+        background var(--motion-standard);
+    }
+
+    .switch input:checked + .switch-track {
+      border-color: var(--md-primary);
+      background: var(--md-primary);
+    }
+
+    .switch input:checked + .switch-track::before {
+      width: 24px;
+      height: 24px;
+      background: var(--md-on-primary);
+      transform: translate(18px, -4px);
+    }
+
+    .text-field {
+      display: grid;
+      gap: 6px;
+      min-width: 240px;
+    }
+
+    .text-field label {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .input,
+    .select {
+      min-height: 44px;
+      width: 100%;
+      padding: 0 14px;
+      border: 1px solid var(--md-outline);
+      border-radius: var(--shape-xs);
+      background: var(--md-surface-container-lowest);
+      color: var(--md-on-surface);
+      outline: none;
+      transition: border-color var(--motion-standard), box-shadow var(--motion-standard);
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: var(--md-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 18%, transparent);
+    }
+
+    .input.mono {
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .url-row {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+    }
+
+    .url-input-group {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .schedule-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .schedule-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr)) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .day-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      grid-column: 1 / -1;
+      padding-top: 2px;
+    }
+
+    .day-chip {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border: 1px solid var(--md-outline);
+      border-radius: var(--shape-pill);
+      color: var(--md-on-surface-variant);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .day-chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .day-chip.checked {
+      border-color: transparent;
+      background: var(--md-tertiary-container);
+      color: var(--md-on-tertiary-container);
+    }
+
+    .settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .empty-state,
+    .loading-state {
+      display: grid;
+      grid-column: 1 / -1;
+      min-height: 220px;
+      place-items: center;
+      padding: 32px;
+      border: 1px dashed var(--md-outline);
+      border-radius: var(--shape-lg);
+      background: var(--md-surface-container-low);
+      color: var(--md-on-surface-variant);
+      text-align: center;
+    }
+
+    .loading-state .icon {
+      margin-bottom: 10px;
+      color: var(--md-primary);
+      width: 34px;
+      height: 34px;
+      animation: spin 1100ms linear infinite;
+    }
+
+    .dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: color-mix(in srgb, var(--md-scrim) 42%, transparent);
+    }
+
+    .dialog.active {
+      display: flex;
+      animation: fade-in 140ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .dialog-content {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      width: min(1120px, 100%);
+      max-height: min(84vh, 880px);
+      border-radius: var(--shape-xl);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface);
+      box-shadow: var(--elevation-3);
+      overflow: hidden;
+      animation: scale-in 180ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .dialog-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 22px 24px 12px;
+    }
+
+    .dialog-title {
+      min-width: 0;
+    }
+
+    .dialog-title h2 {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 24px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .dialog-title p {
+      margin: 4px 0 0;
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+    }
+
+    .log-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 0 24px 14px;
+    }
+
+    .log-toolbar .text-field {
+      flex: 1 1 260px;
+      min-width: 180px;
+    }
+
+    .log-toolbar .select-field {
+      width: 148px;
+      flex: 0 0 auto;
+    }
+
+    .dialog-body {
+      min-height: 0;
+      margin: 0 24px 24px;
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--shape-lg);
+      background: var(--md-surface-container-lowest);
+      overflow: auto;
+    }
+
+    .log-content {
+      min-height: 360px;
+      margin: 0;
+      padding: 14px 16px;
+      color: var(--md-on-surface);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-line {
+      display: block;
+      padding: 1px 6px;
+      border-radius: var(--shape-xs);
+    }
+
+    .log-line:hover {
+      background: var(--md-surface-container);
+    }
+
+    .log-line-error {
+      color: var(--md-error);
+      background: color-mix(in srgb, var(--md-error-container) 36%, transparent);
+    }
+
+    .log-line-warn {
+      color: var(--md-warning);
+    }
+
+    .log-line-stack {
+      color: var(--md-on-surface-variant);
+      padding-left: 22px;
+    }
+
+    .log-line-hidden {
+      display: none;
+    }
+
+    .snackbar {
+      position: fixed;
+      left: 50%;
+      top: 16px;
+      z-index: 200;
+      display: flex;
+      min-height: 52px;
+      max-width: min(560px, calc(100vw - 32px));
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 12px 10px 14px;
+      border-radius: var(--shape-xs);
+      background: #313631;
+      color: #f0f1ec;
+      box-shadow: var(--elevation-3);
+      opacity: 0;
+      pointer-events: auto;
+      transform: translate(-50%, -16px);
+      transition: opacity var(--motion-standard), transform var(--motion-standard);
+    }
+
+    .snackbar.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .snackbar.error {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .snackbar.success {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .snackbar-message {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-height: 180px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+      cursor: text;
+      padding-top: 2px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .snackbar-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+      padding-left: 4px;
+    }
+
+    .snackbar-action-btn {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      border: 0;
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, currentColor 16%, transparent);
+      color: inherit;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .snackbar-action-btn:hover {
+      background: color-mix(in srgb, currentColor 24%, transparent);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.42; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scale-in {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .top-app-bar,
+      .dashboard-header {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-actions,
+      .dashboard-actions {
+        justify-content: flex-start;
+      }
+
+      .theme-switcher {
+        justify-items: start;
+      }
+
+      .summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        padding: 14px;
+      }
+
+      .top-app-bar {
+        margin: -14px -14px 14px;
+        padding: 14px;
+      }
+
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--shape-md);
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .bar-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .theme-tabs {
+        width: 100%;
+      }
+
+      .theme-btn {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .view-tabs {
+        width: 100%;
+      }
+
+      .nav-btn {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .connection-chip {
+        justify-content: center;
+      }
+
+      .summary-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .module-card {
+        min-height: auto;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .process-kv-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .settings-item,
+      .url-row,
+      .schedule-row {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-panel-summary,
+      .settings-panel-content {
+        padding-inline: 10px;
+      }
+
+      .drag-handle {
+        display: none;
+      }
+
+      .settings-controls,
+      .url-input-group,
+      .schedule-controls {
+        grid-template-columns: 1fr;
+        justify-content: stretch;
+      }
+
+      .settings-controls {
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .module-actions .btn {
+        width: auto;
+        flex: 1 1 130px;
+      }
+
+      .dialog {
+        padding: 10px;
+      }
+
+      .dialog-content {
+        max-height: calc(100vh - 20px);
+        border-radius: var(--shape-lg);
+      }
+
+      .dialog-header,
+      .log-toolbar {
+        padding-inline: 16px;
+      }
+
+      .dialog-body {
+        margin: 0 16px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position: absolute;" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="icon-article" viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm2 5h10V6H7v2Zm0 5h10v-2H7v2Zm0 5h7v-2H7v2Z"/></symbol>
+      <symbol id="icon-auto_mode" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1-9 9 9 9 0 0 1 9-9Zm0 2a7 7 0 0 0-5.66 11.1A7 7 0 1 0 12 5Zm0 2a5 5 0 0 1 0 10V7Z"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="m12 10.6 4.95-4.95 1.4 1.4L13.4 12l4.95 4.95-1.4 1.4L12 13.4l-4.95 4.95-1.4-1.4L10.6 12 5.65 7.05l1.4-1.4L12 10.6Z"/></symbol>
+      <symbol id="icon-dashboard" viewBox="0 0 24 24"><path d="M4 13h7v7H4v-7Zm9 0h7v7h-7v-7ZM4 4h7v7H4V4Zm9 0h7v7h-7V4Z"/></symbol>
+      <symbol id="icon-dark_mode" viewBox="0 0 24 24"><path d="M12.5 3a8.5 8.5 0 1 0 8.5 8.5A7.5 7.5 0 0 1 12.5 3Z"/></symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24"><path d="M11 4h2v8.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6V4ZM5 18h14v2H5v-2Z"/></symbol>
+      <symbol id="icon-drag_indicator" viewBox="0 0 24 24"><path d="M9 6.5A1.5 1.5 0 1 1 6 6.5a1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9-11A1.5 1.5 0 1 1 15 6.5a1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/></symbol>
+      <symbol id="icon-expand_more" viewBox="0 0 24 24"><path d="m12 15.4-6-6L7.4 8l4.6 4.6L16.6 8 18 9.4l-6 6Z"/></symbol>
+      <symbol id="icon-error" viewBox="0 0 24 24"><path d="M12 2 1 21h22L12 2Zm1 16h-2v-2h2v2Zm0-4h-2V9h2v5Z"/></symbol>
+      <symbol id="icon-event_available" viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2Zm12 8H5v9h14v-9Zm-8 7-3-3 1.4-1.4 1.6 1.6 4.6-4.6L17 11l-6 6Z"/></symbol>
+      <symbol id="icon-hub" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 2.83 4H17a4 4 0 1 1-3.86 5H10.86A4 4 0 1 1 7 7h2.17A3 3 0 0 1 12 3Zm0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM7 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-6.14 1A4.1 4.1 0 0 1 11 11h2c.03-.34.08-.67.14-1h-2.28Z"/></symbol>
+      <symbol id="icon-light_mode" viewBox="0 0 24 24"><path d="M11 1h2v4h-2V1Zm0 18h2v4h-2v-4ZM4.22 5.64l1.42-1.42 2.83 2.83-1.41 1.42-2.84-2.83Zm11.31 11.31 1.42-1.41 2.83 2.83-1.42 1.42-2.83-2.84ZM1 11h4v2H1v-2Zm18 0h4v2h-4v-2ZM4.22 18.36l2.83-2.83 1.42 1.41-2.83 2.84-1.42-1.42ZM15.53 7.05l2.83-2.83 1.42 1.42-2.84 2.83-1.41-1.42ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></symbol>
+      <symbol id="icon-open_in_new" viewBox="0 0 24 24"><path d="M5 5h8v2H7v10h10v-6h2v8H5V5Zm10 0h4v4h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H15V5Z"/></symbol>
+      <symbol id="icon-play_circle" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm-2 6v8l6-4-6-4Z"/></symbol>
+      <symbol id="icon-progress_activity" viewBox="0 0 24 24"><path d="M12 2v3a7 7 0 1 0 7 7h3A10 10 0 1 1 12 2Z"/></symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M17.7 6.3A8 8 0 0 0 4 12H2a10 10 0 0 1 17.1-7.1L21 3v6h-6l2.7-2.7ZM6.3 17.7A8 8 0 0 0 20 12h2A10 10 0 0 1 4.9 19.1L3 21v-6h6l-2.7 2.7Z"/></symbol>
+      <symbol id="icon-restart_alt" viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.32 10H3.52A9 9 0 1 0 12 3V1L8 5l4 4V7Z"/></symbol>
+      <symbol id="icon-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5V3Zm2 2v5h9V5H7Zm0 14h10v-7H7v7Zm2-12h5V5H9v2Z"/></symbol>
+      <symbol id="icon-south" viewBox="0 0 24 24"><path d="M11 4h2v12.2l4.6-4.6L19 13l-7 7-7-7 1.4-1.4 4.6 4.6V4Z"/></symbol>
+      <symbol id="icon-stop_circle" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20ZM8 8v8h8V8H8Z"/></symbol>
+      <symbol id="icon-system_update_alt" viewBox="0 0 24 24"><path d="M11 4h2v7.2l2.6-2.6L17 10l-5 5-5-5 1.4-1.4 2.6 2.6V4ZM5 18h14v2H5v-2Z"/></symbol>
+      <symbol id="icon-tune" viewBox="0 0 24 24"><path d="M3 7h10v2H3V7Zm12 0h6v2h-6V7ZM3 15h6v2H3v-2Zm8 0h10v2H11v-2ZM9 4h2v8H9V4Zm4 8h2v8h-2v-8Z"/></symbol>
+      <symbol id="icon-undo" viewBox="0 0 24 24"><path d="M7 7V3L2 8l5 5V9h8a4 4 0 1 1 0 8h-4v2h4A6 6 0 1 0 15 7H7Z"/></symbol>
+      <symbol id="icon-visibility" viewBox="0 0 24 24"><path d="M12 5c5 0 8.5 4.2 10 7-1.5 2.8-5 7-10 7s-8.5-4.2-10-7c1.5-2.8 5-7 10-7Zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></symbol>
+      <symbol id="icon-visibility_off" viewBox="0 0 24 24"><path d="M3.3 2 22 20.7 20.7 22l-3.1-3.1A11 11 0 0 1 12 20c-5 0-8.5-4.2-10-8a18 18 0 0 1 4.1-5.2L2 3.3 3.3 2Zm6.1 8.1A3.9 3.9 0 0 0 8 13a4 4 0 0 0 5.9 3.5l-1.6-1.6a2 2 0 0 1-2.4-2.4l-1.5-1.5Zm2.6-6.1c5 0 8.5 4.2 10 8a18.1 18.1 0 0 1-2.7 3.9l-3-3A4 4 0 0 0 11.1 7.7L8.8 5.4A11 11 0 0 1 12 4Z"/></symbol>
+    </defs>
+  </svg>
+  <div class="wallpaper-layer" id="wallpaperLayer" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="top-app-bar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg class="icon"><use href="#icon-hub"></use></svg>
+        </div>
+        <div class="brand-copy">
+          <h1>HubKit</h1>
+          <p class="subtitle" id="pageSubtitle">个人自动化中控台</p>
+        </div>
+      </div>
+      <div class="bar-actions">
+        <div class="theme-switcher" aria-label="主题模式">
+          <div class="theme-tabs" role="tablist" aria-label="主题模式">
+            <button class="theme-btn" id="theme-auto" type="button" data-theme-mode="auto" onclick="setThemeMode('auto')">
+              <svg class="icon" aria-hidden="true"><use href="#icon-auto_mode"></use></svg>
+              <span>自动</span>
+            </button>
+            <button class="theme-btn" id="theme-light" type="button" data-theme-mode="light" onclick="setThemeMode('light')">
+              <svg class="icon" aria-hidden="true"><use href="#icon-light_mode"></use></svg>
+              <span>浅色</span>
+            </button>
+            <button class="theme-btn" id="theme-dark" type="button" data-theme-mode="dark" onclick="setThemeMode('dark')">
+              <svg class="icon" aria-hidden="true"><use href="#icon-dark_mode"></use></svg>
+              <span>深色</span>
+            </button>
+          </div>
+        </div>
+        <nav class="view-tabs" aria-label="视图切换">
+          <button class="nav-btn active" type="button" data-view="dashboard" onclick="showView('dashboard')">
+            <svg class="icon" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+            <span>仪表盘</span>
+          </button>
+          <button class="nav-btn" type="button" data-view="settings" onclick="showView('settings')">
+            <svg class="icon" aria-hidden="true"><use href="#icon-tune"></use></svg>
+            <span>设置</span>
+          </button>
+        </nav>
+        <div class="connection-chip disconnected" id="connectionChip" role="status" aria-live="polite">
+          <span class="status-indicator" id="wsStatus"></span>
+          <span id="wsStatusText">连接中...</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="dashboardView" aria-labelledby="dashboardTitle">
+        <div class="dashboard-header">
+          <div>
+            <h2 class="settings-section-title" id="dashboardTitle">模块运行状态</h2>
+            <p class="settings-section-desc">按需启动、停止和查看模块输出。</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn btn-tonal" type="button" onclick="fetchModules(true)">
+              <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+              <span>刷新</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="summary-strip" id="summaryStrip" aria-label="模块统计">
+          <div class="summary-item" data-summary-tone="all">
+            <span class="summary-label">全部模块</span>
+            <span class="summary-value" id="summaryTotal">0</span>
+            <span class="summary-note">已纳入当前面板</span>
+          </div>
+          <div class="summary-item" data-summary-tone="running">
+            <span class="summary-label">运行中</span>
+            <span class="summary-value" id="summaryRunning">0</span>
+            <span class="summary-note">正在提供服务</span>
+            <button class="summary-inline-action" id="forceCloseAllBtn" type="button" onclick="forceCloseAllModules()">
+              ${icon('stop_circle')}<span>全部关停</span>
+            </button>
+          </div>
+          <div class="summary-item" data-summary-tone="stopped">
+            <span class="summary-label">已停止</span>
+            <span class="summary-value" id="summaryStopped">0</span>
+            <span class="summary-note">可按需唤起</span>
+          </div>
+          <div class="summary-item" data-summary-tone="update">
+            <span class="summary-label">可更新</span>
+            <span class="summary-value" id="summaryUpdateable">0</span>
+            <span class="summary-note">建议优先关注</span>
+          </div>
+        </div>
+
+        <div class="modules-grid" id="modulesGrid" style="margin-top: 16px;">
+          <div class="loading-state">
+            <div>
+              <svg class="icon" aria-hidden="true"><use href="#icon-progress_activity"></use></svg>
+              <div>正在加载模块...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settingsView" style="display: none;" aria-labelledby="settingsTitle">
+        <div class="settings-container" id="settingsContent"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="dialog" id="logDialog" role="dialog" aria-modal="true" aria-labelledby="logDialogTitle">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="dialog-title">
+          <h2 id="logDialogTitle">模块日志</h2>
+          <p id="logDialogSubtitle">最近 200 行</p>
+        </div>
+        <button class="icon-btn" type="button" onclick="closeLogDialog()" title="关闭" aria-label="关闭">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
+      <div class="log-toolbar">
+        <div class="text-field">
+          <label for="logFilter">过滤</label>
+          <input class="input mono" id="logFilter" type="search" placeholder="error、warn、关键字" oninput="applyLogFilter()">
+        </div>
+        <div class="text-field select-field">
+          <label for="logLevelFilter">级别</label>
+          <select class="select" id="logLevelFilter" onchange="applyLogFilter()">
+            <option value="all">全部</option>
+            <option value="error">错误</option>
+            <option value="warn">警告</option>
+            <option value="info">信息</option>
+          </select>
+        </div>
+        <label class="switch" title="自动刷新">
+          <input type="checkbox" id="logTailToggle" checked onchange="toggleLogTail()">
+          <span class="switch-track"></span>
+        </label>
+        <button class="btn btn-text btn-sm" type="button" onclick="refreshLogs()">
+          <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+          <span>刷新</span>
+        </button>
+        <button class="btn btn-text btn-sm" type="button" onclick="scrollLogsBottom()">
+          <svg class="icon" aria-hidden="true"><use href="#icon-south"></use></svg>
+          <span>底部</span>
+        </button>
+      </div>
+      <div class="dialog-body" id="logBody">
+        <pre class="log-content" id="logContent">加载中...</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="snackbar" id="snackbar" role="status" aria-live="polite">
+    <div class="snackbar-message" id="snackbarMessage"></div>
+    <div class="snackbar-actions">
+      <button class="snackbar-action-btn" id="snackbarCopyBtn" type="button" onclick="copyToastMessage()">复制</button>
+      <button class="snackbar-action-btn" id="snackbarCloseBtn" type="button" onclick="hideToast()">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    const THEME_STORAGE_KEY = 'hubkit-theme-mode';
+    const UI_PREFS_STORAGE_KEY = 'hubkit-ui-prefs';
+    let ws = null;
+    let modules = [];
+    let settings = { autoStart: {}, startOrder: [], visibility: {}, schedules: {}, moduleWebUrls: {} };
+    let reconnectInterval = null;
+    let currentView = 'dashboard';
+    let dragSrcIndex = null;
+    let currentLogModuleId = null;
+    let currentLogModuleName = '';
+    let logTailTimer = null;
+    let lastToastMessage = '';
+    let themeMode = document.documentElement.dataset.themeMode || 'auto';
+    let resolvedTheme = document.documentElement.dataset.themeResolved || 'light';
+    let diagnosticsByModule = {};
+    let diagnosticsLoadingByModule = {};
+    let forceCloseLoadingByModule = {};
+    let forceCloseAllLoading = false;
+    let uiPrefs = loadUiPrefs();
+    let settingsPanels = {
+      display: true,
+      autoStart: false,
+      visibility: false,
+      webUrl: false,
+      schedule: false,
+    };
+    const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const dayLabels = ['日', '一', '二', '三', '四', '五', '六'];
+
+    function icon(name) {
+      return `<svg class="icon" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, '&#96;');
+    }
+
+    function jsString(value) {
+      return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '');
+    }
+
+    function loadUiPrefs() {
+      try {
+        const raw = localStorage.getItem(UI_PREFS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        const blurRaw = Number(parsed?.wallpaperBlur);
+        const wallpaperBlur = Number.isFinite(blurRaw)
+          ? Math.min(24, Math.max(0, blurRaw))
+          : 6;
+        return {
+          collapseProcessMini: parsed?.collapseProcessMini === true,
+          wallpaperEnabled: parsed?.wallpaperEnabled === true,
+          wallpaperUrl: typeof parsed?.wallpaperUrl === 'string' ? parsed.wallpaperUrl : '',
+          wallpaperBlur,
+        };
+      } catch (error) {
+        return { collapseProcessMini: false, wallpaperEnabled: false, wallpaperUrl: '', wallpaperBlur: 6 };
+      }
+    }
+
+    function saveUiPrefs() {
+      localStorage.setItem(UI_PREFS_STORAGE_KEY, JSON.stringify(uiPrefs));
+    }
+
+    function setProcessMiniCollapsed(enabled) {
+      uiPrefs.collapseProcessMini = enabled === true;
+      saveUiPrefs();
+      renderDashboard();
+      if (currentView === 'settings') {
+        renderSettings();
+      }
+    }
+
+    function applyWallpaper() {
+      const layer = document.getElementById('wallpaperLayer');
+      if (!layer) return;
+      const enabled = uiPrefs.wallpaperEnabled === true;
+      const url = String(uiPrefs.wallpaperUrl || '').trim();
+      const blur = Number.isFinite(Number(uiPrefs.wallpaperBlur)) ? Number(uiPrefs.wallpaperBlur) : 6;
+      const safeBlur = Math.min(24, Math.max(0, blur));
+      layer.style.setProperty('--wallpaper-blur', `${safeBlur}px`);
+
+      if (!enabled || !url) {
+        layer.style.display = 'none';
+        layer.style.backgroundImage = '';
+        return;
+      }
+
+      layer.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+      layer.style.display = 'block';
+    }
+
+    function setWallpaperEnabled(enabled) {
+      uiPrefs.wallpaperEnabled = enabled === true;
+      saveUiPrefs();
+      applyWallpaper();
+    }
+
+    function updateWallpaperUrl(value) {
+      uiPrefs.wallpaperUrl = String(value || '');
+      saveUiPrefs();
+      applyWallpaper();
+    }
+
+    function updateWallpaperBlur(value) {
+      const n = Number(value);
+      uiPrefs.wallpaperBlur = Number.isFinite(n) ? Math.min(24, Math.max(0, n)) : 6;
+      saveUiPrefs();
+      applyWallpaper();
+      const valueEl = document.getElementById('wallpaperBlurValue');
+      if (valueEl) valueEl.textContent = `${uiPrefs.wallpaperBlur}px`;
+    }
+
+    function resolveTheme(mode) {
+      return mode === 'auto' ? (systemThemeQuery.matches ? 'dark' : 'light') : mode;
+    }
+
+    function applyTheme(mode, persist = true) {
+      themeMode = mode === 'light' || mode === 'dark' || mode === 'auto' ? mode : 'auto';
+      resolvedTheme = resolveTheme(themeMode);
+      document.documentElement.dataset.themeMode = themeMode;
+      document.documentElement.dataset.themeResolved = resolvedTheme;
+      if (persist) {
+        localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+      }
+      updateThemeControls();
+    }
+
+    function updateThemeControls() {
+      document.querySelectorAll('.theme-btn').forEach((button) => {
+        const active = button.dataset.themeMode === themeMode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+
+    function setThemeMode(mode) {
+      applyTheme(mode, true);
+      const themeName = mode === 'auto' ? '自动跟随系统' : mode === 'light' ? '浅色模式' : '深色模式';
+      showToast(`已切换到${themeName}`);
+    }
+
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        updateConnectionStatus(true);
+        clearInterval(reconnectInterval);
+        reconnectInterval = null;
+        fetchModules();
+        fetchSettings();
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          handleWebSocketMessage(JSON.parse(event.data));
+        } catch (error) {
+          console.error('Invalid WebSocket message:', error);
+        }
+      };
+
+      ws.onerror = () => updateConnectionStatus(false);
+
+      ws.onclose = () => {
+        updateConnectionStatus(false);
+        if (!reconnectInterval) {
+          reconnectInterval = setInterval(connectWebSocket, 3000);
+        }
+      };
+    }
+
+    function updateConnectionStatus(connected) {
+      const chip = document.getElementById('connectionChip');
+      const statusText = document.getElementById('wsStatusText');
+      chip.className = `connection-chip ${connected ? 'connected' : 'disconnected'}`;
+      statusText.textContent = connected ? '已连接' : '未连接';
+    }
+
+    function handleWebSocketMessage(data) {
+      const refreshEvents = new Set([
+        'module_started',
+        'module_stopped',
+        'module_restarted',
+        'module_updated',
+        'schedule_triggered',
+      ]);
+      if (refreshEvents.has(data.type)) {
+        fetchModules();
+      }
+    }
+
+    async function fetchModules(showNotice = false) {
+      try {
+        const response = await fetch('/api/modules');
+        const json = await response.json();
+        modules = Array.isArray(json) ? json : (json.data || []);
+        renderDashboard();
+        if (currentView === 'settings') renderSettings();
+        if (showNotice) showToast('模块状态已刷新');
+      } catch (error) {
+        console.error('Failed to fetch modules:', error);
+        renderDashboardError();
+        if (showNotice) showToast('刷新失败', 'error');
+      }
+    }
+
+    async function fetchSettings() {
+      try {
+        const response = await fetch('/api/settings');
+        const json = await response.json();
+        if (json.success) {
+          settings = {
+            autoStart: {},
+            startOrder: [],
+            visibility: {},
+            schedules: {},
+            moduleWebUrls: {},
+            ...json.data,
+          };
+          if (currentView === 'settings') renderSettings();
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    }
+
+    async function saveSettings() {
+      try {
+        const response = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            autoStart: settings.autoStart,
+            startOrder: settings.startOrder,
+          }),
+        });
+        const json = await response.json();
+        if (json.success) {
+          showToast('设置已保存');
+          fetchSettings();
+        } else {
+          showToast(json.error || '保存失败', 'error');
+        }
+      } catch (error) {
+        console.error('Failed to save settings:', error);
+        showToast('保存失败', 'error');
+      }
+    }
+
+    async function moduleAction(id, action) {
+      const labels = { start: '启动', stop: '停止', restart: '重启' };
+      try {
+        const response = await fetch(`/api/modules/${encodeURIComponent(id)}/${action}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: action === 'stop' ? JSON.stringify({ force: false }) : undefined,
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || `${labels[action]}失败`);
+        }
+        showToast(json.message || `${labels[action]}成功`);
+        fetchModules();
+      } catch (error) {
+        console.error(`Failed to ${action} module:`, error);
+        showToast(error.message || `${labels[action]}失败`, 'error');
+      }
+    }
+
+    function startModule(id) {
+      moduleAction(id, 'start');
+    }
+
+    function stopModule(id) {
+      moduleAction(id, 'stop');
+    }
+
+    function restartModule(id) {
+      moduleAction(id, 'restart');
+    }
+
+    async function fetchLogs(id) {
+      try {
+        const response = await fetch(`/api/modules/${encodeURIComponent(id)}/logs?lines=200`);
+        const json = await response.json();
+        if (json.success) return json.data || '';
+        return json.error || '无法加载日志';
+      } catch (error) {
+        console.error('Failed to fetch logs:', error);
+        return '无法加载日志';
+      }
+    }
+
+    function renderDashboard() {
+      updateSummary();
+      renderModules();
+    }
+
+    function renderDashboardError() {
+      const grid = document.getElementById('modulesGrid');
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div>
+            ${icon('error')}
+            <div>无法加载模块状态。</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateSummary() {
+      const visibleModules = modules.filter(m => m.visible !== false);
+      const running = visibleModules.filter(m => m.status === 'running').length;
+      const stopped = visibleModules.filter(m => m.status !== 'running').length;
+      const updateable = visibleModules.filter(m => m.updateable).length;
+      document.getElementById('summaryTotal').textContent = visibleModules.length;
+      document.getElementById('summaryRunning').textContent = running;
+      document.getElementById('summaryStopped').textContent = stopped;
+      document.getElementById('summaryUpdateable').textContent = updateable;
+
+      const btn = document.getElementById('forceCloseAllBtn');
+      if (btn) {
+        btn.disabled = forceCloseAllLoading;
+        btn.innerHTML = forceCloseAllLoading
+          ? `${icon('progress_activity')}<span>清理中...</span>`
+          : `${icon('stop_circle')}<span>全部关停</span>`;
+      }
+    }
+
+    function renderModules() {
+      const grid = document.getElementById('modulesGrid');
+      const visibleModules = modules.filter(m => m.visible !== false);
+
+      if (visibleModules.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div>
+              ${icon('visibility_off')}
+              <div>没有可显示的模块。</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = visibleModules.map(createModuleCard).join('');
+    }
+
+    function createModuleCard(module) {
+      const statusClass = getStatusClass(module.status);
+      const uptime = module.uptime ? formatUptime(module.uptime) : 'N/A';
+      const pid = module.pid || 'N/A';
+      const description = module.description || getTypeText(module.type);
+      const startedAt = module.startedAt ? formatStartedAt(module.startedAt) : '未知';
+      const diagnostics = diagnosticsByModule[module.id] || null;
+      const primaryMeta = module.status === 'running'
+        ? `已运行 ${uptime}`
+        : module.updateable
+          ? '支持在线更新'
+          : `${getTypeText(module.type)} 模块`;
+      const keyAction = module.status === 'running' ? '在线服务中' : module.updateable ? '待机，可更新' : '待机，可启动';
+
+      return `
+        <article class="module-card ${statusClass}" data-module-id="${escapeAttr(module.id)}">
+          <div class="module-header">
+            <div class="module-title">
+              <h3>${escapeHtml(module.name)}</h3>
+              <span class="module-id">${escapeHtml(module.id)}</span>
+            </div>
+            <div class="state-badge ${statusClass}">
+              <span class="state-dot"></span>
+              <span>${escapeHtml(getStatusText(module.status))}</span>
+            </div>
+          </div>
+
+          <p class="module-description">${escapeHtml(description)}</p>
+
+          <div class="module-primary-row">
+            <div class="module-primary-meta">
+              <span class="module-kicker">当前状态</span>
+              <span class="module-emphasis">${escapeHtml(keyAction)}</span>
+            </div>
+            <div class="module-primary-meta" style="text-align: right;">
+              <span class="module-kicker">摘要</span>
+              <span class="module-emphasis">${escapeHtml(primaryMeta)}</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">类型</span>
+              <span class="metric-value">${escapeHtml(getTypeText(module.type))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">进程</span>
+              <span class="metric-value">${escapeHtml(pid)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">启动时间</span>
+              <span class="metric-value" title="${escapeAttr(startedAt)}">${escapeHtml(startedAt)}</span>
+            </div>
+          </div>
+
+          ${buildProcessMiniCard(module, diagnostics)}
+
+          <div class="module-actions">
+            ${buildActionButtons(module)}
+          </div>
+        </article>
+      `;
+    }
+
+    function buildActionButtons(module) {
+      const id = jsString(module.id);
+      const name = jsString(module.name);
+      const controls = module.status === 'running'
+        ? `
+          <button class="btn btn-error" type="button" onclick="stopModule('${id}')">${icon('stop_circle')}<span>停止</span></button>
+          <button class="btn btn-tonal" type="button" onclick="restartModule('${id}')">${icon('restart_alt')}<span>重启</span></button>
+        `
+        : `<button class="btn btn-filled" type="button" onclick="startModule('${id}')">${icon('play_circle')}<span>启动</span></button>`;
+
+      const openButton = module.webUrl
+        ? `<button class="btn btn-tertiary" type="button" onclick="openModuleUrl('${id}', '${jsString(module.webUrl)}')">${icon('open_in_new')}<span>打开</span></button>`
+        : '';
+
+      const updateButton = module.updateable
+        ? `<button class="btn btn-outlined" id="update-btn-${escapeAttr(module.id)}" type="button" onclick="checkAndUpdate('${id}')">${icon('system_update_alt')}<span>检查更新</span></button>`
+        : '';
+
+      return `
+        ${controls}
+        ${openButton}
+        <button class="btn btn-text" type="button" onclick="showLogs('${id}', '${name}')">${icon('article')}<span>日志</span></button>
+        ${updateButton}
+      `;
+    }
+
+    function buildProcessMiniCard(module, diagnostics) {
+      const id = jsString(module.id);
+      const loading = diagnosticsLoadingByModule[module.id] === true;
+      const forcing = forceCloseLoadingByModule[module.id] === true;
+      const collapsed = uiPrefs.collapseProcessMini === true;
+      const checkedAt = diagnostics?.checkedAt ? formatStartedAt(diagnostics.checkedAt) : '未检查';
+      const pidStatus = diagnostics?.pidFromStatus ?? module.pid ?? null;
+      const pidFile = diagnostics?.pidFromPidFile ?? null;
+      const portValue = diagnostics?.port ?? parsePort(module.webUrl) ?? null;
+      const portText = portValue ? String(portValue) : '未配置';
+      const portOccupied = diagnostics?.portOccupied === true;
+      const listenerText = formatListenerSummary(diagnostics?.portListeners || []);
+      const pidCandidatesText = formatPidCandidatesSummary(diagnostics?.pidCandidates || []);
+      const runBadge = module.status === 'running' ? '运行中' : '已停止';
+      const runBadgeClass = module.status === 'running' ? 'running' : 'error';
+      const portBadgeClass = portValue ? (portOccupied ? 'warn' : 'running') : '';
+      const portBadgeText = portValue ? (portOccupied ? '端口占用' : '端口空闲') : '无端口';
+
+      return `
+        <section class="process-mini ${collapsed ? 'collapsed' : ''}">
+          <div class="process-mini-head">
+            <span class="process-mini-title">进程检查</span>
+            <span class="process-mini-time">${escapeHtml(checkedAt)}</span>
+          </div>
+          <div class="process-badges">
+            <span class="proc-badge ${runBadgeClass}">${escapeHtml(runBadge)}</span>
+            <span class="proc-badge ${portBadgeClass}">${escapeHtml(portBadgeText)}</span>
+          </div>
+          <div class="process-kv">
+            <div class="process-kv-row">
+              <span class="process-kv-key">PID：</span>
+              <span class="process-kv-value">${escapeHtml(pidStatus ? String(pidStatus) : '无')} / 文件 ${escapeHtml(pidFile ? String(pidFile) : '无')}</span>
+            </div>
+            <div class="process-kv-row">
+              <span class="process-kv-key">端口：</span>
+              <span class="process-kv-value">${escapeHtml(portText)}</span>
+            </div>
+            <div class="process-kv-row">
+              <span class="process-kv-key">占用进程：</span>
+              <span class="process-kv-value">${escapeHtml(listenerText)}</span>
+            </div>
+            <div class="process-kv-row">
+              <span class="process-kv-key">候选进程：</span>
+              <span class="process-kv-value">${escapeHtml(pidCandidatesText)}</span>
+            </div>
+          </div>
+          <div class="process-mini-actions">
+            <button
+              class="btn btn-outlined btn-sm"
+              type="button"
+              ${loading || forcing ? 'disabled' : ''}
+              onclick="checkModuleDiagnostics('${id}')"
+            >${loading ? `${icon('progress_activity')}<span>检查中...</span>` : `${icon('refresh')}<span>检查状态</span>`}</button>
+            <button
+              class="btn btn-error btn-sm"
+              type="button"
+              ${forcing || loading ? 'disabled' : ''}
+              onclick="forceCloseModule('${id}')"
+            >${forcing ? `${icon('progress_activity')}<span>处理中...</span>` : `${icon('stop_circle')}<span>强制关闭</span>`}</button>
+          </div>
+        </section>
+      `;
+    }
+
+    function parsePort(urlValue) {
+      if (!urlValue) return null;
+      try {
+        const parsed = new URL(urlValue);
+        if (parsed.port) return Number(parsed.port);
+        if (parsed.protocol === 'http:') return 80;
+        if (parsed.protocol === 'https:') return 443;
+      } catch (error) {
+        return null;
+      }
+      return null;
+    }
+
+    function trimCommand(command) {
+      if (!command) return 'unknown';
+      if (command.length <= 42) return command;
+      return `${command.slice(0, 39)}...`;
+    }
+
+    function formatListenerSummary(listeners) {
+      if (!listeners || listeners.length === 0) return '无';
+      return listeners
+        .slice(0, 2)
+        .map((item) => `${item.pid}(${trimCommand(item.command)}${item.alive ? '' : ',dead'})`)
+        .join('；');
+    }
+
+    function formatPidCandidatesSummary(candidates) {
+      if (!candidates || candidates.length === 0) return '无';
+      return candidates
+        .slice(0, 3)
+        .map((item) => `${item.pid}${item.alive ? '' : '(dead)'}`)
+        .join('、');
+    }
+
+    function buildBasicDiagnostics(module) {
+      const pid = module?.pid ?? null;
+      const port = parsePort(module?.webUrl) ?? null;
+      const alive = module?.status === 'running' && pid;
+      return {
+        pidFromStatus: pid,
+        pidFromPidFile: null,
+        pidCandidates: pid ? [{ pid, command: 'unknown', alive: Boolean(alive) }] : [],
+        port,
+        portOccupied: Boolean(module?.status === 'running' && port),
+        portListeners: [],
+        checkedAt: new Date().toISOString(),
+      };
+    }
+
+    async function checkModuleDiagnostics(moduleId) {
+      diagnosticsLoadingByModule[moduleId] = true;
+      renderDashboard();
+      try {
+        const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/diagnostics`);
+        const isJson = String(response.headers.get('content-type') || '').includes('application/json');
+        const json = isJson ? await response.json().catch(() => ({})) : {};
+
+        if (response.status === 404) {
+          const module = modules.find(item => item.id === moduleId);
+          diagnosticsByModule[moduleId] = buildBasicDiagnostics(module);
+          showToast('当前服务版本不支持进程诊断，已降级为基础检查。请重启 2281 服务更新后端。', 'error');
+          return;
+        }
+
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || `检查失败（HTTP ${response.status}）`);
+        }
+        diagnosticsByModule[moduleId] = json.data?.diagnostics || null;
+        showToast('进程状态已更新');
+      } catch (error) {
+        console.error('Failed to fetch diagnostics:', error);
+        showToast(error.message || '检查失败', 'error');
+      } finally {
+        diagnosticsLoadingByModule[moduleId] = false;
+        renderDashboard();
+      }
+    }
+
+    async function forceCloseModule(moduleId) {
+      const module = modules.find(item => item.id === moduleId);
+      const moduleName = module?.name || moduleId;
+      const confirmText = `确认强制关闭 ${moduleName}？会尝试清理端口占用进程。`;
+      if (!window.confirm(confirmText)) return;
+
+      forceCloseLoadingByModule[moduleId] = true;
+      renderDashboard();
+      try {
+        const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/force-close`, { method: 'POST' });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(json.error || '强制关闭失败');
+        }
+        if (json.data?.after) {
+          diagnosticsByModule[moduleId] = json.data.after;
+        }
+        if (json.success === false) {
+          showToast(json.message || '强制关闭执行完成，但仍有残留进程', 'error');
+        } else {
+          showToast(json.message || '强制关闭成功');
+        }
+        fetchModules();
+      } catch (error) {
+        console.error('Failed to force close module:', error);
+        showToast(error.message || '强制关闭失败', 'error');
+      } finally {
+        forceCloseLoadingByModule[moduleId] = false;
+        renderDashboard();
+      }
+    }
+
+    async function forceCloseAllModules() {
+      if (forceCloseAllLoading) return;
+      const runningCount = modules.filter(item => item.status === 'running').length;
+      const confirmText = runningCount > 0
+        ? `确认关停全部模块？当前运行中 ${runningCount} 个，将执行强制清理残留。`
+        : '确认执行一次全量残留清理？当前无运行模块。';
+      if (!window.confirm(confirmText)) return;
+
+      forceCloseAllLoading = true;
+      renderDashboard();
+      try {
+        const response = await fetch('/api/modules/force-close-all', { method: 'POST' });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(json.error || '全部关停失败');
+        }
+
+        const failedCount = Number(json?.data?.failedCount || 0);
+        const total = Number(json?.data?.total || 0);
+        if (failedCount > 0) {
+          showToast(json.message || `全部关停已执行，但 ${failedCount}/${total} 仍有残留`, 'error');
+        } else {
+          showToast(json.message || `全部关停完成，已清理 ${total} 个模块`);
+        }
+
+        const results = Array.isArray(json?.data?.results) ? json.data.results : [];
+        results.forEach((result) => {
+          if (result?.moduleId && result?.after) {
+            diagnosticsByModule[result.moduleId] = result.after;
+          }
+        });
+        await fetchModules();
+      } catch (error) {
+        console.error('Failed to force close all modules:', error);
+        showToast(error.message || '全部关停失败', 'error');
+      } finally {
+        forceCloseAllLoading = false;
+        renderDashboard();
+      }
+    }
+
+    function openModuleUrl(moduleId, url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    async function checkAndUpdate(moduleId) {
+      const btn = document.getElementById(`update-btn-${moduleId}`);
+      setButtonBusy(btn, '检查中...');
+
+      try {
+        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update-check`);
+        const json = await res.json();
+        resetUpdateButton(btn, moduleId);
+
+        if (!json.success) {
+          showToast(json.error || '检查失败', 'error');
+          return;
+        }
+
+        if (json.hasUpdates) {
+          btn.className = 'btn btn-warning';
+          btn.innerHTML = `${icon('download')}<span>更新 ${json.commitsBehind || ''}</span>`;
+          btn.onclick = () => performUpdate(moduleId);
+          showToast(json.message || '发现可用更新');
+        } else {
+          showToast('已是最新版本');
+        }
+      } catch (error) {
+        resetUpdateButton(btn, moduleId);
+        showToast('检查失败', 'error');
+      }
+    }
+
+    async function performUpdate(moduleId) {
+      const btn = document.getElementById(`update-btn-${moduleId}`);
+      setButtonBusy(btn, '更新中...');
+
+      try {
+        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update`, { method: 'POST' });
+        const json = await res.json();
+        resetUpdateButton(btn, moduleId);
+
+        if (json.success) {
+          showToast(json.message || '更新完成');
+          fetchModules();
+        } else {
+          showToast(json.error || '更新失败', 'error');
+        }
+      } catch (error) {
+        resetUpdateButton(btn, moduleId);
+        showToast('更新失败', 'error');
+      }
+    }
+
+    function setButtonBusy(btn, label) {
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = `${icon('progress_activity')}<span>${escapeHtml(label)}</span>`;
+    }
+
+    function resetUpdateButton(btn, moduleId) {
+      if (!btn) return;
+      btn.disabled = false;
+      btn.className = 'btn btn-outlined';
+      btn.innerHTML = `${icon('system_update_alt')}<span>检查更新</span>`;
+      btn.onclick = () => checkAndUpdate(moduleId);
+    }
+
+    function getStatusClass(status) {
+      if (status === 'running') return 'running';
+      if (status === 'error') return 'error';
+      if (status === 'starting') return 'starting';
+      if (status === 'stopping') return 'stopping';
+      return 'stopped';
+    }
+
+    function getStatusText(status) {
+      const statusMap = {
+        running: '运行中',
+        stopped: '已停止',
+        starting: '启动中',
+        stopping: '停止中',
+        error: '错误',
+        unknown: '未知',
+      };
+      return statusMap[status] || status || '未知';
+    }
+
+    function getTypeText(type) {
+      const typeMap = {
+        nodejs: 'Node.js',
+        python: 'Python',
+        shell: 'Shell',
+      };
+      return typeMap[type] || type || 'N/A';
+    }
+
+    function formatUptime(seconds) {
+      if (!seconds || seconds < 0) return 'N/A';
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      if (days > 0) return `${days}天 ${hours}小时`;
+      if (hours > 0) return `${hours}小时 ${minutes}分钟`;
+      return `${minutes}分钟`;
+    }
+
+    function formatStartedAt(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '未知';
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${d} ${hh}:${mm}`;
+    }
+
+    function showView(view) {
+      currentView = view;
+      document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
+      document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
+      document.getElementById('pageSubtitle').textContent = view === 'dashboard' ? '个人自动化中控台' : '模块偏好与调度';
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+      if (view === 'settings') renderSettings();
+    }
+
+    function renderSettings() {
+      const container = document.getElementById('settingsContent');
+      const orderedModules = getOrderedModules();
+      const webUrlModules = modules.filter(m => m.webUrl !== undefined || m.webPort);
+
+      container.innerHTML = `
+        <div class="section-heading">
+          <div>
+            <h2 class="settings-section-title" id="settingsTitle">设置</h2>
+            <p class="settings-section-desc">自动启动、显示状态、Web 地址与定时任务。</p>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn btn-filled" type="button" onclick="saveSettings()">${icon('save')}<span>保存设置</span></button>
+          <button class="btn btn-tonal" type="button" onclick="resetSettings()">${icon('undo')}<span>重置</span></button>
+        </div>
+
+        <section class="settings-section">
+          ${renderSettingsPanel(
+            'display',
+            '界面显示',
+            '控制卡片信息密度。',
+            `<div class="settings-list">${createDisplayPrefsItem()}</div>`
+          )}
+
+          ${renderSettingsPanel(
+            'autoStart',
+            '自动启动',
+            '拖拽调整启动顺序。',
+            `<div class="settings-list" id="autoStartList">${orderedModules.map((module, idx) => createAutoStartItem(module, idx)).join('') || emptySettings('暂无模块')}</div>`
+          )}
+
+          ${renderSettingsPanel(
+            'visibility',
+            '卡片显示',
+            '隐藏后仍可被后台管理。',
+            `<div class="settings-list">${orderedModules.map(createVisibilityItem).join('') || emptySettings('暂无模块')}</div>`
+          )}
+
+          ${webUrlModules.length > 0 ? renderSettingsPanel(
+            'webUrl',
+            'Web UI 地址',
+            '设置模块入口链接。',
+            `<div class="settings-list">${webUrlModules.map(createWebUrlItem).join('')}</div>`
+          ) : ''}
+
+          ${renderSettingsPanel(
+            'schedule',
+            '定时任务',
+            '按指定时间启动或停止模块。',
+            `<div class="settings-list">${orderedModules.map(createScheduleItem).join('') || emptySettings('暂无模块')}</div>`
+          )}
+        </section>
+      `;
+
+      initSettingsPanels();
+      initDragAndDrop();
+    }
+
+    function renderSettingsPanel(panelId, title, description, content) {
+      const openAttr = settingsPanels[panelId] === false ? '' : 'open';
+      return `
+        <details class="settings-panel" data-settings-panel="${panelId}" ${openAttr}>
+          <summary class="settings-panel-summary">
+            <div class="section-heading">
+              <div>
+                <h3 class="settings-section-title">${escapeHtml(title)}</h3>
+                <p class="settings-section-desc">${escapeHtml(description)}</p>
+              </div>
+              <span class="panel-chevron" aria-hidden="true">${icon('expand_more')}</span>
+            </div>
+          </summary>
+          <div class="settings-panel-content">
+            ${content}
+          </div>
+        </details>
+      `;
+    }
+
+    function initSettingsPanels() {
+      const panels = document.querySelectorAll('[data-settings-panel]');
+      panels.forEach((panel) => {
+        const panelId = panel.dataset.settingsPanel;
+        panel.addEventListener('toggle', () => {
+          settingsPanels[panelId] = panel.open;
+        });
+      });
+    }
+
+    function emptySettings(text) {
+      return `<div class="empty-state">${escapeHtml(text)}</div>`;
+    }
+
+    function createAutoStartItem(module, idx) {
+      const checked = settings.autoStart[module.id] ? 'checked' : '';
+      return `
+        <div class="settings-item" data-module-id="${escapeAttr(module.id)}" draggable="true">
+          <div class="drag-handle" title="拖拽排序">${icon('drag_indicator')}</div>
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(module.name)}</span>
+            <span class="settings-item-id">${escapeHtml(module.id)}</span>
+          </div>
+          <div class="settings-controls">
+            <span class="order-badge">#${idx + 1}</span>
+            <label class="switch" title="自动启动">
+              <input type="checkbox" ${checked} onchange="toggleAutoStart('${jsString(module.id)}', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function createDisplayPrefsItem() {
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr);">
+          <div class="settings-item-info" style="display: grid; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <div>
+                <span class="settings-item-name">进程检查卡片</span>
+                <span class="settings-item-id">默认展开；开启后改为折叠显示</span>
+              </div>
+              <label class="switch" title="折叠进程检查">
+                <input type="checkbox" ${uiPrefs.collapseProcessMini ? 'checked' : ''} onchange="setProcessMiniCollapsed(this.checked)">
+                <span class="switch-track"></span>
+              </label>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <div>
+                <span class="settings-item-name">壁纸显示</span>
+                <span class="settings-item-id">可设置背景图并调节模糊度</span>
+              </div>
+              <label class="switch" title="启用壁纸">
+                <input type="checkbox" ${uiPrefs.wallpaperEnabled ? 'checked' : ''} onchange="setWallpaperEnabled(this.checked)">
+                <span class="switch-track"></span>
+              </label>
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-url-input">壁纸 URL</label>
+              <input
+                class="input mono"
+                id="wallpaper-url-input"
+                type="url"
+                value="${escapeAttr(uiPrefs.wallpaperUrl || '')}"
+                placeholder="https://images.example.com/bg.jpg"
+                oninput="updateWallpaperUrl(this.value)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-blur-input">模糊度 <span id="wallpaperBlurValue">${escapeHtml(String(uiPrefs.wallpaperBlur ?? 6))}px</span></label>
+              <input
+                id="wallpaper-blur-input"
+                type="range"
+                min="0"
+                max="24"
+                step="1"
+                value="${escapeAttr(String(uiPrefs.wallpaperBlur ?? 6))}"
+                oninput="updateWallpaperBlur(this.value)"
+              >
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createVisibilityItem(module) {
+      const visible = module.visible !== false;
+      return `
+        <div class="settings-item">
+          <div class="brand-mark" style="width: 40px; height: 40px; box-shadow: none;">${icon(visible ? 'visibility' : 'visibility_off')}</div>
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(module.name)}</span>
+            <span class="settings-item-id">${escapeHtml(module.id)}</span>
+          </div>
+          <div class="settings-controls">
+            <label class="switch" title="显示卡片">
+              <input type="checkbox" ${visible ? 'checked' : ''} onchange="setModuleVisibility('${jsString(module.id)}', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function createWebUrlItem(module) {
+      return `
+        <div class="settings-item url-row">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(module.name)}</span>
+            <span class="settings-item-id">${escapeHtml(module.id)}</span>
+          </div>
+          <div class="url-input-group">
+            <div class="text-field">
+              <label for="url-${escapeAttr(module.id)}">URL</label>
+              <input class="input mono" type="url" id="url-${escapeAttr(module.id)}" value="${escapeAttr(module.webUrl || '')}" placeholder="http://localhost:5173">
+            </div>
+            <button class="btn btn-tonal btn-sm" type="button" onclick="saveModuleUrl('${jsString(module.id)}')">${icon('save')}<span>保存</span></button>
+          </div>
+        </div>
+      `;
+    }
+
+    function createScheduleItem(module) {
+      const schedule = module.schedule || settings.schedules[module.id] || {};
+      const enabled = schedule.enabled === true;
+      const days = Array.isArray(schedule.daysOfWeek) ? schedule.daysOfWeek : [];
+      return `
+        <div class="settings-item schedule-row">
+          <label class="switch" title="启用定时任务">
+            <input type="checkbox" ${enabled ? 'checked' : ''} id="schedule-enabled-${escapeAttr(module.id)}">
+            <span class="switch-track"></span>
+          </label>
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(module.name)}</span>
+            <span class="settings-item-id">${escapeHtml(module.id)}</span>
+            <div class="schedule-controls" style="margin-top: 10px;">
+              <div class="text-field">
+                <label for="schedule-start-${escapeAttr(module.id)}">启动</label>
+                <input class="input" type="time" id="schedule-start-${escapeAttr(module.id)}" value="${escapeAttr(schedule.startTime || '')}">
+              </div>
+              <div class="text-field">
+                <label for="schedule-stop-${escapeAttr(module.id)}">停止</label>
+                <input class="input" type="time" id="schedule-stop-${escapeAttr(module.id)}" value="${escapeAttr(schedule.stopTime || '')}">
+              </div>
+              <button class="btn btn-tonal btn-sm" type="button" onclick="saveSchedule('${jsString(module.id)}')">${icon('event_available')}<span>保存</span></button>
+              <div class="day-selector" aria-label="生效日期">
+                ${dayLabels.map((label, day) => `
+                  <label class="day-chip ${days.includes(day) ? 'checked' : ''}">
+                    <input type="checkbox" name="schedule-days-${escapeAttr(module.id)}" value="${day}" ${days.includes(day) ? 'checked' : ''} onchange="this.closest('.day-chip').classList.toggle('checked', this.checked)">
+                    周${label}
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function saveModuleUrl(moduleId) {
+      const input = document.getElementById(`url-${moduleId}`);
+      if (!input) return;
+      const url = input.value.trim();
+      if (!url) {
+        showToast('请输入有效的 URL', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/web-url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Web 地址已保存');
+          const module = modules.find(m => m.id === moduleId);
+          if (module) module.webUrl = url;
+          renderDashboard();
+        } else {
+          showToast(json.error || '保存失败', 'error');
+        }
+      } catch (error) {
+        showToast('保存失败', 'error');
+      }
+    }
+
+    async function setModuleVisibility(moduleId, visible) {
+      try {
+        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/visibility`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visible }),
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || '保存失败');
+        const module = modules.find(m => m.id === moduleId);
+        if (module) module.visible = visible;
+        showToast('显示状态已更新');
+        renderDashboard();
+      } catch (error) {
+        showToast(error.message || '保存失败', 'error');
+        fetchModules();
+      }
+    }
+
+    async function saveSchedule(moduleId) {
+      const enabled = document.getElementById(`schedule-enabled-${moduleId}`)?.checked === true;
+      const startTime = document.getElementById(`schedule-start-${moduleId}`)?.value || '';
+      const stopTime = document.getElementById(`schedule-stop-${moduleId}`)?.value || '';
+      const daysOfWeek = [...document.querySelectorAll('input[name^="schedule-days-"]:checked')]
+        .filter(input => input.name === `schedule-days-${moduleId}`)
+        .map(input => Number(input.value));
+
+      try {
+        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/schedule`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled, startTime, stopTime, daysOfWeek }),
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || '保存失败');
+        settings.schedules[moduleId] = json.schedule;
+        const module = modules.find(m => m.id === moduleId);
+        if (module) module.schedule = json.schedule;
+        showToast('定时任务已保存');
+      } catch (error) {
+        showToast(error.message || '保存失败', 'error');
+      }
+    }
+
+    function getOrderedModules() {
+      const order = settings.startOrder || [];
+      return [...modules].sort((a, b) => {
+        const ai = order.indexOf(a.id);
+        const bi = order.indexOf(b.id);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
+    }
+
+    function toggleAutoStart(moduleId, enabled) {
+      settings.autoStart[moduleId] = enabled;
+    }
+
+    function resetSettings() {
+      fetchSettings().then(() => renderSettings());
+    }
+
+    function initDragAndDrop() {
+      const list = document.getElementById('autoStartList');
+      if (!list) return;
+
+      const items = list.querySelectorAll('.settings-item[draggable="true"]');
+      items.forEach((item, index) => {
+        item.addEventListener('dragstart', (event) => {
+          dragSrcIndex = index;
+          item.classList.add('dragging');
+          event.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+          list.querySelectorAll('.settings-item').forEach(row => row.classList.remove('drag-over'));
+        });
+
+        item.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          item.classList.add('drag-over');
+        });
+
+        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+
+        item.addEventListener('drop', (event) => {
+          event.preventDefault();
+          item.classList.remove('drag-over');
+          const dropIndex = index;
+          if (dragSrcIndex === dropIndex) return;
+
+          const ordered = getOrderedModules();
+          const [moved] = ordered.splice(dragSrcIndex, 1);
+          ordered.splice(dropIndex, 0, moved);
+          settings.startOrder = ordered.map(module => module.id);
+          renderSettings();
+        });
+      });
+    }
+
+    async function showLogs(moduleId, moduleName) {
+      currentLogModuleId = moduleId;
+      currentLogModuleName = moduleName;
+      document.getElementById('logDialogTitle').textContent = moduleName;
+      document.getElementById('logDialogSubtitle').textContent = '最近 200 行';
+      document.getElementById('logFilter').value = '';
+      document.getElementById('logLevelFilter').value = 'all';
+      document.getElementById('logContent').textContent = '加载中...';
+      document.getElementById('logDialog').classList.add('active');
+      await refreshLogs();
+      toggleLogTail();
+    }
+
+    function closeLogDialog() {
+      document.getElementById('logDialog').classList.remove('active');
+      currentLogModuleId = null;
+      clearInterval(logTailTimer);
+      logTailTimer = null;
+    }
+
+    async function refreshLogs() {
+      if (!currentLogModuleId) return;
+      const content = document.getElementById('logContent');
+      const rawLogs = await fetchLogs(currentLogModuleId);
+      content.innerHTML = renderLogLines(rawLogs || '暂无日志');
+      applyLogFilter();
+      if (document.getElementById('logTailToggle').checked) {
+        scrollLogsBottom();
+      }
+    }
+
+    function renderLogLines(rawLogs) {
+      return String(rawLogs).split('\n').map(line => {
+        const lower = line.toLowerCase();
+        let level = 'info';
+        let cls = 'log-line log-line-info';
+        if (lower.includes('error') || lower.includes('failed') || lower.includes('exception')) {
+          level = 'error';
+          cls = 'log-line log-line-error';
+        } else if (lower.includes('warn')) {
+          level = 'warn';
+          cls = 'log-line log-line-warn';
+        } else if (/^\s+at\s/.test(line)) {
+          level = 'stack';
+          cls = 'log-line log-line-stack';
+        }
+        return `<span class="${cls}" data-level="${level}">${escapeHtml(line || ' ')}</span>`;
+      }).join('');
+    }
+
+    function applyLogFilter() {
+      const term = document.getElementById('logFilter').value.trim().toLowerCase();
+      const level = document.getElementById('logLevelFilter').value;
+      const lines = document.querySelectorAll('#logContent .log-line');
+      lines.forEach(line => {
+        const textMatch = !term || line.textContent.toLowerCase().includes(term);
+        const lineLevel = line.dataset.level;
+        const levelMatch = level === 'all' || lineLevel === level || (level === 'info' && lineLevel === 'stack');
+        line.classList.toggle('log-line-hidden', !(textMatch && levelMatch));
+      });
+    }
+
+    function toggleLogTail() {
+      clearInterval(logTailTimer);
+      logTailTimer = null;
+      if (currentLogModuleId && document.getElementById('logTailToggle').checked) {
+        logTailTimer = setInterval(refreshLogs, 5000);
+      }
+    }
+
+    function scrollLogsBottom() {
+      const body = document.getElementById('logBody');
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function hideToast() {
+      const snackbar = document.getElementById('snackbar');
+      snackbar.classList.remove('show');
+    }
+
+    function pauseToastTimer() {
+      const snackbar = document.getElementById('snackbar');
+      clearTimeout(snackbar.hideTimer);
+    }
+
+    function resumeToastTimer() {
+      const snackbar = document.getElementById('snackbar');
+      if (!snackbar.classList.contains('show')) return;
+      clearTimeout(snackbar.hideTimer);
+      snackbar.hideTimer = setTimeout(() => {
+        hideToast();
+      }, 3000);
+    }
+
+    async function copyToastMessage() {
+      const text = String(lastToastMessage || '').trim();
+      if (!text) return;
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.setAttribute('readonly', 'true');
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-9999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          textArea.remove();
+        }
+        showToast('提示内容已复制');
+      } catch {
+        showToast('复制失败，请手动选中文本复制', 'error');
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const snackbar = document.getElementById('snackbar');
+      const messageEl = document.getElementById('snackbarMessage');
+      lastToastMessage = String(message || '');
+      snackbar.className = `snackbar ${type}`;
+      messageEl.textContent = lastToastMessage;
+      snackbar.classList.add('show');
+      clearTimeout(snackbar.hideTimer);
+      const baseDuration = type === 'error' ? 9000 : 5200;
+      const longTextExtra = lastToastMessage.length > 80 ? 4000 : 0;
+      snackbar.hideTimer = setTimeout(() => {
+        hideToast();
+      }, baseDuration + longTextExtra);
+    }
+
+    document.getElementById('logDialog').addEventListener('click', (event) => {
+      if (event.target.id === 'logDialog') closeLogDialog();
+    });
+
+    document.getElementById('snackbar').addEventListener('mouseenter', pauseToastTimer);
+    document.getElementById('snackbar').addEventListener('mouseleave', resumeToastTimer);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeLogDialog();
+    });
+
+    if (typeof systemThemeQuery.addEventListener === 'function') {
+      systemThemeQuery.addEventListener('change', () => {
+        if (themeMode === 'auto') applyTheme('auto', false);
+      });
+    } else if (typeof systemThemeQuery.addListener === 'function') {
+      systemThemeQuery.addListener(() => {
+        if (themeMode === 'auto') applyTheme('auto', false);
+      });
+    }
+
+    applyTheme(themeMode, false);
+    applyWallpaper();
+    connectWebSocket();
+    fetchModules();
+    fetchSettings();
+    setInterval(fetchModules, 5000);
+  </script>
+</body>
+</html>

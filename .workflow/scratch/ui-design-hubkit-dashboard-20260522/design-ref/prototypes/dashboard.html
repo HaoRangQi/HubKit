@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubKit Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Colors */
+      --color-primary-indigo: oklch(0.58 0.22 264);
+      --color-primary-pink: oklch(0.64 0.24 350);
+      --color-primary-orange: oklch(0.68 0.20 35);
+      --color-secondary-purple: oklch(0.60 0.24 295);
+      --color-secondary-cyan: oklch(0.78 0.18 195);
+
+      --color-bg-base: oklch(0.15 0.02 264);
+      --color-bg-elevated: oklch(0.18 0.02 264);
+      --color-bg-glass: oklch(0.20 0.02 264 / 0.6);
+      --color-bg-glass-hover: oklch(0.22 0.02 264 / 0.7);
+
+      --color-text-primary: oklch(0.95 0.01 264);
+      --color-text-secondary: oklch(0.75 0.02 264);
+      --color-text-tertiary: oklch(0.60 0.02 264);
+      --color-text-on-primary: oklch(0.98 0.01 264);
+
+      --color-border-default: oklch(0.30 0.02 264 / 0.3);
+      --color-border-glass: oklch(0.50 0.05 264 / 0.2);
+      --color-border-focus: oklch(0.58 0.22 264);
+
+      --color-status-success: oklch(0.70 0.18 145);
+      --color-status-warning: oklch(0.75 0.18 85);
+      --color-status-error: oklch(0.62 0.24 25);
+      --color-status-info: oklch(0.78 0.18 195);
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+      /* Spacing */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+
+      /* Border Radius */
+      --radius-sm: 0.25rem;
+      --radius-base: 0.5rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-glass: 0 8px 32px 0 oklch(0 0 0 / 0.37);
+      --shadow-glow-indigo: 0 0 20px oklch(0.58 0.22 264 / 0.3), 0 0 40px oklch(0.58 0.22 264 / 0.1);
+      --shadow-glow-pink: 0 0 20px oklch(0.64 0.24 350 / 0.3), 0 0 40px oklch(0.64 0.24 350 / 0.1);
+
+      /* Transitions */
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(135deg, oklch(0.12 0.04 264) 0%, oklch(0.15 0.03 295) 50%, oklch(0.13 0.03 350) 100%);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at top right, oklch(0.20 0.08 264 / 0.3) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at bottom left, oklch(0.18 0.06 350 / 0.2) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-8);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--color-primary-indigo), var(--color-secondary-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-bg-glass);
+      border: 1px solid var(--color-border-glass);
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(12px);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-indicator.connected {
+      background: var(--color-status-success);
+      box-shadow: 0 0 10px var(--color-status-success);
+    }
+
+    .status-indicator.disconnected {
+      background: var(--color-status-error);
+      box-shadow: 0 0 10px var(--color-status-error);
+    }
+
+    /* Module Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: var(--space-6);
+      animation: fadeIn 0.5s ease-out 0.1s backwards;
+    }
+
+    /* Module Card */
+    .module-card {
+      background: linear-gradient(135deg, oklch(0.20 0.02 264 / 0.6) 0%, oklch(0.18 0.02 295 / 0.5) 100%);
+      border: 1px solid var(--color-border-glass);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-glass);
+      transition: all var(--transition-base);
+      animation: slideUp 0.4s ease-out backwards;
+    }
+
+    .module-card:hover {
+      background: linear-gradient(135deg, oklch(0.22 0.03 264 / 0.7) 0%, oklch(0.20 0.03 295 / 0.6) 100%);
+      border-color: oklch(0.58 0.22 264 / 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px 0 oklch(0 0 0 / 0.4);
+    }
+
+    .module-card:nth-child(1) { animation-delay: 0.1s; }
+    .module-card:nth-child(2) { animation-delay: 0.15s; }
+    .module-card:nth-child(3) { animation-delay: 0.2s; }
+    .module-card:nth-child(4) { animation-delay: 0.25s; }
+    .module-card:nth-child(5) { animation-delay: 0.3s; }
+    .module-card:nth-child(6) { animation-delay: 0.35s; }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+    }
+
+    .module-title {
+      flex: 1;
+    }
+
+    .module-title h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+      color: var(--color-text-primary);
+    }
+
+    .module-title .module-id {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--color-text-tertiary);
+    }
+
+    .module-status-badge {
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .module-status-badge.running {
+      background: oklch(0.70 0.18 145 / 0.2);
+      color: var(--color-status-success);
+      border: 1px solid oklch(0.70 0.18 145 / 0.3);
+    }
+
+    .module-status-badge.stopped {
+      background: oklch(0.60 0.02 264 / 0.2);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border-glass);
+    }
+
+    .module-status-badge.error {
+      background: oklch(0.62 0.24 25 / 0.2);
+      color: var(--color-status-error);
+      border: 1px solid oklch(0.62 0.24 25 / 0.3);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-dot.running {
+      background: var(--color-status-success);
+      box-shadow: 0 0 8px var(--color-status-success);
+    }
+
+    .status-dot.stopped {
+      background: var(--color-text-tertiary);
+    }
+
+    .status-dot.error {
+      background: var(--color-status-error);
+      box-shadow: 0 0 8px var(--color-status-error);
+    }
+
+    .module-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-value {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    /* Action Buttons */
+    .module-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-sans);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary-indigo), var(--color-secondary-purple));
+      color: var(--color-text-on-primary);
+      box-shadow: 0 4px 6px -1px oklch(0 0 0 / 0.1), var(--shadow-glow-indigo);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 0 30px oklch(0.58 0.22 264 / 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--color-bg-glass);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border-glass);
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--color-bg-glass-hover);
+      border-color: oklch(0.58 0.22 264 / 0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-text-secondary);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: oklch(0.20 0.02 264 / 0.4);
+      color: var(--color-text-primary);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--color-primary-pink), var(--color-primary-orange));
+      color: var(--color-text-on-primary);
+      box-shadow: 0 4px 6px -1px oklch(0 0 0 / 0.1), var(--shadow-glow-pink);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 0 30px oklch(0.64 0.24 350 / 0.4);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: oklch(0 0 0 / 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, oklch(0.20 0.02 264 / 0.95) 0%, oklch(0.18 0.02 295 / 0.9) 100%);
+      border: 1px solid var(--color-border-glass);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      max-width: 800px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-glass);
+      animation: scaleIn 0.2s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .modal-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--color-text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: var(--space-2);
+      border-radius: var(--radius-base);
+      transition: all var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background: oklch(0.20 0.02 264 / 0.5);
+      color: var(--color-text-primary);
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      background: oklch(0.15 0.02 264 / 0.8);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+
+    .log-content {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-4);
+      }
+
+      .header h1 {
+        font-size: 1.875rem;
+      }
+
+      .modal-content {
+        width: 95%;
+        padding: var(--space-6);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>HubKit Dashboard</h1>
+      <div class="connection-status">
+        <div class="status-indicator disconnected" id="wsStatus"></div>
+        <span id="wsStatusText">连接中...</span>
+      </div>
+    </header>
+
+    <div class="modules-grid" id="modulesGrid">
+      <!-- Modules will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <!-- Log Modal -->
+  <div class="modal" id="logModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="logModalTitle">模块日志</h2>
+        <button class="modal-close" onclick="closeLogModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="log-content" id="logContent">加载中...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let modules = [];
+    let reconnectInterval = null;
+
+    // WebSocket Connection
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        updateConnectionStatus(true);
+        clearInterval(reconnectInterval);
+        fetchModules();
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleWebSocketMessage(data);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        updateConnectionStatus(false);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        updateConnectionStatus(false);
+        reconnectInterval = setInterval(connectWebSocket, 3000);
+      };
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusIndicator = document.getElementById('wsStatus');
+      const statusText = document.getElementById('wsStatusText');
+
+      if (connected) {
+        statusIndicator.className = 'status-indicator connected';
+        statusText.textContent = '已连接';
+      } else {
+        statusIndicator.className = 'status-indicator disconnected';
+        statusText.textContent = '未连接';
+      }
+    }
+
+    function handleWebSocketMessage(data) {
+      if (data.type === 'module_update') {
+        fetchModules();
+      }
+    }
+
+    // API Calls
+    async function fetchModules() {
+      try {
+        const response = await fetch('/api/modules');
+        modules = await response.json();
+        renderModules();
+      } catch (error) {
+        console.error('Failed to fetch modules:', error);
+      }
+    }
+
+    async function startModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/start`, { method: 'POST' });
+        if (response.ok) {
+          fetchModules();
+        }
+      } catch (error) {
+        console.error('Failed to start module:', error);
+      }
+    }
+
+    async function stopModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/stop`, { method: 'POST' });
+        if (response.ok) {
+          fetchModules();
+        }
+      } catch (error) {
+        console.error('Failed to stop module:', error);
+      }
+    }
+
+    async function restartModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/restart`, { method: 'POST' });
+        if (response.ok) {
+          fetchModules();
+        }
+      } catch (error) {
+        console.error('Failed to restart module:', error);
+      }
+    }
+
+    async function fetchLogs(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/logs`);
+        const logs = await response.text();
+        return logs;
+      } catch (error) {
+        console.error('Failed to fetch logs:', error);
+        return '无法加载日志';
+      }
+    }
+
+    // Render Functions
+    function renderModules() {
+      const grid = document.getElementById('modulesGrid');
+      grid.innerHTML = '';
+
+      modules.forEach((module, index) => {
+        const card = createModuleCard(module, index);
+        grid.appendChild(card);
+      });
+    }
+
+    function createModuleCard(module, index) {
+      const card = document.createElement('div');
+      card.className = 'module-card';
+      card.style.animationDelay = `${0.1 + index * 0.05}s`;
+
+      const statusClass = module.status === 'running' ? 'running' :
+                         module.status === 'error' ? 'error' : 'stopped';
+
+      const uptime = module.uptime ? formatUptime(module.uptime) : 'N/A';
+
+      card.innerHTML = `
+        <div class="module-header">
+          <div class="module-title">
+            <h3>${module.name}</h3>
+            <span class="module-id">${module.id}</span>
+          </div>
+          <div class="module-status-badge ${statusClass}">
+            <div class="status-dot ${statusClass}"></div>
+            <span>${getStatusText(module.status)}</span>
+          </div>
+        </div>
+
+        <div class="module-info">
+          <div class="info-item">
+            <span class="info-label">类型</span>
+            <span class="info-value">${module.type || 'N/A'}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">PID</span>
+            <span class="info-value">${module.pid || 'N/A'}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">运行时长</span>
+            <span class="info-value">${uptime}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">重启次数</span>
+            <span class="info-value">${module.restarts || 0}</span>
+          </div>
+        </div>
+
+        <div class="module-actions">
+          ${module.status === 'running' ?
+            `<button class="btn btn-danger" onclick="stopModule('${module.id}')">停止</button>
+             <button class="btn btn-secondary" onclick="restartModule('${module.id}')">重启</button>` :
+            `<button class="btn btn-primary" onclick="startModule('${module.id}')">启动</button>`
+          }
+          <button class="btn btn-ghost" onclick="showLogs('${module.id}', '${module.name}')">日志</button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function getStatusText(status) {
+      const statusMap = {
+        'running': '运行中',
+        'stopped': '已停止',
+        'error': '错误'
+      };
+      return statusMap[status] || status;
+    }
+
+    function formatUptime(seconds) {
+      if (!seconds || seconds < 0) return 'N/A';
+
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+
+      if (days > 0) return `${days}天 ${hours}小时`;
+      if (hours > 0) return `${hours}小时 ${minutes}分钟`;
+      return `${minutes}分钟`;
+    }
+
+    // Modal Functions
+    async function showLogs(moduleId, moduleName) {
+      const modal = document.getElementById('logModal');
+      const title = document.getElementById('logModalTitle');
+      const content = document.getElementById('logContent');
+
+      title.textContent = `${moduleName} - 日志`;
+      content.textContent = '加载中...';
+      modal.classList.add('active');
+
+      const logs = await fetchLogs(moduleId);
+      content.textContent = logs || '暂无日志';
+    }
+
+    function closeLogModal() {
+      const modal = document.getElementById('logModal');
+      modal.classList.remove('active');
+    }
+
+    // Close modal on background click
+    document.getElementById('logModal').addEventListener('click', (e) => {
+      if (e.target.id === 'logModal') {
+        closeLogModal();
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLogModal();
+      }
+    });
+
+    // Initialize
+    connectWebSocket();
+    fetchModules();
+
+    // Refresh modules every 5 seconds
+    setInterval(fetchModules, 5000);
+  </script>
+</body>
+</html>

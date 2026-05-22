@@ -1,0 +1,9 @@
+{
+  "id": "hello-python",
+  "name": "Hello Python",
+  "description": "简单的 Python 示例模块",
+  "type": "python",
+  "scriptPath": "./main.py",
+  "autoStart": false,
+  "enabled": true
+}

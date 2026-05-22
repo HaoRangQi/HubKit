@@ -1,0 +1,28 @@
+{
+  "id": "TASK-002",
+  "title": "实现 Node.js 脚本适配器",
+  "description": "实现 Node.js 脚本的适配器，支持通过模块协议调用 Node.js 脚本的 status/start/stop 等方法",
+  "status": "completed",
+  "wave": 2,
+  "depends_on": ["TASK-001"],
+  "files": [
+    "src/adapters/nodejs-adapter.ts",
+    "src/adapters/base-adapter.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "src/adapters/nodejs-adapter.ts 实现了 ModuleProtocol 接口",
+      "可以启动和停止 Node.js 进程",
+      "可以查询 Node.js 进程状态"
+    ]
+  },
+  "hints": [
+    "使用 child_process 模块管理进程",
+    "考虑进程的生命周期管理",
+    "实现基础适配器类供其他适配器继承"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过",
+    "适配器可以实例化"
+  ]
+}

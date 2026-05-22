@@ -1,0 +1,60 @@
+{
+  "phase": "1.2",
+  "title": "CLI 工具开发",
+  "goal": "实现命令行工具，支持模块管理基础操作",
+  "scope": "phase",
+  "created_at": "2026-05-22T03:45:00.000Z",
+  "tasks": [
+    {
+      "id": "TASK-006",
+      "title": "选型 CLI 框架并初始化项目",
+      "wave": 1
+    },
+    {
+      "id": "TASK-007",
+      "title": "实现模块注册和扫描机制",
+      "wave": 2,
+      "depends_on": ["TASK-006"]
+    },
+    {
+      "id": "TASK-008",
+      "title": "实现 hub list 命令",
+      "wave": 3,
+      "depends_on": ["TASK-007"]
+    },
+    {
+      "id": "TASK-009",
+      "title": "实现 hub status 命令",
+      "wave": 3,
+      "depends_on": ["TASK-007"]
+    },
+    {
+      "id": "TASK-010",
+      "title": "实现 hub enable/disable 命令",
+      "wave": 4,
+      "depends_on": ["TASK-008", "TASK-009"]
+    }
+  ],
+  "waves": [
+    {
+      "wave": 1,
+      "tasks": ["TASK-006"],
+      "description": "CLI 框架选型和初始化"
+    },
+    {
+      "wave": 2,
+      "tasks": ["TASK-007"],
+      "description": "模块注册机制"
+    },
+    {
+      "wave": 3,
+      "tasks": ["TASK-008", "TASK-009"],
+      "description": "基础查询命令（并行）"
+    },
+    {
+      "wave": 4,
+      "tasks": ["TASK-010"],
+      "description": "模块控制命令"
+    }
+  ]
+}

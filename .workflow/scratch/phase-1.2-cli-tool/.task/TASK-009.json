@@ -1,0 +1,27 @@
+{
+  "id": "TASK-009",
+  "title": "实现 hub status 命令",
+  "description": "实现 status 命令，查看模块运行状态，支持查看单个模块或所有模块",
+  "status": "completed",
+  "wave": 3,
+  "depends_on": ["TASK-007"],
+  "files": [
+    "src/cli/commands/status.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "hub status 可以显示所有模块状态",
+      "hub status <moduleId> 可以显示单个模块详细状态",
+      "显示进程 ID、运行时长、内存和 CPU 占用",
+      "npm run build 编译成功"
+    ]
+  },
+  "hints": [
+    "使用适配器的 status() 方法获取状态",
+    "格式化显示运行时长和资源占用"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过",
+    "hub status 命令可用"
+  ]
+}

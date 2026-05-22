@@ -1,0 +1,45 @@
+{
+  "name": "hubkit",
+  "version": "0.1.0",
+  "description": "个人自动化中控台 - 统一管理所有脚本和自动化任务",
+  "main": "dist/index.js",
+  "bin": {
+    "hub": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc && cp src/web/public/index.html dist/web/public/index.html",
+    "dev": "tsc --watch",
+    "start": "node dist/cli/index.js",
+    "web": "node dist/cli/index.js web",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "automation",
+    "cli",
+    "module-manager",
+    "process-manager"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/ws": "^8.18.1",
+    "commander": "^11.1.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "ws": "^8.20.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.10.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

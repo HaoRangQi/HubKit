@@ -1,0 +1,28 @@
+{
+  "id": "TASK-010",
+  "title": "实现 hub enable/disable 命令",
+  "description": "实现 enable 和 disable 命令，用于启用和禁用模块",
+  "status": "completed",
+  "wave": 4,
+  "depends_on": ["TASK-008", "TASK-009"],
+  "files": [
+    "src/cli/commands/enable.ts",
+    "src/cli/commands/disable.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "hub enable <moduleId> 可以启用模块",
+      "hub disable <moduleId> 可以禁用模块",
+      "状态持久化到配置文件",
+      "npm run build 编译成功"
+    ]
+  },
+  "hints": [
+    "需要持久化模块状态",
+    "可以使用 JSON 文件存储模块状态"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过",
+    "hub enable/disable 命令可用"
+  ]
+}

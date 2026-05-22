@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubKit Dashboard - 专业深色主题</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg-primary: oklch(0.15 0.02 264);
+      --color-bg-secondary: oklch(0.18 0.025 264);
+      --color-bg-tertiary: oklch(0.22 0.03 264);
+      --color-bg-elevated: oklch(0.25 0.035 264);
+      --color-text-primary: oklch(0.95 0.01 264);
+      --color-text-secondary: oklch(0.7 0.02 264);
+      --color-text-tertiary: oklch(0.5 0.02 264);
+      --color-primary: oklch(0.65 0.25 264);
+      --color-primary-hover: oklch(0.7 0.28 264);
+      --color-accent: oklch(0.7 0.2 300);
+      --color-success: oklch(0.7 0.18 145);
+      --color-success-bg: oklch(0.25 0.08 145);
+      --color-warning: oklch(0.75 0.15 85);
+      --color-error: oklch(0.65 0.22 25);
+      --color-error-bg: oklch(0.25 0.1 25);
+      --color-border: oklch(0.3 0.03 264);
+      --color-border-hover: oklch(0.4 0.05 264);
+      --shadow-sm: 0 1px 2px 0 oklch(0.1 0 0 / 0.3);
+      --shadow-md: 0 4px 6px -1px oklch(0.1 0 0 / 0.4);
+      --shadow-lg: 0 10px 15px -3px oklch(0.1 0 0 / 0.5);
+      --shadow-xl: 0 20px 25px -5px oklch(0.1 0 0 / 0.6);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 18px;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+    header {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    }
+    .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .logo { font-size: 32px; filter: drop-shadow(0 0 8px var(--color-primary)); }
+    .header-text h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.02em; }
+    .subtitle { font-size: 14px; color: var(--color-text-secondary); font-weight: 500; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-tertiary);
+      transition: all var(--transition-base);
+    }
+    .status-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .status-badge.connected::before { background: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
+    .status-badge.disconnected::before { background: var(--color-error); animation: none; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
+    .module-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--color-primary);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition-base);
+    }
+    .module-card:hover {
+      border-color: var(--color-border-hover);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+    .module-card:hover::before { transform: scaleX(1); }
+    .module-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; }
+    .module-title-group { flex: 1; min-width: 0; }
+    .module-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .module-id { font-size: 12px; color: var(--color-text-tertiary); font-family: var(--font-mono); }
+    .module-status {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .module-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .module-status.running {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      border: 1px solid oklch(0.35 0.1 145);
+    }
+    .module-status.running::before { background: var(--color-success); animation: pulse 2s infinite; }
+    .module-status.stopped {
+      background: oklch(0.25 0.02 264);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+    }
+    .module-status.stopped::before { background: var(--color-text-tertiary); }
+    .module-status.error {
+      background: var(--color-error-bg);
+      color: var(--color-error);
+      border: 1px solid oklch(0.35 0.12 25);
+    }
+    .module-status.error::before { background: var(--color-error); animation: pulse 1s infinite; }
+    .module-info {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .module-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .module-info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-info-row:first-child { padding-top: 0; }
+    .module-info-label { font-size: 13px; color: var(--color-text-secondary); }
+    .module-info-value { font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
+    .module-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width var(--transition-base), height var(--transition-base);
+    }
+    .btn:hover::before { width: 300px; height: 300px; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-start { background: var(--color-success); color: var(--color-bg-primary); }
+    .btn-start:hover { box-shadow: 0 0 20px -5px var(--color-success); }
+    .btn-stop { background: var(--color-error); color: white; }
+    .btn-stop:hover { box-shadow: 0 0 20px -5px var(--color-error); }
+    .btn-restart { background: var(--color-warning); color: var(--color-bg-primary); }
+    .btn-restart:hover { box-shadow: 0 0 20px -5px var(--color-warning); }
+    .btn-logs { background: var(--color-primary); color: white; }
+    .btn-logs:hover { box-shadow: 0 0 20px -5px var(--color-primary); }
+    .loading { text-align: center; padding: 60px 20px; color: var(--color-text-secondary); }
+    .loading::before {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty {
+      text-align: center;
+      padding: 80px 20px;
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      color: var(--color-text-secondary);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: oklch(0.1 0 0 / 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active { display: flex; animation: fadeIn var(--transition-base); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-content {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      max-width: 900px;
+      max-height: 85vh;
+      width: 100%;
+      box-shadow: var(--shadow-xl);
+      animation: slideUp 0.35s;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .modal-title { font-size: 22px; font-weight: 700; }
+    .modal-close {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover {
+      background: var(--color-bg-elevated);
+      color: var(--color-text-primary);
+      border-color: var(--color-border-hover);
+    }
+    .logs-container {
+      background: oklch(0.12 0.02 264);
+      border: 1px solid var(--color-border);
+      color: oklch(0.85 0.02 264);
+      padding: 20px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-y: auto;
+      flex: 1;
+      max-height: 500px;
+    }
+    .logs-container::-webkit-scrollbar { width: 10px; }
+    .logs-container::-webkit-scrollbar-track { background: var(--color-bg-tertiary); border-radius: 5px; }
+    .logs-container::-webkit-scrollbar-thumb { background: var(--color-border-hover); border-radius: 5px; }
+    .logs-container::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+    .log-line { margin-bottom: 4px; padding: 4px 8px; border-radius: 4px; transition: background var(--transition-fast); }
+    .log-line:hover { background: oklch(0.15 0.02 264); }
+    @media (max-width: 768px) {
+      .container { padding: 20px 16px; }
+      header { padding: 20px; }
+      .header-content { flex-direction: column; align-items: flex-start; }
+      .modules-grid { grid-template-columns: 1fr; }
+      .modal-content { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="header-left">
+          <div class="logo">🚀</div>
+          <div class="header-text">
+            <h1>HubKit Dashboard</h1>
+            <p class="subtitle">个人自动化中控台</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <span id="ws-status" class="status-badge disconnected">未连接</span>
+        </div>
+      </div>
+    </header>
+    <div id="modules-container"><div class="loading"></div></div>
+  </div>
+  <div id="logs-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="logs-title">模块日志</h2>
+        <button class="modal-close" onclick="closeLogs()">&times;</button>
+      </div>
+      <div id="logs-content" class="logs-container"><div class="loading"></div></div>
+    </div>
+  </div>
+  <script>
+    let ws = null, modules = [];
+    function connectWebSocket() {
+      ws = new WebSocket(\`ws://\${window.location.host}\`);
+      ws.onopen = () => {
+        document.getElementById('ws-status').textContent = '已连接';
+        document.getElementById('ws-status').className = 'status-badge connected';
+      };
+      ws.onclose = () => {
+        document.getElementById('ws-status').textContent = '未连接';
+        document.getElementById('ws-status').className = 'status-badge disconnected';
+        setTimeout(connectWebSocket, 5000);
+      };
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'module_started' || data.type === 'module_stopped' || data.type === 'module_restarted') loadModules();
+      };
+    }
+    async function loadModules() {
+      try {
+        const response = await fetch('/api/modules');
+        const result = await response.json();
+        if (result.success) { modules = result.data; renderModules(); }
+      } catch (error) { console.error('加载模块失败:', error); }
+    }
+    function renderModules() {
+      const container = document.getElementById('modules-container');
+      if (modules.length === 0) { container.innerHTML = '<div class="empty">暂无模块</div>'; return; }
+      container.innerHTML = \`<div class="modules-grid">\${modules.map(m => \`
+        <div class="module-card">
+          <div class="module-header">
+            <div class="module-title-group">
+              <div class="module-title">\${m.name}</div>
+              <div class="module-id">\${m.id}</div>
+            </div>
+            <span class="module-status \${m.status}">\${getStatusText(m.status)}</span>
+          </div>
+          <div class="module-info">
+            <div class="module-info-row"><span class="module-info-label">类型</span><span class="module-info-value">\${m.type}</span></div>
+            \${m.pid ? \`<div class="module-info-row"><span class="module-info-label">进程 ID</span><span class="module-info-value">\${m.pid}</span></div>\` : ''}
+            \${m.uptime ? \`<div class="module-info-row"><span class="module-info-label">运行时长</span><span class="module-info-value">\${formatUptime(m.uptime)}</span></div>\` : ''}
+          </div>
+          <div class="module-actions">
+            \${m.status === 'running' ? \`
+              <button class="btn btn-stop" onclick="stopModule('\${m.id}')">停止</button>
+              <button class="btn btn-restart" onclick="restartModule('\${m.id}')">重启</button>
+            \` : \`<button class="btn btn-start" onclick="startModule('\${m.id}')">启动</button>\`}
+            <button class="btn btn-logs" onclick="showLogs('\${m.id}', '\${m.name}')">日志</button>
+          </div>
+        </div>
+      \`).join('')}</div>\`;
+    }
+    async function startModule(id) {
+      try {
+        const r = await fetch(\`/api/modules/\${id}/start\`, { method: 'POST' });
+        const result = await r.json();
+        if (result.success) await loadModules(); else alert('启动失败: ' + result.error);
+      } catch (e) { alert('启动失败: ' + e.message); }
+    }
+    async function stopModule(id) {
+      try {
+        const r = await fetch(\`/api/modules/\${id}/stop\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ force: false }) });
+        const result = await r.json();
+        if (result.success) await loadModules(); else alert('停止失败: ' + result.error);
+      } catch (e) { alert('停止失败: ' + e.message); }
+    }
+    async function restartModule(id) {
+      try {
+        const r = await fetch(\`/api/modules/\${id}/restart\`, { method: 'POST' });
+        const result = await r.json();
+        if (result.success) await loadModules(); else alert('重启失败: ' + result.error);
+      } catch (e) { alert('重启失败: ' + e.message); }
+    }
+    async function showLogs(id, name) {
+      document.getElementById('logs-title').textContent = \`\${name} - 日志\`;
+      document.getElementById('logs-modal').classList.add('active');
+      document.getElementById('logs-content').innerHTML = '<div class="loading"></div>';
+      try {
+        const r = await fetch(\`/api/modules/\${id}/logs?lines=100\`);
+        const result = await r.json();
+        if (result.success) {
+          const logs = result.data;
+          document.getElementById('logs-content').innerHTML = logs.length === 0 ? '<div style="color: var(--color-text-tertiary);">暂无日志</div>' : logs.map(log => \`<div class="log-line">\${log.message}</div>\`).join('');
+        } else {
+          document.getElementById('logs-content').innerHTML = \`<div style="color: var(--color-error);">加载失败: \${result.error}</div>\`;
+        }
+      } catch (e) {
+        document.getElementById('logs-content').innerHTML = \`<div style="color: var(--color-error);">加载失败: \${e.message}</div>\`;
+      }
+    }
+    function closeLogs() { document.getElementById('logs-modal').classList.remove('active'); }
+    function getStatusText(s) { return { 'running': '运行中', 'stopped': '已停止', 'error': '错误' }[s] || s; }
+    function formatUptime(s) {
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+      return h > 0 ? \`\${h}h \${m}m\` : m > 0 ? \`\${m}m \${sec}s\` : \`\${sec}s\`;
+    }
+    connectWebSocket();
+    loadModules();
+    setInterval(loadModules, 5000);
+  </script>
+</body>
+</html>

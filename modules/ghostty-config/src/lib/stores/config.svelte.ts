@@ -1,0 +1,310 @@
+import {dev} from "$app/environment";
+import settings, {fetchColorScheme, type KeybindString} from "$lib/data/settings";
+import type {HexColor} from "$lib/utils/colors";
+import parse from "$lib/utils/parse";
+// import defs from "../data/defaults.json";
+
+// TODO: find a good way to properly type the config
+const defaults: DefaultConfig = {} as DefaultConfig;
+
+for (const panel of settings) {
+    for (const group of panel.groups) {
+        for (const setting of group.settings) {
+            // @ts-expect-error - this is a bit hacky but it allows us to avoid having to maintain a separate defaults file, and also ensures that the defaults are always in sync with the schema
+            defaults[setting.id as keyof DefaultConfig] = setting.value;
+        }
+    }
+}
+
+if (dev) {
+    // eslint-disable-next-line no-console
+    console.log(defaults);
+}
+
+const config = $state(Object.assign({}, defaults));
+
+
+export function keyToConfig(key: string) {
+    return key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+export function diff() {
+    // TODO: more elegance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-redundant-type-constituents
+    const output: Partial<Record<keyof typeof defaults | string, any>> = {};
+
+    for (const k in config) {
+        const key = k as keyof DefaultConfig;
+        if (Array.isArray(config[key]) && key === "keybind") {
+            const toAdd = config[key].filter(c => !defaults[key].includes(c));
+            if (toAdd.length) output[keyToConfig(key)] = toAdd;
+        }
+        else if (Array.isArray(config[key]) && key === "palette") {
+            const toAdd = [];
+            for (let p = 0; p < defaults[key].length; p++) {
+                if (config[key][p] === defaults[key][p]) continue;
+                toAdd.push(`${p}=${config[key][p]}`);
+            }
+            if (toAdd.length) output[keyToConfig(key)] = toAdd;
+        }
+        else if (config[key] != defaults[key]) {
+            output[keyToConfig(key)] = config[key];
+        }
+    }
+
+    return output;
+}
+
+export function load(conf: Partial<typeof config>) {
+    for (const key in conf) {
+        if (!(key in config)) continue;
+        if (key !== "keybind" && key !== "palette") {
+            // @ts-expect-error doing this properly is hard
+            config[key as keyof typeof config] = conf[key as keyof typeof config]!;
+        }
+        else if (key === "keybind") {
+            config.keybind = [...config.keybind, ...conf.keybind!];
+        }
+        else if (key === "palette") {
+            for (let p = 0; p < conf.palette!.length; p++) {
+                if (!conf.palette![p]) continue;
+                config.palette[p] = conf.palette![p];
+            }
+        }
+    }
+}
+
+export async function setColorScheme(name: string): Promise<boolean> {
+    if (name === "") {
+        resetColorScheme();
+        return true;
+    }
+
+    try {
+        const colorSchemeResponse = await fetchColorScheme(name);
+        // TODO: move the assertion into the return,
+        // didn't do it now because it would have lead to a circular dep
+        const parsed = parse(colorSchemeResponse) as Partial<DefaultConfig>;
+        load(parsed);
+        return true;
+    }
+    catch (err) {
+        // TODO: give feedback to user maybe?
+        console.error(err); // eslint-disable-line no-console
+        return false;
+    }
+}
+
+export function resetColorScheme() {
+    const keys = [
+        "background",
+        "foreground",
+        "cursorColor",
+        "selectionBackground",
+        "selectionForeground"
+    ] as Array<keyof DefaultConfig>;
+
+    for (const key of keys) {
+        // @ts-expect-error doing this properly is hard
+        config[key] = defaults[key];
+    }
+
+    for (let c = 0; c < defaults.palette.length; c++) {
+        config.palette[c] = defaults.palette[c];
+    }
+}
+
+export default config;
+
+// TODO: is this useful?
+interface DefaultConfig {
+    palette: HexColor[];
+    keybind: KeybindString[];
+    fontFamily: string;
+    fontFamilyBold: string;
+    fontFamilyItalic: string;
+    fontFamilyBoldItalic: string;
+    fontStyle: string;
+    fontStyleBold: string;
+    fontStyleItalic: string;
+    fontStyleBoldItalic: string;
+    fontFeature: string;
+    fontSize: number;
+    fontVariation: string;
+    fontVariationBold: string;
+    fontVariationItalic: string;
+    fontVariationBoldItalic: string;
+    fontCodepointMap: string;
+    fontThicken: boolean;
+    adjustCellWidth: string;
+    adjustCellHeight: string;
+    adjustFontBaseline: string;
+    adjustUnderlinePosition: string;
+    adjustUnderlineThickness: string;
+    adjustStrikethroughPosition: string;
+    adjustStrikethroughThickness: string;
+    adjustCursorThickness: string;
+    graphemeWidthMethod: string;
+    theme: string;
+    background: HexColor;
+    foreground: HexColor;
+    selectionForeground: HexColor;
+    selectionBackground: HexColor;
+    minimumContrast: number;
+    cursorColor: HexColor;
+    cursorText: string;
+    cursorOpacity: number;
+    cursorStyle: string;
+    cursorStyleBlink: string;
+    cursorClickToMove: boolean;
+    mouseHideWhileTyping: boolean;
+    mouseShiftCapture: boolean;
+    mouseScrollMultiplier: number;
+    backgroundOpacity: number;
+    unfocusedSplitOpacity: number;
+    unfocusedSplitFill: string;
+    command: string;
+    waitAfterCommand: boolean;
+    abnormalCommandExitRuntime: number;
+    scrollbackLimit: number;
+    link: string;
+    linkUrl: boolean;
+    fullscreen: boolean;
+    title: string;
+    class: string;
+    workingDirectory: string;
+    windowPaddingX: number;
+    windowPaddingY: number;
+    windowPaddingBalance: boolean;
+    windowPaddingColor: string;
+    windowVsync: boolean;
+    windowInheritWorkingDirectory: boolean;
+    windowInheritFontSize: boolean;
+    windowDecoration: boolean;
+    windowTitleFontFamily: string;
+    windowTheme: string;
+    windowColorspace: string;
+    windowHeight: number | undefined;
+    windowWidth: number | undefined;
+    windowSaveState: string;
+    windowStepResize: boolean;
+    windowNewTabPosition: string;
+    resizeOverlay: string;
+    resizeOverlayPosition: string;
+    resizeOverlayDuration: string;
+    focusFollowsMouse: boolean;
+    clipboardRead: string;
+    clipboardWrite: string;
+    clipboardTrimTrailingSpaces: boolean;
+    clipboardPasteProtection: boolean;
+    clipboardPasteBracketedSafe: boolean;
+    imageStorageLimit: number;
+    copyOnSelect: boolean;
+    clickRepeatInterval: number;
+    configFile: string;
+    configDefaultFiles: boolean;
+    confirmCloseSurface: boolean;
+    quitAfterLastWindowClosed: boolean;
+    quitAfterLastWindowClosedDelay: string;
+    initialWindow: boolean;
+    shellIntegration: string;
+    shellIntegrationFeatures: string;
+    oscColorReportFormat: string;
+    vtKamAllowed: boolean;
+    customShader: string;
+    customShaderAnimation: boolean;
+    macosNonNativeFullscreen: boolean;
+    macosTitlebarStyle: string;
+    macosOptionAsAlt: boolean;
+    macosWindowShadow: boolean;
+    linuxCgroup: string;
+    linuxCgroupMemoryLimit: string;
+    linuxCgroupProcessesLimit: string;
+    linuxCgroupHardFail: boolean;
+    gtkSingleInstance: string;
+    gtkTitlebar: boolean;
+    gtkTabsLocation: string;
+    gtkWideTabs: boolean;
+    desktopNotifications: boolean;
+    term: string;
+    enquiryResponse: string;
+    linkPreviews: string;
+    undoTimeout: string;
+    initialCommand: string;
+    env: string;
+    input: string;
+    maximize: boolean;
+    titleReport: boolean;
+    quickTerminalPosition: string;
+    quickTerminalScreen: string;
+    quickTerminalSize: string;
+    quickTerminalAnimationDuration: number;
+    quickTerminalAutohide: boolean;
+    quickTerminalSpaceBehavior: string;
+    quickTerminalKeyboardInteractivity: string;
+    scrollToBottom: string;
+    bellFeatures: string;
+    bellAudioPath: string;
+    bellAudioVolume: number;
+    windowSubtitle: string;
+    tabInheritWorkingDirectory: boolean;
+    splitInheritWorkingDirectory: boolean;
+    windowShowTabBar: string;
+    windowTitlebarBackground: HexColor;
+    windowTitlebarForeground: HexColor;
+    backgroundBlur: string;
+    backgroundImage: string;
+    backgroundOpacityCells: boolean;
+    backgroundImageOpacity: number;
+    backgroundImagePosition: string;
+    backgroundImageFit: string;
+    backgroundImageRepeat: boolean;
+    scrollbar: string;
+    splitDividerColor: HexColor;
+    splitPreserveZoom: boolean;
+    windowPositionY: number;
+    windowPositionX: number;
+    boldColor: string;
+    faintOpacity: number;
+    paletteGenerate: boolean;
+    paletteHarmonious: boolean;
+    selectionClearOnTyping: boolean;
+    selectionClearOnCopy: boolean;
+    selectionWordChars: string;
+    fontThickenStrength: number;
+    fontShapingBreak: string;
+    fontSyntheticStyle: string;
+    alphaBlending: string;
+    adjustOverlinePosition: string;
+    adjustOverlineThickness: string;
+    adjustBoxThickness: string;
+    adjustCursorHeight: string;
+    adjustIconHeight: string;
+    freetypeLoadFlags: string;
+    mouseReporting: boolean;
+    rightClickAction: string;
+    x11InstanceName: string;
+    gtkCustomCss: string;
+    gtkOpenglDebug: boolean;
+    appNotifications: string;
+    gtkToolbarStyle: string;
+    gtkTitlebarStyle: string;
+    gtkTitlebarHideWhenMaximized: boolean;
+    gtkQuickTerminalLayer: string;
+    gtkQuickTerminalNamespace: string;
+    asyncBackend: string;
+    macosTitlebarProxyIcon: string;
+    macosWindowButtons: string;
+    macosHidden: string;
+    macosAutoSecureInput: boolean;
+    macosSecureInputIndication: boolean;
+    macosDockDropBehavior: string;
+    macosShortcuts: string;
+    autoUpdate: string;
+    autoUpdateChannel: string;
+    macosIcon: string;
+    macosIconFrame: string;
+    macosIconGhostColor: HexColor;
+    macosIconScreenColor: HexColor;
+    macosCustomIcon: string;
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TASK-008",
+  "title": "实现 hub list 命令",
+  "description": "实现 list 命令，列出所有已注册的模块，支持按类型和启用状态过滤",
+  "status": "completed",
+  "wave": 3,
+  "depends_on": ["TASK-007"],
+  "files": [
+    "src/cli/commands/list.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "hub list 可以列出所有模块",
+      "支持 --enabled 过滤已启用模块",
+      "支持 --type 按类型过滤",
+      "npm run build 编译成功"
+    ]
+  },
+  "hints": [
+    "使用 ModuleScanner 扫描模块目录",
+    "使用 Commander.js 的 option 定义过滤参数"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过",
+    "hub list 命令可用"
+  ]
+}

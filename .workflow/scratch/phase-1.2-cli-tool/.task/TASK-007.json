@@ -1,0 +1,30 @@
+{
+  "id": "TASK-007",
+  "title": "实现模块注册和扫描机制",
+  "description": "实现模块注册表，支持模块的注册、查询和管理；实现模块扫描机制，自动发现指定目录下的模块",
+  "status": "completed",
+  "wave": 2,
+  "depends_on": ["TASK-006"],
+  "files": [
+    "src/registry/module-registry.ts",
+    "src/registry/module-scanner.ts",
+    "src/config/config.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "ModuleRegistry 类可以注册、查询、列出模块",
+      "ModuleScanner 类可以扫描目录并发现模块",
+      "支持模块配置文件（.hubkit.json）",
+      "npm run build 编译成功"
+    ]
+  },
+  "hints": [
+    "使用 Map 存储模块注册表",
+    "扫描器需要递归遍历目录",
+    "模块配置文件包含：id, name, type, scriptPath, enabled 等字段"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过",
+    "可以注册和查询模块"
+  ]
+}

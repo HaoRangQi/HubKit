@@ -1,0 +1,9 @@
+{
+  "id": "example-nodejs",
+  "name": "示例 Node.js 模块",
+  "description": "一个简单的 Node.js 示例模块",
+  "type": "nodejs",
+  "scriptPath": "index.js",
+  "autoStart": false,
+  "enabled": true
+}

@@ -1,0 +1,12 @@
+{
+  "name": "hubkit-node-example",
+  "version": "1.0.0",
+  "description": "HubKit Node.js module example",
+  "main": "module.js",
+  "scripts": {
+    "start": "node module.js"
+  },
+  "keywords": ["hubkit", "module", "example"],
+  "author": "",
+  "license": "MIT"
+}

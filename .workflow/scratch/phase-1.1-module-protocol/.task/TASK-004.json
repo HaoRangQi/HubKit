@@ -1,0 +1,26 @@
+{
+  "id": "TASK-004",
+  "title": "实现 Shell 脚本适配器",
+  "description": "实现 Shell 脚本的适配器，支持通过模块协议调用 Shell 脚本的 status/start/stop 等方法",
+  "status": "completed",
+  "wave": 2,
+  "depends_on": ["TASK-001"],
+  "files": [
+    "src/adapters/shell-adapter.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "src/adapters/shell-adapter.ts 实现了 ModuleProtocol 接口",
+      "可以启动和停止 Shell 进程",
+      "可以查询 Shell 进程状态"
+    ]
+  },
+  "hints": [
+    "继承 base-adapter 基础类",
+    "支持 bash/zsh/sh",
+    "处理脚本权限问题"
+  ],
+  "execution_directives": [
+    "npm run build 编译通过"
+  ]
+}

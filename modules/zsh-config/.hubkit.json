@@ -1,0 +1,11 @@
+{
+  "id": "zsh-config",
+  "name": "Zsh Config Center",
+  "description": "本地 zsh 可视化配置中心，管理 ~/.zshrc、~/.zprofile 等配置文件",
+  "type": "nodejs",
+  "scriptPath": "src/server.js",
+  "webUrl": "http://localhost:3002",
+  "webPort": 3002,
+  "autoStart": false,
+  "enabled": true
+}

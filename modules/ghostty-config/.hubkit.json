@@ -1,0 +1,14 @@
+{
+  "id": "ghostty-config",
+  "name": "Ghostty Config",
+  "description": "Ghostty 终端可视化配置生成器，支持字体、颜色、光标等配置的可视化编辑",
+  "type": "nodejs",
+  "scriptPath": ".",
+  "startScript": "dev",
+  "webUrl": "http://localhost:5173",
+  "webPort": 5173,
+  "updateable": true,
+  "repoUrl": "https://github.com/zerebos/ghostty-config",
+  "autoStart": false,
+  "enabled": true
+}

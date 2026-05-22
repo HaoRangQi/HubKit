@@ -1,0 +1,28 @@
+{
+  "id": "TASK-001",
+  "title": "定义模块协议规范",
+  "description": "设计统一的模块接口协议，定义 status/start/stop/logs/settings 等标准接口，支持 Node.js/Python/Shell 三种脚本类型",
+  "status": "completed",
+  "wave": 1,
+  "depends_on": [],
+  "files": [
+    "docs/module-protocol.md",
+    "src/types/module.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "docs/module-protocol.md 包含完整的接口定义",
+      "src/types/module.ts 定义了 ModuleProtocol 接口",
+      "协议支持 status/start/stop/logs/settings 五个标准方法"
+    ]
+  },
+  "hints": [
+    "参考现有的进程管理工具（PM2、systemd）的接口设计",
+    "考虑不同脚本类型的共性和差异",
+    "协议应该简单、可扩展"
+  ],
+  "execution_directives": [
+    "检查文件是否创建",
+    "验证接口定义完整性"
+  ]
+}

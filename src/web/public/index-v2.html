@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubKit Dashboard</title>
+  <style>
+    :root {
+      /* 配色方案 - 现代深色主题 */
+      --color-bg-primary: #0f172a;
+      --color-bg-secondary: #1e293b;
+      --color-bg-elevated: #334155;
+      --color-bg-card: #1e293b;
+      --color-bg-hover: #334155;
+
+      --color-text-primary: #f1f5f9;
+      --color-text-secondary: #cbd5e1;
+      --color-text-tertiary: #94a3b8;
+
+      --color-border: #334155;
+      --color-border-hover: #475569;
+
+      --color-brand-primary: #3b82f6;
+      --color-brand-secondary: #8b5cf6;
+      --color-brand-accent: #06b6d4;
+
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-error: #ef4444;
+      --color-info: #3b82f6;
+
+      /* 间距 */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+
+      /* 圆角 */
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+
+      /* 阴影 */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+      /* 动画 */
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--spacing-xl);
+    }
+
+    /* Header */
+    header {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--color-border);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+      margin-top: var(--spacing-xs);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+    }
+
+    .status-badge.connected {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.disconnected {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .status-badge.connected .status-dot {
+      background: var(--color-success);
+    }
+
+    .status-badge.disconnected .status-dot {
+      background: var(--color-error);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Modules Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: var(--spacing-lg);
+    }
+
+    .module-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: all var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .module-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--color-border-hover);
+    }
+
+    .module-card:hover::before {
+      opacity: 1;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .module-title-group {
+      flex: 1;
+    }
+
+    .module-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .module-id {
+      font-size: 0.75rem;
+      color: var(--color-text-tertiary);
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      background: var(--color-bg-elevated);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+    }
+
+    .module-status {
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .module-status.running {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .module-status.stopped {
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--color-text-tertiary);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .module-status.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .module-info {
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+    }
+
+    .module-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) 0;
+    }
+
+    .module-info-row:not(:last-child) {
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .module-info-label {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .module-info-value {
+      color: var(--color-text-primary);
+      font-weight: 500;
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+
+    /* Buttons */
+    .module-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-sm);
+    }
+
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-start {
+      background: var(--color-success);
+      color: white;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: #059669;
+    }
+
+    .btn-stop {
+      background: var(--color-error);
+      color: white;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: #dc2626;
+    }
+
+    .btn-restart {
+      background: var(--color-warning);
+      color: white;
+    }
+
+    .btn-restart:hover:not(:disabled) {
+      background: #d97706;
+    }
+
+    .btn-logs {
+      background: var(--color-brand-primary);
+      color: white;
+      grid-column: span 2;
+    }
+
+    .btn-logs:hover:not(:disabled) {
+      background: #2563eb;
+    }
+
+    /* Loading & Empty States */
+    .loading, .empty {
+      text-align: center;
+      padding: var(--spacing-2xl);
+      color: var(--color-text-secondary);
+    }
+
+    .loading {
+      font-size: 1.125rem;
+    }
+
+    .empty {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-xl);
+      border: 2px dashed var(--color-border);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn var(--transition-normal);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      max-width: 900px;
+      max-height: 85vh;
+      overflow: auto;
+      width: 90%;
+      box-shadow: var(--shadow-xl);
+      animation: slideUp var(--transition-slow);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .modal-close {
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+
+    .logs-container {
+      background: #1a1a1a;
+      color: #e5e7eb;
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid var(--color-border);
+    }
+
+    .log-line {
+      margin-bottom: var(--spacing-xs);
+      padding: var(--spacing-xs);
+      border-radius: var(--radius-sm);
+    }
+
+    .log-line:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--color-bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-sm);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-border-hover);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: var(--spacing-md);
+      }
+
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="header-title">
+          <div>
+            <h1>🚀 HubKit Dashboard</h1>
+            <p class="subtitle">个人自动化中控台 - 统一管理所有脚本和自动化任务</p>
+          </div>
+        </div>
+        <span id="ws-status" class="status-badge disconnected">
+          <span class="status-dot"></span>
+          未连接
+        </span>
+      </div>
+    </header>
+
+    <div id="modules-container">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 日志模态框 -->
+  <div id="logs-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="logs-title">模块日志</h2>
+        <button class="modal-close" onclick="closeLogs()">×</button>
+      </div>
+      <div id="logs-content" class="logs-container">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let modules = [];
+
+    // 连接 WebSocket
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}`);
+
+      ws.onopen = () => {
+        console.log('WebSocket 已连接');
+        const statusEl = document.getElementById('ws-status');
+        statusEl.innerHTML = '<span class="status-dot"></span>已连接';
+        statusEl.className = 'status-badge connected';
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket 已断开');
+        const statusEl = document.getElementById('ws-status');
+        statusEl.innerHTML = '<span class="status-dot"></span>未连接';
+        statusEl.className = 'status-badge disconnected';
+        setTimeout(connectWebSocket, 5000);
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('收到消息:', data);
+        if (data.type === 'module_started' || data.type === 'module_stopped' || data.type === 'module_restarted') {
+          loadModules();
+        }
+      };
+    }
+
+    // 加载模块列表
+    async function loadModules() {
+      try {
+        const response = await fetch('/api/modules');
+        const result = await response.json();
+        if (result.success) {
+          modules = result.data;
+          renderModules();
+        }
+      } catch (error) {
+        console.error('加载模块失败:', error);
+      }
+    }
+
+    // 渲染模块列表
+    function renderModules() {
+      const container = document.getElementById('modules-container');
+      if (modules.length === 0) {
+        container.innerHTML = '<div class="empty">暂无模块</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="modules-grid">
+          ${modules.map(module => `
+            <div class="module-card">
+              <div class="module-header">
+                <div class="module-title-group">
+                  <div class="module-title">${module.name}</div>
+                  <div class="module-id">${module.id}</div>
+                </div>
+                <span class="module-status ${module.status}">${getStatusText(module.status)}</span>
+              </div>
+
+              <div class="module-info">
+                <div class="module-info-row">
+                  <span class="module-info-label">类型</span>
+                  <span class="module-info-value">${module.type}</span>
+                </div>
+                ${module.pid ? `
+                  <div class="module-info-row">
+                    <span class="module-info-label">进程 ID</span>
+                    <span class="module-info-value">${module.pid}</span>
+                  </div>
+                ` : ''}
+                ${module.uptime ? `
+                  <div class="module-info-row">
+                    <span class="module-info-label">运行时长</span>
+                    <span class="module-info-value">${formatUptime(module.uptime)}</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div class="module-actions">
+                ${module.status === 'running' ? `
+                  <button class="btn btn-stop" onclick="stopModule('${module.id}')">停止</button>
+                  <button class="btn btn-restart" onclick="restartModule('${module.id}')">重启</button>
+                ` : `
+                  <button class="btn btn-start" onclick="startModule('${module.id}')" style="grid-column: span 2;">启动</button>
+                `}
+                <button class="btn btn-logs" onclick="showLogs('${module.id}', '${module.name}')">查看日志</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 启动模块
+    async function startModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/start`, { method: 'POST' });
+        const result = await response.json();
+        if (result.success) {
+          await loadModules();
+        } else {
+          alert('启动失败: ' + result.error);
+        }
+      } catch (error) {
+        alert('启动失败: ' + error.message);
+      }
+    }
+
+    // 停止模块
+    async function stopModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/stop`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ force: false })
+        });
+        const result = await response.json();
+        if (result.success) {
+          await loadModules();
+        } else {
+          alert('停止失败: ' + result.error);
+        }
+      } catch (error) {
+        alert('停止失败: ' + error.message);
+      }
+    }
+
+    // 重启模块
+    async function restartModule(id) {
+      try {
+        const response = await fetch(`/api/modules/${id}/restart`, { method: 'POST' });
+        const result = await response.json();
+        if (result.success) {
+          await loadModules();
+        } else {
+          alert('重启失败: ' + result.error);
+        }
+      } catch (error) {
+        alert('重启失败: ' + error.message);
+      }
+    }
+
+    // 显示日志
+    async function showLogs(id, name) {
+      document.getElementById('logs-title').textContent = `${name} - 日志`;
+      document.getElementById('logs-modal').classList.add('active');
+      document.getElementById('logs-content').innerHTML = '<div class="loading">加载中...</div>';
+
+      try {
+        const response = await fetch(`/api/modules/${id}/logs?lines=100`);
+        const result = await response.json();
+        if (result.success) {
+          const logs = result.data;
+          if (logs.length === 0) {
+            document.getElementById('logs-content').innerHTML = '<div style="color: #94a3b8;">暂无日志</div>';
+          } else {
+            document.getElementById('logs-content').innerHTML = logs.map(log =>
+              `<div class="log-line">${log.message}</div>`
+            ).join('');
+          }
+        } else {
+          document.getElementById('logs-content').innerHTML = `<div style="color: var(--color-error);">加载失败: ${result.error}</div>`;
+        }
+      } catch (error) {
+        document.getElementById('logs-content').innerHTML = `<div style="color: var(--color-error);">加载失败: ${error.message}</div>`;
+      }
+    }
+
+    // 关闭日志
+    function closeLogs() {
+      document.getElementById('logs-modal').classList.remove('active');
+    }
+
+    // 获取状态文本
+    function getStatusText(status) {
+      const statusMap = {
+        'running': '运行中',
+        'stopped': '已停止',
+        'error': '错误'
+      };
+      return statusMap[status] || status;
+    }
+
+    // 格式化运行时长
+    function formatUptime(seconds) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      } else if (minutes > 0) {
+        return `${minutes}m ${secs}s`;
+      } else {
+        return `${secs}s`;
+      }
+    }
+
+    // 初始化
+    connectWebSocket();
+    loadModules();
+    setInterval(loadModules, 5000);
+
+    // 点击模态框背景关闭
+    document.getElementById('logs-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'logs-modal') {
+        closeLogs();
+      }
+    });
+  </script>
+</body>
+</html>

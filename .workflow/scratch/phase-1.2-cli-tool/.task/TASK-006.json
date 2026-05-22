@@ -1,0 +1,31 @@
+{
+  "id": "TASK-006",
+  "title": "选型 CLI 框架并初始化项目",
+  "description": "选择合适的 CLI 框架（Commander.js），初始化 TypeScript 项目，配置构建工具和依赖",
+  "status": "completed",
+  "wave": 1,
+  "depends_on": [],
+  "files": [
+    "package.json",
+    "tsconfig.json",
+    "src/cli/index.ts",
+    "src/cli/commands/index.ts"
+  ],
+  "convergence": {
+    "criteria": [
+      "package.json 包含 commander 依赖",
+      "tsconfig.json 配置正确",
+      "src/cli/index.ts 可以解析命令行参数",
+      "npm run build 编译成功"
+    ]
+  },
+  "hints": [
+    "使用 Commander.js（轻量级，易于使用）",
+    "配置 TypeScript 编译到 dist/ 目录",
+    "添加 bin 字段指向 CLI 入口"
+  ],
+  "execution_directives": [
+    "npm install 安装依赖",
+    "npm run build 编译通过"
+  ]
+}

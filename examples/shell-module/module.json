@@ -1,0 +1,9 @@
+{
+  "id": "hello-shell",
+  "name": "Hello Shell",
+  "description": "简单的 Shell 示例模块",
+  "type": "shell",
+  "scriptPath": "./run.sh",
+  "autoStart": false,
+  "enabled": true
+}
