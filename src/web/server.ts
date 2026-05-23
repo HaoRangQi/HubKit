@@ -14,6 +14,7 @@ import { ScriptBundleManager } from '../script-bundle/script-bundle-manager';
 import { BootPreferenceService } from '../system-actions/boot-preference-service';
 import { ModuleProtocol } from '../types/module';
 import { ModuleScheduler } from '../scheduler/module-scheduler';
+import { moduleRuntimeStateStore } from '../runtime/module-runtime-state';
 
 /**
  * HubKit Web 服务器
@@ -38,6 +39,9 @@ export class WebServer {
     this.bootPreferenceService = new BootPreferenceService(config.getDataDir(), (message) => this.broadcast(message));
     this.scheduler = new ModuleScheduler(this.registry);
     this.scheduler.setEventListener((event) => this.broadcast(event));
+    moduleRuntimeStateStore.on('change', (moduleId, runtimeState) => {
+      this.broadcast({ type: 'module_runtime_updated', moduleId, runtimeState });
+    });
 
     this.setupMiddleware();
     this.setupRoutes();

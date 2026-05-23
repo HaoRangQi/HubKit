@@ -1,6 +1,7 @@
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+import { ModuleStartPolicy } from '../types/module';
 
 /**
  * 定时任务规则
@@ -34,6 +35,10 @@ export interface ModuleSettings {
   groups: Array<{ id: string; name: string }>;
   /** moduleId -> groupId */
   moduleGroups: Record<string, string>;
+  /** moduleId -> 启动策略 */
+  startPolicies: Record<string, ModuleStartPolicy>;
+  /** groupId -> 启动策略模板 */
+  groupStartPolicyTemplates: Record<string, string>;
 }
 
 /**
@@ -69,6 +74,8 @@ const DEFAULT_CONFIG: HubKitConfig = {
       { id: 'default', name: '默认分组' },
     ],
     moduleGroups: {},
+    startPolicies: {},
+    groupStartPolicyTemplates: {},
   },
 };
 
@@ -108,6 +115,8 @@ export class ConfigManager {
               ? loaded.settings.groups
               : DEFAULT_CONFIG.settings.groups,
             moduleGroups: loaded.settings?.moduleGroups ?? {},
+            startPolicies: loaded.settings?.startPolicies ?? {},
+            groupStartPolicyTemplates: loaded.settings?.groupStartPolicyTemplates ?? {},
           },
         };
       }
@@ -193,6 +202,8 @@ export class ConfigManager {
       schedules: JSON.parse(JSON.stringify(this.config.settings.schedules)),
       groups: JSON.parse(JSON.stringify(this.config.settings.groups)),
       moduleGroups: { ...this.config.settings.moduleGroups },
+      startPolicies: JSON.parse(JSON.stringify(this.config.settings.startPolicies)),
+      groupStartPolicyTemplates: { ...this.config.settings.groupStartPolicyTemplates },
     };
   }
 
@@ -208,6 +219,8 @@ export class ConfigManager {
       schedules: settings.schedules ?? this.config.settings.schedules,
       groups: settings.groups ?? this.config.settings.groups,
       moduleGroups: settings.moduleGroups ?? this.config.settings.moduleGroups,
+      startPolicies: settings.startPolicies ?? this.config.settings.startPolicies,
+      groupStartPolicyTemplates: settings.groupStartPolicyTemplates ?? this.config.settings.groupStartPolicyTemplates,
     };
     this.save();
   }

@@ -16,6 +16,7 @@ jest.mock('fs', () => {
       open: jest.fn(),
       writeFile: jest.fn(),
       unlink: jest.fn(),
+      appendFile: jest.fn(),
     },
     statSync: jest.fn(),
   };
@@ -76,5 +77,42 @@ describe('NodeJSAdapter dependency preparation', () => {
     await (adapter as any).prepareForStart();
 
     expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('reports readiness when node_modules is missing', async () => {
+    (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify({
+      dependencies: { express: '^5.0.0' },
+    }));
+    (fs.access as jest.Mock).mockImplementation(async (targetPath: string) => {
+      if (targetPath.endsWith('node_modules')) throw new Error('missing');
+      if (targetPath.endsWith('package-lock.json')) return undefined;
+      throw new Error('missing');
+    });
+
+    const readiness = await adapter.inspectStartReadiness();
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.actionLabel).toBe('安装依赖并启动');
+    expect(readiness.installCommand).toBe('npm ci');
+  });
+
+  it('returns start preparation after installing dependencies', async () => {
+    (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify({
+      dependencies: { express: '^5.0.0' },
+    }));
+    (fs.access as jest.Mock).mockImplementation(async (targetPath: string) => {
+      if (targetPath.endsWith('node_modules')) throw new Error('missing');
+      if (targetPath.endsWith('package-lock.json')) return undefined;
+      throw new Error('missing');
+    });
+    execMock.mockImplementation((_cmd, _opts, callback) => callback(null, 'installed', ''));
+
+    const preparation = await (adapter as any).prepareForStart();
+
+    expect(preparation).toEqual({
+      dependencyInstalled: true,
+      installCommand: 'npm ci',
+      summary: '已安装依赖并启动',
+    });
   });
 });

@@ -2540,6 +2540,10 @@
             <svg class="icon" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
             <span>仪表盘</span>
           </button>
+          <button class="nav-btn" type="button" data-view="diagnostics" onclick="showView('diagnostics')">
+            <svg class="icon" aria-hidden="true"><use href="#icon-article"></use></svg>
+            <span>体检</span>
+          </button>
           <button class="nav-btn" type="button" data-view="settings" onclick="showView('settings')">
             <svg class="icon" aria-hidden="true"><use href="#icon-tune"></use></svg>
             <span>设置</span>
@@ -2609,6 +2613,10 @@
 
       <section id="settingsView" style="display: none;" aria-labelledby="settingsTitle">
         <div class="settings-container" id="settingsContent"></div>
+      </section>
+
+      <section id="diagnosticsView" style="display: none;" aria-labelledby="diagnosticsTitle">
+        <div class="settings-container" id="diagnosticsContent"></div>
       </section>
     </main>
   </div>
@@ -2710,7 +2718,23 @@
     const UI_PREFS_STORAGE_KEY = 'hubkit-ui-prefs';
     let ws = null;
     let modules = [];
-    let settings = { autoStart: {}, startOrder: [], visibility: {}, schedules: {}, moduleWebUrls: {} };
+    const defaultStartPolicy = {
+      retryCount: 1,
+      retryDelayMs: 1500,
+      healthCheckEnabled: true,
+      healthCheckTimeoutMs: 15000,
+      preflightChecksEnabled: true,
+      blockOnPortConflict: true,
+    };
+    let settings = {
+      autoStart: {},
+      startOrder: [],
+      visibility: {},
+      schedules: {},
+      moduleWebUrls: {},
+      startPolicies: {},
+      groupStartPolicyTemplates: {},
+    };
     let reconnectInterval = null;
     let currentView = 'dashboard';
     let dragSrcIndex = null;
@@ -2725,6 +2749,9 @@
     let diagnosticsLoadingByModule = {};
     let forceCloseLoadingByModule = {};
     let forceCloseAllLoading = false;
+    let moduleActionLoading = {};
+    let moduleAuditReports = [];
+    let startPolicyTemplates = [];
     let scriptBundles = [];
     let scriptRunLoading = {};
     let systemActions = [];
@@ -2744,6 +2771,7 @@
       autoStart: false,
       grouping: false,
       visibility: false,
+      startPolicy: false,
       webUrl: false,
       schedule: false,
       cleanup: false,
@@ -3191,10 +3219,12 @@
         'module_stopped',
         'module_restarted',
         'module_updated',
+        'module_runtime_updated',
         'schedule_triggered',
       ]);
       if (refreshEvents.has(data.type)) {
         fetchModules();
+        if (currentView === 'diagnostics') fetchModuleAudit();
       }
       if (data.type === 'script_action_updated') {
         fetchScriptBundles();
@@ -3268,6 +3298,8 @@
             visibility: {},
             schedules: {},
             moduleWebUrls: {},
+            startPolicies: {},
+            groupStartPolicyTemplates: {},
             ...json.data,
           };
           if (currentView === 'settings') renderSettings();
@@ -3287,6 +3319,8 @@
             startOrder: settings.startOrder,
             groups: settings.groups,
             moduleGroups: settings.moduleGroups,
+            startPolicies: settings.startPolicies,
+            groupStartPolicyTemplates: settings.groupStartPolicyTemplates,
           }),
         });
         const json = await response.json();
@@ -3304,7 +3338,10 @@
 
     async function moduleAction(id, action) {
       const labels = { start: '启动', stop: '停止', restart: '重启' };
+      if (moduleActionLoading[id]) return;
       try {
+        moduleActionLoading[id] = action;
+        renderDashboard();
         const response = await fetch(`/api/modules/${encodeURIComponent(id)}/${action}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3319,6 +3356,34 @@
       } catch (error) {
         console.error(`Failed to ${action} module:`, error);
         showToast(error.message || `${labels[action]}失败`, 'error');
+      } finally {
+        delete moduleActionLoading[id];
+        renderDashboard();
+      }
+    }
+
+    async function fetchStartPolicyTemplates() {
+      try {
+        const response = await fetch('/api/start-policy-templates');
+        const json = await response.json();
+        startPolicyTemplates = Array.isArray(json.data) ? json.data : [];
+        if (currentView === 'settings') renderSettings();
+      } catch (error) {
+        console.error('Failed to fetch start policy templates:', error);
+      }
+    }
+
+    async function fetchModuleAudit(showNotice = false) {
+      try {
+        const response = await fetch('/api/module-audit');
+        const json = await response.json();
+        moduleAuditReports = Array.isArray(json.data) ? json.data : [];
+        if (currentView === 'diagnostics') renderDiagnostics();
+        if (showNotice) showToast('模块体检已刷新');
+      } catch (error) {
+        console.error('Failed to fetch module audit:', error);
+        if (currentView === 'diagnostics') renderDiagnosticsError();
+        if (showNotice) showToast('模块体检刷新失败', 'error');
       }
     }
 
@@ -3599,6 +3664,156 @@
             <div>无法加载模块状态。</div>
           </div>
         </div>
+      `;
+    }
+
+    function renderDiagnostics() {
+      const container = document.getElementById('diagnosticsContent');
+      if (!container) return;
+
+      const reports = [...moduleAuditReports].sort((a, b) => a.score - b.score || a.moduleName.localeCompare(b.moduleName, 'zh-CN'));
+      const errorCount = reports.filter((report) => report.findings.some((item) => item.severity === 'error')).length;
+      const warnCount = reports.filter((report) => !report.findings.some((item) => item.severity === 'error') && report.findings.some((item) => item.severity === 'warn')).length;
+      const healthyCount = reports.length - errorCount - warnCount;
+      const missingCommandCount = reports.filter((report) => (report.environment?.missingCommands || []).length > 0).length;
+      const missingEnvCount = reports.filter((report) => (report.environment?.missingEnvVars || []).length > 0).length;
+
+      container.innerHTML = `
+        <div class="section-heading">
+          <div>
+            <h2 class="settings-section-title" id="diagnosticsTitle">模块体检</h2>
+            <p class="settings-section-desc">聚合路径、依赖、端口、健康检查和最近一次启动结果。</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn btn-tonal" type="button" onclick="fetchModuleAudit(true)">
+              ${icon('refresh')}
+              <span>刷新体检</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="summary-strip" aria-label="体检统计">
+          <div class="summary-item glass-panel" data-summary-tone="all">
+            <span class="summary-label">已检查</span>
+            <span class="summary-value">${reports.length}</span>
+            <span class="summary-note">模块总数</span>
+          </div>
+          <div class="summary-item glass-panel" data-summary-tone="running">
+            <span class="summary-label">健康</span>
+            <span class="summary-value">${healthyCount}</span>
+            <span class="summary-note">未发现明显异常</span>
+          </div>
+          <div class="summary-item glass-panel" data-summary-tone="stopped">
+            <span class="summary-label">告警</span>
+            <span class="summary-value">${warnCount}</span>
+            <span class="summary-note">建议排查</span>
+          </div>
+          <div class="summary-item glass-panel" data-summary-tone="update">
+            <span class="summary-label">错误</span>
+            <span class="summary-value">${errorCount}</span>
+            <span class="summary-note">需要处理</span>
+          </div>
+        </div>
+
+        <div class="summary-strip" aria-label="环境统计" style="margin-top: 14px;">
+          <div class="summary-item glass-panel" data-summary-tone="all">
+            <span class="summary-label">缺命令</span>
+            <span class="summary-value">${missingCommandCount}</span>
+            <span class="summary-note">运行时或包管理器未就绪</span>
+          </div>
+          <div class="summary-item glass-panel" data-summary-tone="stopped">
+            <span class="summary-label">缺变量</span>
+            <span class="summary-value">${missingEnvCount}</span>
+            <span class="summary-note">来自 `.env.example` 等模板</span>
+          </div>
+        </div>
+
+        <section class="toolbox-section">
+          <div class="toolbox-grid">
+            ${reports.length > 0 ? reports.map(createAuditCard).join('') : emptySettings('暂无体检结果')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderDiagnosticsError() {
+      const container = document.getElementById('diagnosticsContent');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="empty-state">
+          <div>
+            ${icon('error')}
+            <div>无法加载模块体检结果。</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createAuditCard(report) {
+      const findings = Array.isArray(report.findings) ? report.findings : [];
+      const module = modules.find((item) => item.id === report.moduleId);
+      const topFindings = findings.slice(0, 4);
+      const templateName = getStartPolicyTemplateName(report.inheritedTemplateId);
+      const environment = report.environment || {};
+      const envSummary = [
+        environment.runtime ? `运行时 ${environment.runtime}` : '',
+        environment.packageManager ? `包管理器 ${environment.packageManager}` : '',
+        Array.isArray(environment.missingCommands) && environment.missingCommands.length > 0 ? `缺命令 ${environment.missingCommands.join('、')}` : '',
+        Array.isArray(environment.missingEnvVars) && environment.missingEnvVars.length > 0 ? `缺变量 ${environment.missingEnvVars.join('、')}` : '',
+      ].filter(Boolean).join(' · ');
+      return `
+        <article class="toolbox-card glass-panel">
+          <div class="toolbox-card-header">
+            <div class="toolbox-card-title">
+              <h3>${escapeHtml(report.moduleName)}</h3>
+              <p>${escapeHtml(report.moduleId)} · ${escapeHtml(report.groupId)} · 评分 ${escapeHtml(String(report.score))}</p>
+            </div>
+            <div class="state-badge ${report.findings.some((item) => item.severity === 'error') ? 'error' : report.findings.some((item) => item.severity === 'warn') ? 'starting' : 'running'}">
+              <span class="state-dot"></span>
+              <span>${escapeHtml(report.healthy ? '稳定' : '需处理')}</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">运行状态</span>
+              <span class="metric-value">${escapeHtml(getStatusText(report.status))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">启动阶段</span>
+              <span class="metric-value">${escapeHtml(getRuntimePhaseText(report.runtimePhase))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">策略模板</span>
+              <span class="metric-value">${escapeHtml(templateName)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">重试策略</span>
+              <span class="metric-value">${escapeHtml(`${report.effectiveStartPolicy.retryCount} 次 / ${report.effectiveStartPolicy.retryDelayMs} ms`)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">环境要求</span>
+              <span class="metric-value">${escapeHtml(envSummary || '无额外要求')}</span>
+            </div>
+          </div>
+
+          <div class="settings-list">
+            ${topFindings.map((finding) => `
+              <div class="settings-item">
+                <div class="settings-item-info">
+                  <span class="settings-item-name">${escapeHtml(getAuditSeverityText(finding.severity))} · ${escapeHtml(finding.summary)}</span>
+                  <span class="settings-item-id">${escapeHtml(finding.details || finding.recommendation || '无附加说明')}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="inline-actions">
+            <button class="btn btn-tonal btn-sm" type="button" onclick="checkModuleStatus('${jsString(report.moduleId)}')">${icon('refresh')}<span>检查状态</span></button>
+            <button class="btn btn-text btn-sm" type="button" onclick="showLogs('${jsString(report.moduleId)}', '${jsString(report.moduleName)}')">${icon('article')}<span>查看日志</span></button>
+            ${module?.webUrl ? `<button class="btn btn-text btn-sm" type="button" onclick="openModuleUrl('${jsString(report.moduleId)}', '${jsString(module.webUrl)}')">${icon('open_in_new')}<span>打开入口</span></button>` : ''}
+          </div>
+        </article>
       `;
     }
 
@@ -4281,18 +4496,39 @@
     }
 
     function createModuleCard(module) {
-      const statusClass = getStatusClass(module.status);
+      const runtimeState = module.runtimeState || null;
+      const effectiveStatus = getEffectiveStatus(module);
+      const statusClass = getStatusClass(effectiveStatus);
       const uptime = module.uptime ? formatUptime(module.uptime) : 'N/A';
       const pid = module.pid || 'N/A';
       const description = module.description || getTypeText(module.type);
       const startedAt = module.startedAt ? formatStartedAt(module.startedAt) : '未知';
       const diagnostics = diagnosticsByModule[module.id] || null;
-      const primaryMeta = module.status === 'running'
+      const startReadiness = module.startReadiness || null;
+      const healthSummary = runtimeState?.health?.summary || '未检查';
+      const lastRecordText = formatLastStartRecord(runtimeState?.lastStartRecord);
+      const primaryMeta = effectiveStatus === 'running'
         ? `已运行 ${uptime}`
+        : runtimeState?.phase === 'failed'
+          ? runtimeState.failure?.details || runtimeState.details || '查看日志定位问题'
+        : isModuleBusy(module)
+          ? runtimeState?.details || runtimeState?.summary || '启动进行中'
+        : startReadiness?.ready === false
+          ? startReadiness.installCommand || '首次启动会先安装依赖'
         : module.updateable
           ? '支持在线更新'
           : `${getTypeText(module.type)} 模块`;
-      const keyAction = module.status === 'running' ? '在线服务中' : module.updateable ? '待机，可更新' : '待机，可启动';
+      const keyAction = effectiveStatus === 'running'
+        ? healthSummary
+        : runtimeState?.phase === 'failed'
+          ? runtimeState.failure?.summary || runtimeState.summary || '启动失败'
+        : isModuleBusy(module)
+          ? runtimeState?.summary || '启动进行中'
+        : startReadiness?.ready === false
+          ? startReadiness.summary || '启动前需要准备依赖'
+          : module.updateable
+            ? '待机，可更新'
+            : '待机，可启动';
 
       return `
         <article class="module-card glass-panel ${statusClass}" data-module-id="${escapeAttr(module.id)}">
@@ -4303,11 +4539,19 @@
             </div>
             <div class="state-badge ${statusClass}">
               <span class="state-dot"></span>
-              <span>${escapeHtml(getStatusText(module.status))}</span>
+              <span>${escapeHtml(getStatusText(effectiveStatus))}</span>
             </div>
           </div>
 
           <p class="module-description">${escapeHtml(description)}</p>
+
+          ${runtimeState?.phase === 'failed' ? `
+            <div class="tool-action-warning">${escapeHtml(runtimeState.failure?.details || runtimeState.details || runtimeState.failure?.summary || runtimeState.summary || '启动失败')}</div>
+          ` : startReadiness?.ready === false ? `
+            <div class="tool-action-warning">${escapeHtml(startReadiness.details || startReadiness.summary || '首次启动会先安装依赖，再继续启动模块')}</div>
+          ` : runtimeState?.health?.state === 'unhealthy' ? `
+            <div class="tool-action-warning">${escapeHtml(runtimeState.health.details || runtimeState.health.summary || '健康检查未通过')}</div>
+          ` : ''}
 
           <div class="module-primary-row">
             <div class="module-primary-meta">
@@ -4333,6 +4577,14 @@
               <span class="metric-label">启动时间</span>
               <span class="metric-value" title="${escapeAttr(startedAt)}">${escapeHtml(startedAt)}</span>
             </div>
+            <div class="metric">
+              <span class="metric-label">健康状态</span>
+              <span class="metric-value">${escapeHtml(healthSummary)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">最近启动</span>
+              <span class="metric-value" title="${escapeAttr(lastRecordText)}">${escapeHtml(lastRecordText)}</span>
+            </div>
           </div>
 
           ${buildProcessMiniCard(module, diagnostics)}
@@ -4347,12 +4599,17 @@
     function buildActionButtons(module) {
       const id = jsString(module.id);
       const name = jsString(module.name);
+      const runtimeState = module.runtimeState || null;
+      const startLabel = module.startReadiness?.actionLabel || '启动';
+      const loadingAction = moduleActionLoading[module.id] || '';
+      const busy = isModuleBusy(module) || Boolean(loadingAction);
+      const busyLabel = runtimeState?.summary || (loadingAction === 'stop' ? '停止中...' : '处理中...');
       const controls = module.status === 'running'
         ? `
-          <button class="btn btn-error" type="button" onclick="stopModule('${id}')">${icon('stop_circle')}<span>停止</span></button>
-          <button class="btn btn-tonal" type="button" onclick="restartModule('${id}')">${icon('restart_alt')}<span>重启</span></button>
+          <button class="btn btn-error" type="button" ${busy ? 'disabled' : ''} onclick="stopModule('${id}')">${loadingAction === 'stop' ? `${icon('progress_activity')}<span>停止中...</span>` : `${icon('stop_circle')}<span>停止</span>`}</button>
+          <button class="btn btn-tonal" type="button" ${busy ? 'disabled' : ''} onclick="restartModule('${id}')">${loadingAction === 'restart' ? `${icon('progress_activity')}<span>重启中...</span>` : `${icon('restart_alt')}<span>重启</span>`}</button>
         `
-        : `<button class="btn btn-filled" type="button" onclick="startModule('${id}')">${icon('play_circle')}<span>启动</span></button>`;
+        : `<button class="btn btn-filled" type="button" ${busy ? 'disabled' : ''} onclick="startModule('${id}')">${busy ? `${icon('progress_activity')}<span>${escapeHtml(busyLabel)}</span>` : `${icon('play_circle')}<span>${escapeHtml(startLabel)}</span>`}</button>`;
 
       const openButton = module.webUrl
         ? `<button class="btn btn-tertiary" type="button" onclick="openModuleUrl('${id}', '${jsString(module.webUrl)}')">${icon('open_in_new')}<span>打开</span></button>`
@@ -4365,7 +4622,7 @@
       return `
         ${controls}
         ${openButton}
-        <button class="btn btn-text" type="button" onclick="showLogs('${id}', '${name}')">${icon('article')}<span>日志</span></button>
+        <button class="btn btn-text" type="button" onclick="showLogs('${id}', '${name}')">${icon('article')}<span>${runtimeState?.phase === 'failed' ? '查看失败日志' : '日志'}</span></button>
         ${updateButton}
       `;
     }
@@ -4673,6 +4930,50 @@
       return statusMap[status] || status || '未知';
     }
 
+    function getEffectiveStatus(module) {
+      const phase = module?.runtimeState?.phase;
+      if (phase === 'failed') return 'error';
+      if (phase === 'preparing' || phase === 'installing' || phase === 'starting' || phase === 'health_checking') {
+        return 'starting';
+      }
+      if (phase === 'running') return 'running';
+      if (phase === 'stopped') return 'stopped';
+      return module?.status || 'unknown';
+    }
+
+    function isModuleBusy(module) {
+      const phase = module?.runtimeState?.phase;
+      return phase === 'preparing' || phase === 'installing' || phase === 'starting' || phase === 'health_checking';
+    }
+
+    function formatLastStartRecord(record) {
+      if (!record) return '暂无记录';
+      const duration = Number.isFinite(record.durationMs) ? `${Math.max(0, Math.round(record.durationMs))} ms` : '耗时未知';
+      return record.outcome === 'succeeded'
+        ? `${duration} · ${record.attemptCount} 次尝试`
+        : `失败 · ${record.attemptCount} 次尝试`;
+    }
+
+    function getRuntimePhaseText(phase) {
+      const phaseMap = {
+        idle: '空闲',
+        preparing: '准备中',
+        installing: '安装依赖',
+        starting: '启动中',
+        health_checking: '健康检查',
+        running: '运行中',
+        stopped: '已停止',
+        failed: '失败',
+      };
+      return phaseMap[phase] || phase || '未知';
+    }
+
+    function getAuditSeverityText(severity) {
+      if (severity === 'error') return '错误';
+      if (severity === 'warn') return '告警';
+      return '提示';
+    }
+
     function getTypeText(type) {
       const typeMap = {
         nodejs: 'Node.js',
@@ -4706,12 +5007,18 @@
     function showView(view) {
       currentView = view;
       document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
+      document.getElementById('diagnosticsView').style.display = view === 'diagnostics' ? 'block' : 'none';
       document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
-      document.getElementById('pageSubtitle').textContent = view === 'dashboard' ? '个人自动化中控台' : '模块偏好与调度';
+      document.getElementById('pageSubtitle').textContent = view === 'dashboard'
+        ? '个人自动化中控台'
+        : view === 'diagnostics'
+          ? '模块体检与诊断'
+          : '模块偏好与调度';
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
       if (view === 'settings') renderSettings();
+      if (view === 'diagnostics') renderDiagnostics();
     }
 
     function renderSettings() {
@@ -4726,7 +5033,7 @@
         <div class="section-heading">
           <div>
             <h2 class="settings-section-title" id="settingsTitle">设置</h2>
-            <p class="settings-section-desc">自动启动、显示状态、Web 地址与定时任务。</p>
+            <p class="settings-section-desc">自动启动、启动策略、显示状态、Web 地址与定时任务。</p>
           </div>
         </div>
 
@@ -4755,6 +5062,13 @@
             '自动启动',
             '拖拽调整启动顺序。',
             `<div class="settings-list" id="autoStartList">${orderedModules.map((module, idx) => createAutoStartItem(module, idx)).join('') || emptySettings('暂无模块')}</div>`
+          )}
+
+          ${renderSettingsPanel(
+            'startPolicy',
+            '启动策略',
+            '控制预检、重试与健康检查。',
+            `<div class="settings-list">${orderedModules.map(createStartPolicyItem).join('') || emptySettings('暂无模块')}</div>`
           )}
 
           ${renderSettingsPanel(
@@ -5062,6 +5376,107 @@
       `;
     }
 
+    function createStartPolicyItem(module) {
+      const policy = getModuleStartPolicySettings(module);
+      const healthTarget = module.webUrl || (module.webPort ? `http://127.0.0.1:${module.webPort}/` : '未配置 Web 地址/端口');
+      const inheritedTemplateId = module.inheritedTemplateId || 'balanced';
+      const customPolicy = Boolean(settings.startPolicies?.[module.id]);
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div style="display: flex; align-items: start; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: grid; gap: 4px; min-width: 0;">
+                <span class="settings-item-name">${escapeHtml(module.name)}</span>
+                <span class="settings-item-id">${escapeHtml(module.id)} · 健康地址：${escapeHtml(healthTarget)}</span>
+              </div>
+              <div class="inline-actions">
+                <span class="order-badge">${escapeHtml(customPolicy ? '自定义策略' : `继承 ${getStartPolicyTemplateName(inheritedTemplateId)}`)}</span>
+                <span class="order-badge">重试 ${escapeHtml(String(policy.retryCount))} 次</span>
+                ${customPolicy ? `<button class="btn btn-text btn-sm" type="button" onclick="resetModuleStartPolicy('${jsString(module.id)}')">${icon('undo')}<span>恢复继承</span></button>` : ''}
+              </div>
+            </div>
+
+            <div class="schedule-controls" style="margin-top: 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div>
+                  <span class="settings-item-name">启动前预检</span>
+                  <span class="settings-item-id">启动前检查端口冲突等阻塞条件</span>
+                </div>
+                <label class="switch" title="启用启动前预检">
+                  <input type="checkbox" ${policy.preflightChecksEnabled ? 'checked' : ''} onchange="updateStartPolicyBoolean('${jsString(module.id)}', 'preflightChecksEnabled', this.checked)">
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div>
+                  <span class="settings-item-name">阻止端口冲突启动</span>
+                  <span class="settings-item-id">若配置端口已被占用，则直接阻止本次启动</span>
+                </div>
+                <label class="switch" title="阻止端口冲突启动">
+                  <input type="checkbox" ${policy.blockOnPortConflict ? 'checked' : ''} onchange="updateStartPolicyBoolean('${jsString(module.id)}', 'blockOnPortConflict', this.checked)">
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div>
+                  <span class="settings-item-name">启动后健康检查</span>
+                  <span class="settings-item-id">仅对配置了 Web 地址或端口的模块生效</span>
+                </div>
+                <label class="switch" title="启用健康检查">
+                  <input type="checkbox" ${policy.healthCheckEnabled ? 'checked' : ''} onchange="updateStartPolicyBoolean('${jsString(module.id)}', 'healthCheckEnabled', this.checked)">
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div class="text-field">
+                <label for="policy-retry-count-${escapeAttr(module.id)}">失败重试次数</label>
+                <input
+                  class="input"
+                  id="policy-retry-count-${escapeAttr(module.id)}"
+                  type="number"
+                  min="0"
+                  max="3"
+                  step="1"
+                  value="${escapeAttr(String(policy.retryCount))}"
+                  oninput="updateStartPolicyNumber('${jsString(module.id)}', 'retryCount', this.value)"
+                >
+              </div>
+
+              <div class="text-field">
+                <label for="policy-retry-delay-${escapeAttr(module.id)}">重试间隔（ms）</label>
+                <input
+                  class="input"
+                  id="policy-retry-delay-${escapeAttr(module.id)}"
+                  type="number"
+                  min="500"
+                  max="15000"
+                  step="100"
+                  value="${escapeAttr(String(policy.retryDelayMs))}"
+                  oninput="updateStartPolicyNumber('${jsString(module.id)}', 'retryDelayMs', this.value)"
+                >
+              </div>
+
+              <div class="text-field">
+                <label for="policy-health-timeout-${escapeAttr(module.id)}">健康检查超时（ms）</label>
+                <input
+                  class="input"
+                  id="policy-health-timeout-${escapeAttr(module.id)}"
+                  type="number"
+                  min="2000"
+                  max="60000"
+                  step="500"
+                  value="${escapeAttr(String(policy.healthCheckTimeoutMs))}"
+                  oninput="updateStartPolicyNumber('${jsString(module.id)}', 'healthCheckTimeoutMs', this.value)"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function createCleanupSettingsItem() {
       return `
         <div class="settings-item" style="grid-template-columns: minmax(0, 1fr);">
@@ -5136,6 +5551,7 @@
       const locked = group.id === 'default';
       const sectionId = `group-${group.id}`;
       const assignedModules = orderedModules.filter((module) => (module.groupId || settings.moduleGroups[module.id] || 'default') === group.id);
+      const selectedTemplate = settings.groupStartPolicyTemplates?.[group.id] || 'balanced';
       return `
         <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
           <div class="settings-item-info" style="display: grid; gap: 12px;">
@@ -5155,6 +5571,14 @@
                     ${locked ? 'disabled' : ''}
                     oninput="renameDashboardGroup('${jsString(group.id)}', this.value)"
                   >
+                </div>
+                <div class="text-field select-field" style="min-width: 0; flex: 1 1 180px;">
+                  <label for="group-template-${escapeAttr(group.id)}">启动模板</label>
+                  <select class="select" id="group-template-${escapeAttr(group.id)}" onchange="updateGroupStartPolicyTemplate('${jsString(group.id)}', this.value)">
+                    ${startPolicyTemplates.map((template) => `
+                      <option value="${escapeAttr(template.id)}" ${selectedTemplate === template.id ? 'selected' : ''}>${escapeHtml(template.name)}</option>
+                    `).join('')}
+                  </select>
                 </div>
                 <label class="switch" title="默认折叠该分组">
                   <input type="checkbox" ${isDashboardGroupCollapsed(sectionId) ? 'checked' : ''} onchange="setSingleDashboardGroupCollapsed('${jsString(sectionId)}', this.checked)">
@@ -5262,6 +5686,57 @@
           </div>
         </div>
       `;
+    }
+
+    function getModuleStartPolicySettings(module) {
+      const stored = settings.startPolicies?.[module.id] || {};
+      const fromModule = module.startPolicy || {};
+      return {
+        ...defaultStartPolicy,
+        ...fromModule,
+        ...stored,
+      };
+    }
+
+    function getStartPolicyTemplateName(templateId) {
+      const found = startPolicyTemplates.find((template) => template.id === templateId);
+      return found?.name || '平衡型';
+    }
+
+    function updateStartPolicyBoolean(moduleId, key, value) {
+      const current = {
+        ...getModuleStartPolicySettings({ id: moduleId }),
+      };
+      settings.startPolicies = settings.startPolicies || {};
+      settings.startPolicies[moduleId] = {
+        ...current,
+        [key]: value === true,
+      };
+    }
+
+    function updateStartPolicyNumber(moduleId, key, value) {
+      const normalized = Number(value);
+      if (!Number.isFinite(normalized)) return;
+      const current = {
+        ...getModuleStartPolicySettings({ id: moduleId }),
+      };
+      settings.startPolicies = settings.startPolicies || {};
+      settings.startPolicies[moduleId] = {
+        ...current,
+        [key]: Math.round(normalized),
+      };
+    }
+
+    function resetModuleStartPolicy(moduleId) {
+      if (!settings.startPolicies) return;
+      delete settings.startPolicies[moduleId];
+      renderSettings();
+    }
+
+    function updateGroupStartPolicyTemplate(groupId, templateId) {
+      settings.groupStartPolicyTemplates = settings.groupStartPolicyTemplates || {};
+      settings.groupStartPolicyTemplates[groupId] = templateId || 'balanced';
+      renderSettings();
     }
 
     async function saveModuleUrl(moduleId) {
@@ -5618,10 +6093,15 @@
     setupTerminalResizeHandle();
     connectWebSocket();
     fetchModules();
+    fetchModuleAudit();
+    fetchStartPolicyTemplates();
     fetchScriptBundles();
     fetchSystemActions();
     fetchSettings();
     setInterval(fetchModules, 5000);
+    setInterval(() => {
+      if (currentView === 'diagnostics') fetchModuleAudit();
+    }, 10000);
     setInterval(fetchScriptBundles, 10000);
     setInterval(fetchSystemActions, 10000);
   </script>

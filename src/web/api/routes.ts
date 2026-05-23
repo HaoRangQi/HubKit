@@ -11,12 +11,20 @@ import { ScriptBundleManager } from '../../script-bundle/script-bundle-manager';
 import { BootPreferenceService } from '../../system-actions/boot-preference-service';
 import { ModuleProtocol } from '../../types/module';
 import { config } from '../../config/config';
-
-interface PortListenerInfo {
-  pid: number;
-  command: string;
-  alive: boolean;
-}
+import {
+  PortListenerInfo,
+  commandForPid as commandForPidValue,
+  isPidAlive as isPidAliveValue,
+  listPortListeners,
+  parseModulePort as parseModulePortValue,
+} from '../../runtime/module-network';
+import {
+  getModuleInheritedTemplateId,
+  getModuleStartPolicy,
+  normalizeStartPolicy,
+  START_POLICY_TEMPLATES,
+} from '../../runtime/module-start-policy';
+import { inspectModuleEnvironment } from '../../runtime/module-environment';
 
 interface ModuleProcessDiagnostics {
   pidFromStatus: number | null;
@@ -34,6 +42,152 @@ function getModuleDir(scriptPath: string): string {
   } catch {
     return dirname(scriptPath);
   }
+}
+
+async function collectModuleAuditReport(module: any, groupId: string, settings: ReturnType<typeof config.getSettings>) {
+  const adapter = createAdapter(module);
+  const status = await adapter.status();
+  const runtimeState = adapter.getRuntimeState();
+  const health = await adapter.probeHealth();
+  const startReadiness = await adapter.inspectStartReadiness();
+  const diagnostics = await collectModuleProcessDiagnostics(module, status.pid ?? null);
+  const environment = await inspectModuleEnvironment(module);
+  const findings: Array<{
+    severity: 'info' | 'warn' | 'error';
+    code: string;
+    summary: string;
+    details?: string;
+    recommendation?: string;
+  }> = [];
+
+  const effectiveStartPolicy = getModuleStartPolicy(settings, module.id, groupId);
+  const inheritedTemplateId = getModuleInheritedTemplateId(settings, groupId);
+  const moduleDir = getModuleDir(module.scriptPath);
+  const scriptExists = await fs.access(module.scriptPath).then(() => true).catch(() => false);
+  const moduleDirExists = await fs.access(moduleDir).then(() => true).catch(() => false);
+
+  if (!moduleDirExists) {
+    findings.push({
+      severity: 'error',
+      code: 'module_dir_missing',
+      summary: '模块目录不存在',
+      details: moduleDir,
+      recommendation: '检查 scriptPath 或重新同步模块目录',
+    });
+  }
+
+  if (!scriptExists) {
+    findings.push({
+      severity: 'error',
+      code: 'script_missing',
+      summary: '入口脚本不存在',
+      details: module.scriptPath,
+      recommendation: '检查模块入口路径是否失效',
+    });
+  }
+
+  if (!startReadiness.ready) {
+    findings.push({
+      severity: 'warn',
+      code: 'start_not_ready',
+      summary: startReadiness.summary,
+      details: startReadiness.details || startReadiness.installCommand,
+      recommendation: startReadiness.installCommand ? '先处理依赖或端口冲突，再尝试启动' : '先处理阻塞条件',
+    });
+  }
+
+  if (environment.missingCommands.length > 0) {
+    findings.push({
+      severity: 'error',
+      code: 'missing_runtime_commands',
+      summary: `缺少命令：${environment.missingCommands.join('、')}`,
+      details: environment.commandChecks
+        .filter((item) => !item.installed)
+        .map((item) => item.requirement ? `${item.command}（要求 ${item.requirement}）` : item.command)
+        .join('；'),
+      recommendation: '先补齐运行时或包管理器，再重试启动',
+    });
+  }
+
+  if (environment.missingEnvVars.length > 0) {
+    findings.push({
+      severity: 'warn',
+      code: 'missing_env_vars',
+      summary: `缺少环境变量：${environment.missingEnvVars.join('、')}`,
+      details: environment.detectedEnvFiles.length > 0 ? `来源：${environment.detectedEnvFiles.join('、')}` : undefined,
+      recommendation: '补齐环境变量后再启动相关模块',
+    });
+  }
+
+  if (runtimeState.phase === 'failed' && runtimeState.failure) {
+    findings.push({
+      severity: 'error',
+      code: runtimeState.failure.code,
+      summary: runtimeState.failure.summary,
+      details: runtimeState.failure.details,
+      recommendation: runtimeState.failure.source === 'health' ? '检查 Web 服务是否成功监听' : '打开日志查看失败细节',
+    });
+  }
+
+  if (health.state === 'unhealthy') {
+    findings.push({
+      severity: 'error',
+      code: 'health_unhealthy',
+      summary: health.summary,
+      details: health.details,
+      recommendation: '检查服务监听端口与最近启动日志',
+    });
+  }
+
+  if (diagnostics.portOccupied && status.status !== 'running') {
+    findings.push({
+      severity: 'warn',
+      code: 'port_occupied_while_stopped',
+      summary: `端口 ${diagnostics.port} 已被占用`,
+      details: diagnostics.portListeners.map((item) => `${item.command}（PID ${item.pid}）`).join('；'),
+      recommendation: '考虑执行强制关闭，清理残留监听进程',
+    });
+  }
+
+  if (!module.webUrl && !module.webPort && effectiveStartPolicy.healthCheckEnabled) {
+    findings.push({
+      severity: 'info',
+      code: 'health_without_target',
+      summary: '已启用健康检查，但模块未配置 Web 地址或端口',
+      recommendation: '如果这是后台脚本，可切换到“脚本任务”模板',
+    });
+  }
+
+  if (findings.length === 0) {
+    findings.push({
+      severity: 'info',
+      code: 'healthy',
+      summary: '未发现明显异常',
+      recommendation: '当前模块状态稳定',
+    });
+  }
+
+  const score = Math.max(
+    0,
+    100
+      - findings.filter((item) => item.severity === 'error').length * 30
+      - findings.filter((item) => item.severity === 'warn').length * 12
+  );
+
+  return {
+    moduleId: module.id,
+    moduleName: module.name,
+    groupId,
+    status: status.status,
+    runtimePhase: runtimeState.phase,
+    healthy: health.state === 'healthy' || (health.state === 'unknown' && findings.every((item) => item.severity !== 'error')),
+    score,
+    effectiveStartPolicy,
+    inheritedTemplateId,
+    environment,
+    findings,
+    checkedAt: new Date().toISOString(),
+  };
 }
 
 /**
@@ -58,22 +212,30 @@ export function createApiRouter(
         modules.map(async (module) => {
           const adapter = createAdapter(module);
           const status = await adapter.status();
+          await adapter.probeHealth();
+          const startReadiness = await adapter.inspectStartReadiness();
+          const runtimeState = adapter.getRuntimeState();
           const webUrl = config.getModuleWebUrl(module.id, module.webUrl);
           const visible = settings.visibility[module.id] !== false;
           const schedule = settings.schedules[module.id];
           const groupId = settings.moduleGroups[module.id] || 'default';
+          const startPolicy = getModuleStartPolicy(settings, module.id, groupId);
           return {
             ...module,
             webUrl,
             visible,
             schedule,
             groupId,
+            startPolicy,
+            inheritedTemplateId: getModuleInheritedTemplateId(settings, groupId),
             status: status.status,
             pid: status.pid,
             startedAt: status.startedAt,
             uptime: status.uptime,
             memory: status.memory,
             cpu: status.cpu,
+            startReadiness,
+            runtimeState,
           };
         })
       );
@@ -82,6 +244,33 @@ export function createApiRouter(
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
+  });
+
+  router.get('/module-audit', async (_req: Request, res: Response) => {
+    try {
+      const modules = registry.list();
+      const settings = config.getSettings();
+      const reports = await Promise.all(
+        modules.map(async (module) => {
+          const groupId = settings.moduleGroups[module.id] || 'default';
+          return collectModuleAuditReport(module, groupId, settings);
+        })
+      );
+
+      res.json({
+        success: true,
+        data: reports,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  router.get('/start-policy-templates', (_req: Request, res: Response) => {
+    res.json({
+      success: true,
+      data: START_POLICY_TEMPLATES,
+    });
   });
 
   /**
@@ -288,19 +477,27 @@ export function createApiRouter(
 
       const adapter = createAdapter(module);
       const status = await adapter.status();
+      await adapter.probeHealth();
+      const startReadiness = await adapter.inspectStartReadiness();
+      const runtimeState = adapter.getRuntimeState();
       const webUrl = config.getModuleWebUrl(module.id, module.webUrl);
+      const settings = config.getSettings();
 
       res.json({
         success: true,
         data: {
           ...module,
           webUrl,
+          startPolicy: getModuleStartPolicy(settings, module.id, settings.moduleGroups[module.id] || 'default'),
+          inheritedTemplateId: getModuleInheritedTemplateId(settings, settings.moduleGroups[module.id] || 'default'),
           status: status.status,
           pid: status.pid,
           startedAt: status.startedAt,
           uptime: status.uptime,
           memory: status.memory,
           cpu: status.cpu,
+          startReadiness,
+          runtimeState,
         },
       });
     } catch (error) {
@@ -321,11 +518,22 @@ export function createApiRouter(
 
       const adapter = createAdapter(module);
       await adapter.start();
+      const preparation = adapter.getLastStartPreparation();
+      const runtimeState = adapter.getRuntimeState();
 
       // 广播状态更新
       broadcast(wss, { type: 'module_started', moduleId: module.id });
 
-      res.json({ success: true, message: `模块 ${module.name} 已启动` });
+      res.json({
+        success: true,
+        message: preparation?.dependencyInstalled
+          ? `模块 ${module.name} 已安装依赖并启动`
+          : `模块 ${module.name} 已启动`,
+        data: {
+          preparation,
+          runtimeState,
+        },
+      });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
@@ -345,11 +553,12 @@ export function createApiRouter(
       const adapter = createAdapter(module);
       const force = req.body.force === true;
       await adapter.stop(force);
+      const runtimeState = adapter.getRuntimeState();
 
       // 广播状态更新
       broadcast(wss, { type: 'module_stopped', moduleId: module.id });
 
-      res.json({ success: true, message: `模块 ${module.name} 已停止` });
+      res.json({ success: true, message: `模块 ${module.name} 已停止`, data: { runtimeState } });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
@@ -524,11 +733,12 @@ export function createApiRouter(
       const adapter = createAdapter(module);
       await adapter.stop();
       await adapter.start();
+      const runtimeState = adapter.getRuntimeState();
 
       // 广播状态更新
       broadcast(wss, { type: 'module_restarted', moduleId: module.id });
 
-      res.json({ success: true, message: `模块 ${module.name} 已重启` });
+      res.json({ success: true, message: `模块 ${module.name} 已重启`, data: { runtimeState } });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
@@ -794,7 +1004,19 @@ export function createApiRouter(
     try {
       const { autoStart, startOrder } = req.body;
       const { groups, moduleGroups } = req.body;
-      config.updateSettings({ autoStart, startOrder, groups, moduleGroups });
+      const startPolicies = typeof req.body?.startPolicies === 'object' && req.body.startPolicies
+        ? Object.fromEntries(
+            Object.entries(req.body.startPolicies).map(([moduleId, policy]) => [moduleId, normalizeStartPolicy(policy as any)])
+          )
+        : undefined;
+      const groupStartPolicyTemplates = typeof req.body?.groupStartPolicyTemplates === 'object' && req.body.groupStartPolicyTemplates
+        ? Object.fromEntries(
+            Object.entries(req.body.groupStartPolicyTemplates)
+              .filter(([, templateId]) => typeof templateId === 'string' && templateId.trim() !== '')
+              .map(([groupId, templateId]) => [groupId, String(templateId)])
+          )
+        : undefined;
+      config.updateSettings({ autoStart, startOrder, groups, moduleGroups, startPolicies, groupStartPolicyTemplates });
       res.json({ success: true, message: '设置已保存' });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
@@ -833,63 +1055,19 @@ function broadcast(wss: WebSocketServer, message: any): void {
 }
 
 function parseModulePort(module: any): number | null {
-  const fromWebPort = Number(module.webPort);
-  if (Number.isInteger(fromWebPort) && fromWebPort > 0 && fromWebPort <= 65535) {
-    return fromWebPort;
-  }
-
-  if (typeof module.webUrl === 'string' && module.webUrl.trim() !== '') {
-    try {
-      const parsed = new URL(module.webUrl);
-      if (parsed.port) {
-        const p = Number(parsed.port);
-        if (Number.isInteger(p) && p > 0 && p <= 65535) return p;
-      }
-    } catch {
-      // ignore invalid URL
-    }
-  }
-  return null;
+  return parseModulePortValue(module);
 }
 
 function isPidAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    return code === 'EPERM';
-  }
+  return isPidAliveValue(pid);
 }
 
 function commandForPid(pid: number): string {
-  try {
-    return execSync(`ps -p ${pid} -o command=`, {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 1500,
-    }).trim() || 'unknown';
-  } catch {
-    return 'unknown';
-  }
+  return commandForPidValue(pid);
 }
 
 function listPortListenerPids(port: number): number[] {
-  try {
-    const output = execSync(`lsof -nP -iTCP:${port} -sTCP:LISTEN -t`, {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 1800,
-    });
-    return [...new Set(
-      output
-        .split('\n')
-        .map(line => parseInt(line.trim(), 10))
-        .filter(n => Number.isInteger(n) && n > 0)
-    )];
-  } catch {
-    return [];
-  }
+  return listPortListeners(port).map((listener) => listener.pid);
 }
 
 function readPidFromFile(moduleId: string): Promise<number | null> {

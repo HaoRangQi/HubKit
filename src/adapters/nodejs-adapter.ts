@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promises as fs, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { BaseAdapter } from './base-adapter';
-import { ModuleMetadata } from '../types/module';
+import { ModuleMetadata, ModuleStartPreparation, ModuleStartReadiness } from '../types/module';
 
 /**
  * Node.js 脚本适配器
@@ -14,13 +14,59 @@ export class NodeJSAdapter extends BaseAdapter {
     super(metadata);
   }
 
-  protected async prepareForStart(): Promise<void> {
+  async inspectStartReadiness(): Promise<ModuleStartReadiness> {
+    const baseReadiness = await super.inspectStartReadiness();
+    if (!baseReadiness.ready) {
+      return baseReadiness;
+    }
+
+    const installPlan = await this.getDependencyInstallPlan();
+    if (!installPlan) {
+      return {
+        ready: true,
+        actionLabel: '启动',
+        summary: '可直接启动',
+      };
+    }
+
+    return {
+      ready: false,
+      actionLabel: '安装依赖并启动',
+      summary: '检测到缺少 Node.js 依赖',
+      details: '首次启动会先安装依赖，再继续启动模块',
+      installCommand: `${installPlan.cmd} ${installPlan.args.join(' ')}`,
+    };
+  }
+
+  protected async prepareForStart(): Promise<ModuleStartPreparation | null> {
+    const installPlan = await this.getDependencyInstallPlan();
+    if (!installPlan) {
+      return null;
+    }
+
+    const installCommandText = `${installPlan.cmd} ${installPlan.args.join(' ')}`;
+    this.setRuntimePhase('installing', '正在安装 Node.js 依赖', {
+      details: installCommandText,
+      health: this.createHealthReport('checking', '依赖安装中', installCommandText),
+    });
+    await this.appendLogLine(`[HubKit] 检测到缺少 Node.js 依赖，开始执行：${installCommandText}`);
+    await this.runInstallCommand(installPlan.cmd, installPlan.args, installPlan.cwd);
+    await this.appendLogLine(`[HubKit] 依赖安装完成：${installCommandText}`);
+
+    return {
+      dependencyInstalled: true,
+      installCommand: installCommandText,
+      summary: '已安装依赖并启动',
+    };
+  }
+
+  private async getDependencyInstallPlan(): Promise<{ cmd: string; args: string[]; cwd: string } | null> {
     const moduleDir = this.resolveModuleDir();
     const packageJsonPath = join(moduleDir, 'package.json');
     const packageJson = await this.readPackageJson(packageJsonPath);
 
     if (!packageJson) {
-      return;
+      return null;
     }
 
     const hasDependencies = Boolean(
@@ -29,16 +75,16 @@ export class NodeJSAdapter extends BaseAdapter {
     );
 
     if (!hasDependencies) {
-      return;
+      return null;
     }
 
     const hasNodeModules = await this.pathExists(join(moduleDir, 'node_modules'));
     if (hasNodeModules) {
-      return;
+      return null;
     }
 
     const installCommand = await this.resolveInstallCommand(moduleDir);
-    await this.runInstallCommand(installCommand.cmd, installCommand.args, moduleDir);
+    return { ...installCommand, cwd: moduleDir };
   }
 
   /**
@@ -139,8 +185,13 @@ export class NodeJSAdapter extends BaseAdapter {
       exec([cmd, ...args].join(' '), { cwd }, (error, stdout, stderr) => {
         if (error) {
           const message = stderr?.trim() || stdout?.trim() || error.message;
+          void this.appendLogLine(`[HubKit] 依赖安装失败：${message}`);
           reject(new Error(`依赖安装失败（${cmd} ${args.join(' ')}）：${message}`));
           return;
+        }
+        const output = [stdout?.trim(), stderr?.trim()].filter(Boolean).join('\n');
+        if (output) {
+          void this.appendLogLine(output);
         }
         resolve();
       });

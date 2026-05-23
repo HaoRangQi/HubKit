@@ -42,6 +42,149 @@ export interface ModuleStatusInfo {
   error?: string;
 }
 
+export type ModuleStartPhase =
+  | 'idle'
+  | 'preparing'
+  | 'installing'
+  | 'starting'
+  | 'health_checking'
+  | 'running'
+  | 'stopped'
+  | 'failed';
+
+export type ModuleHealthState = 'unknown' | 'checking' | 'healthy' | 'unhealthy';
+
+export type ModuleFailureSource = 'preflight' | 'dependency' | 'process' | 'health' | 'system';
+
+export interface ModuleStartFailure {
+  code: string;
+  source: ModuleFailureSource;
+  summary: string;
+  details?: string;
+  retryable: boolean;
+  occurredAt: string;
+}
+
+export interface ModuleHealthReport {
+  state: ModuleHealthState;
+  summary: string;
+  details?: string;
+  checkedAt?: string;
+}
+
+/**
+ * 启动前准备检查结果
+ */
+export interface ModuleStartReadiness {
+  /** 是否可以直接启动 */
+  ready: boolean;
+  /** 当前启动动作标签 */
+  actionLabel: string;
+  /** 短说明 */
+  summary: string;
+  /** 详情说明 */
+  details?: string;
+  /** 预计执行的依赖安装命令 */
+  installCommand?: string;
+}
+
+/**
+ * 实际启动时执行过的准备动作
+ */
+export interface ModuleStartPreparation {
+  dependencyInstalled: boolean;
+  installCommand?: string;
+  summary: string;
+}
+
+export interface ModuleStartRecord {
+  startedAt: string;
+  finishedAt?: string;
+  durationMs?: number;
+  outcome: 'succeeded' | 'failed';
+  attemptCount: number;
+  summary: string;
+  details?: string;
+  command?: string;
+  preparation?: ModuleStartPreparation | null;
+  failure?: ModuleStartFailure;
+  health?: ModuleHealthReport;
+}
+
+export interface ModuleRuntimeState {
+  phase: ModuleStartPhase;
+  summary: string;
+  details?: string;
+  attempt: number;
+  maxAttempts: number;
+  lastTransitionAt: string;
+  lastStartedAt?: string;
+  lastPreparation?: ModuleStartPreparation | null;
+  failure?: ModuleStartFailure;
+  health: ModuleHealthReport;
+  lastStartRecord?: ModuleStartRecord | null;
+}
+
+export interface ModuleStartPolicy {
+  retryCount: number;
+  retryDelayMs: number;
+  healthCheckEnabled: boolean;
+  healthCheckTimeoutMs: number;
+  preflightChecksEnabled: boolean;
+  blockOnPortConflict: boolean;
+}
+
+export interface StartPolicyTemplate {
+  id: string;
+  name: string;
+  description: string;
+  policy: ModuleStartPolicy;
+}
+
+export type ModuleAuditSeverity = 'info' | 'warn' | 'error';
+
+export interface ModuleAuditFinding {
+  severity: ModuleAuditSeverity;
+  code: string;
+  summary: string;
+  details?: string;
+  recommendation?: string;
+}
+
+export interface ModuleAuditReport {
+  moduleId: string;
+  moduleName: string;
+  groupId: string;
+  status: ModuleStatus;
+  runtimePhase: ModuleStartPhase;
+  healthy: boolean;
+  score: number;
+  effectiveStartPolicy: ModuleStartPolicy;
+  inheritedTemplateId?: string;
+  environment: ModuleEnvironmentReport;
+  findings: ModuleAuditFinding[];
+  checkedAt: string;
+}
+
+export interface ModuleEnvironmentCommandCheck {
+  command: string;
+  installed: boolean;
+  version?: string;
+  requirement?: string;
+}
+
+export interface ModuleEnvironmentReport {
+  runtime: string;
+  packageManager?: string;
+  engineRequirement?: string;
+  detectedEnvFiles: string[];
+  requiredCommands: string[];
+  missingCommands: string[];
+  requiredEnvVars: string[];
+  missingEnvVars: string[];
+  commandChecks: ModuleEnvironmentCommandCheck[];
+}
+
 /**
  * 模块配置项
  */
@@ -85,6 +228,26 @@ export interface ModuleProtocol {
    * @returns 是否启动成功
    */
   start(): Promise<boolean>;
+
+  /**
+   * 获取启动前检查结果
+   */
+  inspectStartReadiness(): Promise<ModuleStartReadiness>;
+
+  /**
+   * 获取最近一次启动前准备动作
+   */
+  getLastStartPreparation(): ModuleStartPreparation | null;
+
+  /**
+   * 获取运行时状态
+   */
+  getRuntimeState(): ModuleRuntimeState;
+
+  /**
+   * 执行一次健康探测
+   */
+  probeHealth(): Promise<ModuleHealthReport>;
 
   /**
    * 停止模块
