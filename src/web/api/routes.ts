@@ -7,6 +7,8 @@ import { ModuleRegistry } from '../../registry/module-registry';
 import { NodeJSAdapter } from '../../adapters/nodejs-adapter';
 import { PythonAdapter } from '../../adapters/python-adapter';
 import { ShellAdapter } from '../../adapters/shell-adapter';
+import { ScriptBundleManager } from '../../script-bundle/script-bundle-manager';
+import { BootPreferenceService } from '../../system-actions/boot-preference-service';
 import { ModuleProtocol } from '../../types/module';
 import { config } from '../../config/config';
 
@@ -37,7 +39,12 @@ function getModuleDir(scriptPath: string): string {
 /**
  * 创建 API 路由
  */
-export function createApiRouter(registry: ModuleRegistry, wss: WebSocketServer): Router {
+export function createApiRouter(
+  registry: ModuleRegistry,
+  wss: WebSocketServer,
+  scriptBundleManager?: ScriptBundleManager,
+  bootPreferenceService?: BootPreferenceService,
+): Router {
   const router = Router();
 
   /**
@@ -54,11 +61,13 @@ export function createApiRouter(registry: ModuleRegistry, wss: WebSocketServer):
           const webUrl = config.getModuleWebUrl(module.id, module.webUrl);
           const visible = settings.visibility[module.id] !== false;
           const schedule = settings.schedules[module.id];
+          const groupId = settings.moduleGroups[module.id] || 'default';
           return {
             ...module,
             webUrl,
             visible,
             schedule,
+            groupId,
             status: status.status,
             pid: status.pid,
             startedAt: status.startedAt,
@@ -70,6 +79,197 @@ export function createApiRouter(registry: ModuleRegistry, wss: WebSocketServer):
       );
 
       res.json({ success: true, data: modulesWithStatus });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取脚本工具包列表
+   */
+  router.get('/script-bundles', async (_req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.json({ success: true, data: [] });
+      }
+      res.json({ success: true, data: scriptBundleManager.listBundles() });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 运行脚本动作
+   */
+  router.post('/script-bundles/:bundleId/actions/:actionId/run', async (req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.status(404).json({ success: false, error: '脚本工具箱未启用' });
+      }
+
+      const bundleId = Array.isArray(req.params.bundleId) ? req.params.bundleId[0] : req.params.bundleId;
+      const actionId = Array.isArray(req.params.actionId) ? req.params.actionId[0] : req.params.actionId;
+      const result = await scriptBundleManager.runAction(bundleId, actionId);
+
+      res.json({
+        success: true,
+        message: result.message,
+        data: result.record,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 在 Web 终端中运行脚本动作
+   */
+  router.post('/script-bundles/:bundleId/actions/:actionId/web-terminal', async (req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.status(404).json({ success: false, error: '脚本工具箱未启用' });
+      }
+
+      const bundleId = Array.isArray(req.params.bundleId) ? req.params.bundleId[0] : req.params.bundleId;
+      const actionId = Array.isArray(req.params.actionId) ? req.params.actionId[0] : req.params.actionId;
+      const cols = typeof req.body?.cols === 'number' ? req.body.cols : undefined;
+      const rows = typeof req.body?.rows === 'number' ? req.body.rows : undefined;
+      const result = await scriptBundleManager.runActionInWebTerminal(bundleId, actionId, cols, rows);
+
+      res.json({
+        success: true,
+        message: result.message,
+        data: {
+          session: result.session,
+          record: result.record,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取脚本动作历史
+   */
+  router.get('/script-bundles/:bundleId/actions/:actionId/history', async (req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.status(404).json({ success: false, error: '脚本工具箱未启用' });
+      }
+
+      const bundleId = Array.isArray(req.params.bundleId) ? req.params.bundleId[0] : req.params.bundleId;
+      const actionId = Array.isArray(req.params.actionId) ? req.params.actionId[0] : req.params.actionId;
+      const history = await scriptBundleManager.getActionHistory(bundleId, actionId);
+      res.json({ success: true, data: history });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取脚本动作日志
+   */
+  router.get('/script-bundles/:bundleId/actions/:actionId/logs', async (req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.status(404).json({ success: false, error: '脚本工具箱未启用' });
+      }
+
+      const bundleId = Array.isArray(req.params.bundleId) ? req.params.bundleId[0] : req.params.bundleId;
+      const actionId = Array.isArray(req.params.actionId) ? req.params.actionId[0] : req.params.actionId;
+      const runId = typeof req.query.runId === 'string' ? req.query.runId : undefined;
+      const raw = await scriptBundleManager.getActionLog(bundleId, actionId, runId);
+      res.json({ success: true, data: raw });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 停止 Web 终端会话
+   */
+  router.post('/terminal-sessions/:sessionId/kill', async (req: Request, res: Response) => {
+    try {
+      if (!scriptBundleManager) {
+        return res.status(404).json({ success: false, error: '脚本工具箱未启用' });
+      }
+
+      const sessionId = Array.isArray(req.params.sessionId) ? req.params.sessionId[0] : req.params.sessionId;
+      const killed = scriptBundleManager.killTerminalSession(sessionId);
+      if (!killed) {
+        return res.status(404).json({ success: false, error: '终端会话不存在或已结束' });
+      }
+      res.json({ success: true, message: '终端会话已停止' });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取原生系统调优动作列表
+   */
+  router.get('/system-actions', async (_req: Request, res: Response) => {
+    try {
+      if (!bootPreferenceService) {
+        return res.json({ success: true, data: [] });
+      }
+      const actions = await bootPreferenceService.listActions();
+      res.json({ success: true, data: actions });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 应用 BootPreference 模式
+   */
+  router.post('/system-actions/boot-preference/apply', async (req: Request, res: Response) => {
+    try {
+      if (!bootPreferenceService) {
+        return res.status(404).json({ success: false, error: '系统调优未启用' });
+      }
+
+      const mode = typeof req.body?.mode === 'string' ? req.body.mode : '';
+      const result = await bootPreferenceService.applyMode(mode as any);
+      res.json({
+        success: true,
+        message: result.message,
+        data: result.record,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取 BootPreference 历史
+   */
+  router.get('/system-actions/boot-preference/history', async (_req: Request, res: Response) => {
+    try {
+      if (!bootPreferenceService) {
+        return res.status(404).json({ success: false, error: '系统调优未启用' });
+      }
+
+      const history = await bootPreferenceService.getHistory();
+      res.json({ success: true, data: history });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  /**
+   * 获取 BootPreference 日志
+   */
+  router.get('/system-actions/boot-preference/logs', async (req: Request, res: Response) => {
+    try {
+      if (!bootPreferenceService) {
+        return res.status(404).json({ success: false, error: '系统调优未启用' });
+      }
+
+      const runId = typeof req.query.runId === 'string' ? req.query.runId : undefined;
+      const raw = await bootPreferenceService.getLog(runId);
+      res.json({ success: true, data: raw });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
@@ -593,7 +793,8 @@ export function createApiRouter(registry: ModuleRegistry, wss: WebSocketServer):
   router.post('/settings', (req: Request, res: Response) => {
     try {
       const { autoStart, startOrder } = req.body;
-      config.updateSettings({ autoStart, startOrder });
+      const { groups, moduleGroups } = req.body;
+      config.updateSettings({ autoStart, startOrder, groups, moduleGroups });
       res.json({ success: true, message: '设置已保存' });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

@@ -1,0 +1,65 @@
+{
+  "id": "macos-configurations",
+  "name": "MacOSConfigurations",
+  "description": "常用 macOS 安装脚本集合。",
+  "rootPath": "./scripts",
+  "groups": [
+    {
+      "id": "environment",
+      "title": "环境安装",
+      "description": "安装或配置 Homebrew、Python、Oh My Zsh、Gemini。",
+      "actions": [
+        {
+          "id": "gemini-setup",
+          "name": "Gemini Setup",
+          "description": "执行 Gemini 浏览器与系统环境初始化脚本。",
+          "scriptPath": "Gemini-Setup-Mac-v6.2.command",
+          "riskLevel": "high",
+          "executionMode": "terminal",
+          "confirmRequired": false,
+          "interactive": true
+        },
+        {
+          "id": "homebrew-intel",
+          "name": "Homebrew Intel",
+          "description": "为 Intel Mac 安装或修复 Homebrew。",
+          "scriptPath": "Homebrew.sh",
+          "riskLevel": "high",
+          "executionMode": "terminal",
+          "confirmRequired": false,
+          "interactive": true
+        },
+        {
+          "id": "homebrew-apple-silicon",
+          "name": "Homebrew Apple Silicon",
+          "description": "为 Apple Silicon Mac 安装或修复 Homebrew。",
+          "scriptPath": "Homebrew_M.sh",
+          "riskLevel": "high",
+          "executionMode": "terminal",
+          "confirmRequired": false,
+          "interactive": true
+        },
+        {
+          "id": "oh-my-zsh",
+          "name": "Oh My Zsh",
+          "description": "安装或更新 Oh My Zsh 及常用主题插件。",
+          "scriptPath": "install_oh_my_zsh.sh",
+          "riskLevel": "high",
+          "executionMode": "terminal",
+          "confirmRequired": false,
+          "interactive": true
+        },
+        {
+          "id": "python-macos",
+          "name": "Python for macOS",
+          "description": "安装或补齐 Python 运行环境。",
+          "scriptPath": "install_python_macos.sh",
+          "riskLevel": "high",
+          "executionMode": "terminal",
+          "confirmRequired": false,
+          "interactive": true
+        }
+      ]
+    }
+  ]
+}

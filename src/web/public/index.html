@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HubKit Dashboard</title>
+  <link rel="stylesheet" href="/vendor/xterm-css/xterm.css">
   <script>
     (function applyInitialTheme() {
       const storageKey = 'hubkit-theme-mode';
@@ -74,6 +75,15 @@
       --elevation-3: 0 4px 8px 3px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
       --motion-standard: 200ms cubic-bezier(0.2, 0, 0, 1);
       --motion-emphasized: 300ms cubic-bezier(0.2, 0, 0, 1);
+      --glass-blur: 18px;
+      --glass-surface-opacity: 0.72;
+      --glass-border-opacity: 0.34;
+      --card-surface-mix: 86%;
+      --card-inner-mix: 72%;
+      --wallpaper-opacity: 0.92;
+      --wallpaper-scrim-opacity: 0;
+      --wallpaper-scrim-color: #ffffff;
+      --wallpaper-scale: 1;
     }
 
     :root[data-theme-resolved="dark"] {
@@ -114,6 +124,7 @@
       --md-on-surface-variant: #c1c9bf;
       --md-outline: #8b9389;
       --md-outline-variant: #414942;
+      --wallpaper-scrim-color: #000000;
     }
 
     * {
@@ -138,6 +149,16 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: var(--wallpaper-scrim-color);
+      opacity: var(--wallpaper-scrim-opacity, 0);
+      pointer-events: none;
+    }
+
     .wallpaper-layer {
       position: fixed;
       inset: -6%;
@@ -146,10 +167,16 @@
       background-repeat: no-repeat;
       background-position: center;
       background-size: cover;
-      opacity: 0.38;
+      opacity: var(--wallpaper-opacity, 0.92);
       filter: blur(var(--wallpaper-blur, 0px));
-      transform: scale(1.06);
+      transform: scale(var(--wallpaper-scale, 1));
       pointer-events: none;
+    }
+
+    .glass-panel {
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      box-shadow: var(--elevation-1);
     }
 
     button,
@@ -173,9 +200,9 @@
     }
 
     .shell {
-      width: min(1480px, 100%);
-      margin: 0 auto;
-      padding: 20px;
+      width: 100%;
+      margin: 0;
+      padding: 20px 32px 32px 188px;
       position: relative;
       z-index: 1;
     }
@@ -189,11 +216,12 @@
       gap: 16px;
       align-items: center;
       min-height: 76px;
-      margin: -20px -20px 18px;
-      padding: 16px 20px;
-      background: color-mix(in srgb, var(--md-surface) 92%, transparent);
-      border-bottom: 1px solid var(--md-outline-variant);
-      backdrop-filter: blur(18px);
+      margin: -20px -32px 18px -188px;
+      padding: 16px 32px 16px 188px;
+      background: color-mix(in srgb, var(--md-surface) calc(var(--glass-surface-opacity) * 100%), transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
     }
 
     .brand {
@@ -387,14 +415,13 @@
       overflow: hidden;
       min-height: 112px;
       padding: 18px 18px 16px;
-      border: 1px solid var(--md-outline-variant);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-lg);
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--md-surface-container-lowest) 88%, transparent),
-        var(--md-surface-container-low)
+        color-mix(in srgb, var(--md-surface-container-lowest) 52%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
       );
-      box-shadow: var(--elevation-1);
     }
 
     .summary-item::after {
@@ -461,8 +488,8 @@
       --summary-accent: var(--md-success);
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--md-success-container) 34%, var(--md-surface-container-lowest)),
-        var(--md-surface-container-low)
+        color-mix(in srgb, var(--md-success-container) 38%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
       );
     }
 
@@ -479,8 +506,8 @@
       --summary-accent: var(--md-warning);
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--md-warning-container) 44%, var(--md-surface-container-lowest)),
-        var(--md-surface-container-low)
+        color-mix(in srgb, var(--md-warning-container) 44%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
       );
     }
 
@@ -496,23 +523,374 @@
       gap: 10px;
     }
 
+    .dashboard-layout {
+      display: block;
+      margin-top: 18px;
+    }
+
+    .group-rail {
+      position: fixed;
+      left: 30px;
+      top: 152px;
+      z-index: 24;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      width: 146px;
+      min-height: calc(100vh - 184px);
+      max-height: calc(100vh - 184px);
+      padding: 14px 10px 14px 0;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 32%, transparent);
+      border-radius: var(--shape-xl);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 58%, transparent);
+      backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+      box-shadow: var(--elevation-1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .group-rail::before {
+      content: "";
+      position: absolute;
+      left: 19px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--md-outline) 40%, transparent);
+    }
+
+    .group-rail-item {
+      position: relative;
+      display: grid;
+      justify-items: start;
+      gap: 5px;
+      min-height: 46px;
+      padding: 6px 6px 6px 38px;
+      border-radius: 0 var(--shape-pill) var(--shape-pill) 0;
+      border: 0;
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .group-rail-item::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid color-mix(in srgb, var(--md-outline) 64%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container-high) 58%, transparent);
+      transition: background var(--motion-standard), border-color var(--motion-standard), transform var(--motion-standard);
+    }
+
+    .group-rail-item.active::before {
+      background: var(--md-primary);
+      border-color: var(--md-primary);
+      transform: scale(1.04);
+    }
+
+    .group-rail-item.active {
+      background: color-mix(in srgb, var(--md-primary-container) 48%, transparent);
+      color: var(--md-on-surface);
+    }
+
+    .group-rail-kicker {
+      font-size: 11px;
+      line-height: 1;
+      opacity: 0.82;
+    }
+
+    .group-rail-label {
+      color: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .dashboard-group-content {
+      display: grid;
+      gap: 22px;
+      min-width: 0;
+    }
+
     .modules-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 18px;
       align-items: stretch;
+      justify-content: start;
+    }
+
+    .toolbox-section {
+      margin-top: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .toolbox-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbox-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .segmented-tabs {
+      display: inline-grid;
+      grid-auto-flow: column;
+      gap: 0;
+      width: max-content;
+      max-width: 100%;
+      min-height: 44px;
+      padding: 4px;
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-surface-container-high) 54%, transparent);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      overflow-x: auto;
+    }
+
+    .segmented-tab {
+      display: inline-flex;
+      min-width: 96px;
+      min-height: 36px;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: var(--shape-pill);
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .segmented-tab.active {
+      background: color-mix(in srgb, var(--md-primary-container) 82%, transparent);
+      color: var(--md-on-primary-container);
+      box-shadow: var(--elevation-1);
+    }
+
+    .toolbox-card {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: var(--shape-md);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-tertiary-container) 16%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
+      );
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+    }
+
+    .toolbox-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toolbox-card-title {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .toolbox-card-title h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .toolbox-card-title p {
+      margin: 0;
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .toolbox-count {
+      padding: 6px 10px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .toolbox-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .tool-action-item {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 50%, transparent);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+    }
+
+    .tool-action-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .tool-action-copy {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .tool-action-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-action-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--md-on-surface);
+    }
+
+    .tool-action-desc {
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .risk-chip,
+    .mode-chip,
+    .run-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: var(--shape-pill);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .risk-chip.high {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .risk-chip.medium {
+      background: var(--md-warning-container);
+      color: var(--md-on-warning-container);
+    }
+
+    .risk-chip.low {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .mode-chip {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+
+    .run-chip {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .run-chip.success {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .run-chip.error {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .run-chip.running {
+      background: var(--md-tertiary-container);
+      color: var(--md-on-tertiary-container);
+    }
+
+    .tool-action-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tool-action-meta .metric {
+      min-height: 72px;
+    }
+
+    .tool-action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tool-action-warning {
+      min-height: 58px;
+      padding: 10px 12px;
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-warning-container) 58%, transparent);
+      color: var(--md-on-warning-container);
+      font-size: 13px;
+      line-height: 1.45;
+      border: 1px solid color-mix(in srgb, var(--md-warning) 22%, transparent);
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
     }
 
     .module-card {
       display: flex;
-      min-height: 312px;
+      width: 100%;
+      min-width: 0;
+      min-height: 700px;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
       padding: 18px 18px 16px;
-      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 86%, transparent);
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-lg);
-      background: var(--md-surface-container-low);
-      box-shadow: none;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-surface-container-lowest) 66%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
+      );
       transition:
         background var(--motion-standard),
         border-color var(--motion-standard),
@@ -520,8 +898,32 @@
         transform var(--motion-standard);
     }
 
+    .module-card.script-card {
+      max-width: 360px;
+      min-height: 356px;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-tertiary-container) 18%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
+      );
+    }
+
+    .module-card.system-action-card {
+      max-width: 360px;
+      min-height: 468px;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-warning-container) 22%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
+      );
+    }
+
     .module-card:hover {
-      background: var(--md-surface-container);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-surface-container-lowest) 72%, transparent),
+        color-mix(in srgb, var(--md-surface-container) var(--card-surface-mix), transparent)
+      );
       border-color: color-mix(in srgb, var(--md-primary) 42%, var(--md-outline-variant));
       box-shadow: var(--elevation-1);
       transform: translateY(-1px);
@@ -531,17 +933,104 @@
       border-color: color-mix(in srgb, var(--md-success) 30%, var(--md-outline-variant));
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--md-success-container) 18%, var(--md-surface-container-low)),
-        var(--md-surface-container-low)
+        color-mix(in srgb, var(--md-success-container) 28%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
       );
+    }
+
+    .module-group-stack {
+      display: grid;
+      gap: 28px;
+    }
+
+    .module-group {
+      display: grid;
+      gap: 14px;
+      scroll-margin-top: 104px;
+    }
+
+    .module-group-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 2px 0;
+    }
+
+    .group-toggle {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      min-width: 0;
+      align-items: center;
+      gap: 10px 14px;
+      padding: 0 0 0 14px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+    }
+
+    .group-toggle .icon {
+      transition: transform var(--motion-standard);
+    }
+
+    .group-toggle::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 4px;
+      border-radius: 999px;
+      background: var(--group-accent, var(--md-primary));
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--group-accent, var(--md-primary)) 28%, transparent);
+    }
+
+    .group-toggle-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .group-toggle-kicker {
+      color: color-mix(in srgb, var(--group-accent, var(--md-primary)) 70%, var(--md-on-surface-variant));
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .module-group.collapsed .group-toggle .icon {
+      transform: rotate(-90deg);
+    }
+
+    .module-group.collapsed .modules-grid {
+      display: none;
+    }
+
+    .module-group-title {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .module-group-meta {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      white-space: nowrap;
     }
 
     .module-card.error {
       border-color: color-mix(in srgb, var(--md-error) 36%, var(--md-outline-variant));
       background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--md-error-container) 20%, var(--md-surface-container-low)),
-        var(--md-surface-container-low)
+        color-mix(in srgb, var(--md-error-container) 28%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
       );
     }
 
@@ -550,6 +1039,7 @@
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 10px;
       align-items: start;
+      min-height: 62px;
     }
 
     .module-title {
@@ -559,7 +1049,7 @@
     .module-title h3 {
       margin: 0;
       color: var(--md-on-surface);
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 700;
       line-height: 1.15;
       overflow-wrap: anywhere;
@@ -613,10 +1103,15 @@
     }
 
     .module-description {
-      min-height: 36px;
+      min-height: 40px;
       margin: -4px 0 0;
       color: var(--md-on-surface-variant);
       font-size: 14px;
+      line-height: 1.45;
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow-wrap: anywhere;
     }
 
@@ -625,9 +1120,10 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 12px 14px;
+      min-height: 64px;
+      padding: 10px 14px;
       border-radius: var(--shape-md);
-      background: color-mix(in srgb, var(--md-surface-container-high) 78%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container-high) var(--card-inner-mix), transparent);
     }
 
     .module-primary-meta {
@@ -647,9 +1143,13 @@
       display: block;
       margin-top: 2px;
       color: var(--md-on-surface);
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       line-height: 1.2;
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow-wrap: anywhere;
     }
 
@@ -657,14 +1157,38 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
-      margin-top: auto;
     }
 
     .metric {
       min-width: 0;
-      padding: 11px 10px;
+      min-height: 66px;
+      padding: 10px;
       border-radius: var(--shape-sm);
-      background: color-mix(in srgb, var(--md-surface-container) 88%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container) var(--card-inner-mix), transparent);
+    }
+
+    .script-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 30px;
+      align-items: center;
+    }
+
+    .script-card-result {
+      display: grid;
+      gap: 4px;
+      min-height: 70px;
+      padding: 12px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-high) var(--card-inner-mix), transparent);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 28%, transparent);
+    }
+
+    .script-card-result .metric-value {
+      margin-top: 0;
+      font-family: var(--font-sans);
+      font-size: 14px;
     }
 
     .metric-label {
@@ -681,22 +1205,26 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 700;
+      display: -webkit-box;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
     }
 
     .process-mini {
       display: grid;
       gap: 8px;
+      min-height: 142px;
       padding: 10px 12px;
-      border: 1px solid var(--md-outline-variant);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-md);
-      background: color-mix(in srgb, var(--md-surface-container-high) 80%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container-high) var(--card-inner-mix), transparent);
     }
 
     .process-mini.collapsed {
       gap: 6px;
+      min-height: 82px;
     }
 
     .process-mini.collapsed .process-badges,
@@ -761,6 +1289,8 @@
     .process-kv {
       display: grid;
       gap: 4px;
+      min-height: 72px;
+      overflow: hidden;
     }
 
     .process-kv-row {
@@ -781,6 +1311,10 @@
       min-width: 0;
       color: var(--md-on-surface);
       font-family: var(--font-mono);
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow-wrap: anywhere;
     }
 
@@ -792,25 +1326,49 @@
 
     .process-mini-actions .btn {
       flex: 1 1 132px;
+      min-height: 36px;
     }
 
     .module-actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       align-items: center;
+      margin-top: auto;
     }
 
     .module-actions .btn-filled,
-    .module-actions .btn-error {
-      flex: 1 1 148px;
+    .module-actions .btn-error,
+    .module-actions .btn-tonal:first-child {
+      grid-column: span 2;
     }
 
-    .module-actions .btn-tonal,
-    .module-actions .btn-tertiary,
-    .module-actions .btn-text,
-    .module-actions .btn-outlined {
-      flex: 1 1 128px;
+    .module-actions .btn {
+      width: 100%;
+      min-width: 0;
+      padding-inline: 12px;
+    }
+
+    .module-card:not(.script-card) .module-actions {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .module-card:not(.script-card) .module-actions .btn-filled,
+    .module-card:not(.script-card) .module-actions .btn-error,
+    .module-card:not(.script-card) .module-actions .btn-tonal:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .system-action-preset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .system-action-preset-grid .btn {
+      width: 100%;
+      min-width: 0;
+      padding-inline: 10px;
     }
 
     .btn {
@@ -928,9 +1486,13 @@
     }
 
     .settings-panel {
-      border: 1px solid var(--md-outline-variant);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-lg);
-      background: var(--md-surface-container-low);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-surface-container-lowest) 40%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
+      );
       overflow: hidden;
     }
 
@@ -997,6 +1559,60 @@
       font-size: 14px;
     }
 
+    :root[data-theme-resolved="dark"] .settings-section-title {
+      color: #ffffff;
+    }
+
+    :root[data-theme-resolved="dark"] .settings-section-desc {
+      color: color-mix(in srgb, #ffffff 86%, transparent);
+    }
+
+    :root[data-theme-resolved="dark"] .top-app-bar h1 {
+      color: #ffffff;
+    }
+
+    :root[data-theme-resolved="dark"] .top-app-bar .subtitle {
+      color: color-mix(in srgb, #ffffff 84%, transparent);
+    }
+
+    :root[data-theme-resolved="dark"] .top-app-bar .theme-btn {
+      color: color-mix(in srgb, #ffffff 92%, transparent);
+    }
+
+    :root[data-theme-resolved="dark"] .top-app-bar .nav-btn {
+      color: color-mix(in srgb, #ffffff 92%, transparent);
+    }
+
+    :root[data-theme-resolved="dark"] .top-app-bar .connection-chip {
+      color: color-mix(in srgb, #ffffff 92%, transparent);
+    }
+
+    :root[data-theme-resolved="dark"] #dashboardView .settings-section-title {
+      color: #ffffff !important;
+    }
+
+    :root[data-theme-resolved="dark"] #dashboardView .settings-section-desc {
+      color: color-mix(in srgb, #ffffff 86%, transparent) !important;
+    }
+
+    :root[data-theme-resolved="dark"] .summary-item .summary-label,
+    :root[data-theme-resolved="dark"] .summary-item .summary-note {
+      color: color-mix(in srgb, #ffffff 84%, transparent) !important;
+    }
+
+    :root[data-theme-resolved="dark"] .summary-item .summary-value {
+      color: #ffffff !important;
+      text-shadow: none !important;
+    }
+
+    :root[data-theme-resolved="dark"] .summary-item[data-summary-tone="running"] .summary-value {
+      color: #b6f5cc !important;
+    }
+
+    :root[data-theme-resolved="dark"] .summary-item[data-summary-tone="update"] .summary-value {
+      color: #ffe28d !important;
+    }
+
     .settings-list {
       display: grid;
       gap: 10px;
@@ -1009,9 +1625,9 @@
       align-items: center;
       min-height: 72px;
       padding: 12px 14px;
-      border: 1px solid var(--md-outline-variant);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-lg);
-      background: var(--md-surface-container-low);
+      background: color-mix(in srgb, var(--md-surface-container-low) 56%, transparent);
       transition: background var(--motion-standard), border-color var(--motion-standard), transform var(--motion-standard);
     }
 
@@ -1249,9 +1865,9 @@
       min-height: 220px;
       place-items: center;
       padding: 32px;
-      border: 1px dashed var(--md-outline);
+      border: 1px dashed color-mix(in srgb, var(--md-outline) calc(var(--glass-border-opacity) * 100%), transparent);
       border-radius: var(--shape-lg);
-      background: var(--md-surface-container-low);
+      background: color-mix(in srgb, var(--md-surface-container-low) 48%, transparent);
       color: var(--md-on-surface-variant);
       text-align: center;
     }
@@ -1280,17 +1896,26 @@
       animation: fade-in 140ms cubic-bezier(0.2, 0, 0, 1);
     }
 
+    .inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
     .dialog-content {
       display: grid;
       grid-template-rows: auto auto minmax(0, 1fr);
       width: min(1120px, 100%);
       max-height: min(84vh, 880px);
       border-radius: var(--shape-xl);
-      background: var(--md-surface-container-high);
+      background: color-mix(in srgb, var(--md-surface-container-high) calc(var(--glass-surface-opacity) * 100%), transparent);
       color: var(--md-on-surface);
       box-shadow: var(--elevation-3);
       overflow: hidden;
       animation: scale-in 180ms cubic-bezier(0.2, 0, 0, 1);
+      backdrop-filter: blur(calc(var(--glass-blur) + 4px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px));
     }
 
     .dialog-header {
@@ -1384,6 +2009,125 @@
 
     .log-line-hidden {
       display: none;
+    }
+
+    .terminal-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+      display: grid;
+      grid-template-columns: 8px minmax(360px, 1fr);
+      width: min(var(--terminal-width, 720px), calc(100vw - 24px));
+      min-width: 360px;
+      max-width: calc(100vw - 24px);
+      transform: translateX(calc(100% + 12px));
+      transition: transform var(--motion-emphasized);
+      pointer-events: none;
+    }
+
+    .terminal-drawer.active {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .terminal-peek {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 79;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 62%, transparent);
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-surface-container-high) 88%, transparent);
+      color: var(--md-on-surface);
+      box-shadow: var(--elevation-2);
+      cursor: pointer;
+      backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+    }
+
+    .terminal-peek.visible {
+      display: inline-flex;
+    }
+
+    .terminal-resizer {
+      cursor: col-resize;
+      background: transparent;
+    }
+
+    .terminal-resizer::after {
+      content: "";
+      display: block;
+      width: 2px;
+      height: 100%;
+      margin-left: 3px;
+      background: color-mix(in srgb, var(--md-outline) 34%, transparent);
+    }
+
+    .terminal-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      border-left: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 88%, transparent);
+      backdrop-filter: blur(calc(var(--glass-blur) + 4px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px));
+      box-shadow: -8px 0 28px rgb(0 0 0 / 0.22);
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 68px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--md-outline-variant);
+    }
+
+    .terminal-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .terminal-title h2 {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 17px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .terminal-title p {
+      margin: 0;
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .terminal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .terminal-body {
+      min-height: 0;
+      padding: 8px;
+      background: #0b0f12;
+    }
+
+    #webTerminal {
+      width: 100%;
+      height: 100%;
     }
 
     .snackbar {
@@ -1489,6 +2233,20 @@
     }
 
     @media (max-width: 1080px) {
+      .shell {
+        padding-left: 160px;
+      }
+
+      .top-app-bar {
+        margin-left: -160px;
+        padding-left: 160px;
+      }
+
+      .group-rail {
+        left: 18px;
+        width: 124px;
+      }
+
       .top-app-bar,
       .dashboard-header {
         grid-template-columns: 1fr;
@@ -1516,6 +2274,49 @@
       .top-app-bar {
         margin: -14px -14px 14px;
         padding: 14px;
+      }
+
+      .group-rail {
+        position: sticky;
+        top: 78px;
+        z-index: 24;
+        width: auto;
+        max-height: none;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(88px, 1fr);
+        gap: 8px;
+        margin: 0 0 16px;
+        padding: 8px 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+
+      .group-rail::before {
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 15px;
+        width: auto;
+        height: 2px;
+      }
+
+      .group-rail-item {
+        min-height: 52px;
+        padding: 0 0 18px;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .group-rail-item::before {
+        left: 50%;
+        top: auto;
+        bottom: 8px;
+        transform: translateX(-50%);
+      }
+
+      .group-rail-item.active::before {
+        transform: translateX(-50%) scale(1.04);
       }
 
       .brand-mark {
@@ -1560,15 +2361,59 @@
       }
 
       .modules-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .module-card {
-        min-height: auto;
+        width: 100%;
+        min-height: 700px;
+        height: auto;
+      }
+
+      .module-card.script-card {
+        max-width: none;
+        min-height: 430px;
+      }
+
+      .module-card.system-action-card {
+        max-width: none;
+        min-height: 468px;
+      }
+
+      .tool-action-meta {
+        grid-template-columns: 1fr;
       }
 
       .metric-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .system-action-preset-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .terminal-drawer {
+        grid-template-columns: 0 minmax(0, 1fr);
+        width: 100vw;
+        min-width: 0;
+        max-width: 100vw;
+      }
+
+      .terminal-resizer {
+        display: none;
+      }
+
+      .terminal-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .terminal-actions {
+        justify-content: stretch;
+      }
+
+      .terminal-actions .btn {
+        flex: 1 1 120px;
       }
 
       .process-kv-row {
@@ -1723,36 +2568,40 @@
         </div>
 
         <div class="summary-strip" id="summaryStrip" aria-label="模块统计">
-          <div class="summary-item" data-summary-tone="all">
+        <div class="summary-item glass-panel" data-summary-tone="all">
             <span class="summary-label">全部模块</span>
             <span class="summary-value" id="summaryTotal">0</span>
             <span class="summary-note">已纳入当前面板</span>
           </div>
-          <div class="summary-item" data-summary-tone="running">
+          <div class="summary-item glass-panel" data-summary-tone="running">
             <span class="summary-label">运行中</span>
             <span class="summary-value" id="summaryRunning">0</span>
             <span class="summary-note">正在提供服务</span>
             <button class="summary-inline-action" id="forceCloseAllBtn" type="button" onclick="forceCloseAllModules()">
-              ${icon('stop_circle')}<span>全部关停</span>
+              <svg class="icon" aria-hidden="true"><use href="#icon-stop_circle"></use></svg>
+              <span>全部关停</span>
             </button>
           </div>
-          <div class="summary-item" data-summary-tone="stopped">
+          <div class="summary-item glass-panel" data-summary-tone="stopped">
             <span class="summary-label">已停止</span>
             <span class="summary-value" id="summaryStopped">0</span>
             <span class="summary-note">可按需唤起</span>
           </div>
-          <div class="summary-item" data-summary-tone="update">
+          <div class="summary-item glass-panel" data-summary-tone="update">
             <span class="summary-label">可更新</span>
             <span class="summary-value" id="summaryUpdateable">0</span>
             <span class="summary-note">建议优先关注</span>
           </div>
         </div>
 
-        <div class="modules-grid" id="modulesGrid" style="margin-top: 16px;">
-          <div class="loading-state">
-            <div>
-              <svg class="icon" aria-hidden="true"><use href="#icon-progress_activity"></use></svg>
-              <div>正在加载模块...</div>
+        <div class="dashboard-layout">
+          <aside class="group-rail" id="dashboardGroupRail" aria-label="分组导航"></aside>
+          <div class="dashboard-group-content" id="dashboardGroupContent">
+            <div class="loading-state">
+              <div>
+                <svg class="icon" aria-hidden="true"><use href="#icon-progress_activity"></use></svg>
+                <div>正在加载卡片分组...</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1808,6 +2657,43 @@
     </div>
   </div>
 
+  <aside class="terminal-drawer" id="terminalDrawer" aria-label="Web 终端">
+    <div class="terminal-resizer" id="terminalResizer" title="拖动调整宽度"></div>
+    <section class="terminal-panel">
+      <header class="terminal-header">
+        <div class="terminal-title">
+          <h2 id="terminalTitle">Web 终端</h2>
+          <p id="terminalSubtitle">未连接</p>
+        </div>
+        <div class="terminal-actions">
+          <button class="btn btn-text btn-sm" type="button" onclick="clearWebTerminal()">
+            <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+            <span>清屏</span>
+          </button>
+          <button class="btn btn-tonal btn-sm" type="button" onclick="killWebTerminal()">
+            <svg class="icon" aria-hidden="true"><use href="#icon-stop_circle"></use></svg>
+            <span>停止</span>
+          </button>
+          <button class="btn btn-text btn-sm" type="button" onclick="collapseTerminalPanel()">
+            <svg class="icon" aria-hidden="true"><use href="#icon-south"></use></svg>
+            <span>收起</span>
+          </button>
+          <button class="btn btn-text btn-sm" type="button" onclick="closeWebTerminal()">
+            <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+            <span>关闭</span>
+          </button>
+        </div>
+      </header>
+      <div class="terminal-body">
+        <div id="webTerminal"></div>
+      </div>
+    </section>
+  </aside>
+  <button class="terminal-peek" id="terminalPeek" type="button" onclick="restoreTerminalPanel()">
+    <svg class="icon" aria-hidden="true"><use href="#icon-play_circle"></use></svg>
+    <span id="terminalPeekLabel">Web 终端</span>
+  </button>
+
   <div class="snackbar" id="snackbar" role="status" aria-live="polite">
     <div class="snackbar-message" id="snackbarMessage"></div>
     <div class="snackbar-actions">
@@ -1816,6 +2702,9 @@
     </div>
   </div>
 
+  <script src="/vendor/xterm/xterm.js"></script>
+  <script src="/vendor/xterm-fit/addon-fit.js"></script>
+  <script src="/vendor/xterm-web-links/addon-web-links.js"></script>
   <script>
     const THEME_STORAGE_KEY = 'hubkit-theme-mode';
     const UI_PREFS_STORAGE_KEY = 'hubkit-ui-prefs';
@@ -1827,6 +2716,7 @@
     let dragSrcIndex = null;
     let currentLogModuleId = null;
     let currentLogModuleName = '';
+    let currentLogTarget = null;
     let logTailTimer = null;
     let lastToastMessage = '';
     let themeMode = document.documentElement.dataset.themeMode || 'auto';
@@ -1835,13 +2725,28 @@
     let diagnosticsLoadingByModule = {};
     let forceCloseLoadingByModule = {};
     let forceCloseAllLoading = false;
+    let scriptBundles = [];
+    let scriptRunLoading = {};
+    let systemActions = [];
+    let systemActionLoading = {};
+    let systemActionRefreshing = {};
+    let terminalInstance = null;
+    let terminalFitAddon = null;
+    let activeTerminalSessionId = null;
+    let activeTerminalAction = null;
+    let terminalHasContent = false;
+    let terminalSessionState = 'closed';
+    let terminalResizing = false;
+    let terminalDrawerWidth = Number(localStorage.getItem('hubkit-terminal-width')) || 720;
     let uiPrefs = loadUiPrefs();
     let settingsPanels = {
       display: true,
       autoStart: false,
+      grouping: false,
       visibility: false,
       webUrl: false,
       schedule: false,
+      cleanup: false,
     };
     const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -1878,13 +2783,50 @@
           : 6;
         return {
           collapseProcessMini: parsed?.collapseProcessMini === true,
+          collapseDashboardGroups: parsed?.collapseDashboardGroups === true,
+          groupCollapseState: parsed?.groupCollapseState && typeof parsed.groupCollapseState === 'object'
+            ? parsed.groupCollapseState
+            : {},
           wallpaperEnabled: parsed?.wallpaperEnabled === true,
           wallpaperUrl: typeof parsed?.wallpaperUrl === 'string' ? parsed.wallpaperUrl : '',
+          wallpaperFit: ['contain', 'cover', 'stretch'].includes(parsed?.wallpaperFit) ? parsed.wallpaperFit : 'contain',
+          wallpaperPositionX: clampNumber(parsed?.wallpaperPositionX, 0, 100, 50),
+          wallpaperPositionY: clampNumber(parsed?.wallpaperPositionY, 0, 100, 50),
           wallpaperBlur,
+          wallpaperOpacity: clampNumber(parsed?.wallpaperOpacity, 0.35, 1, 0.92),
+          wallpaperScrimOpacity: clampNumber(parsed?.wallpaperScrimOpacity, 0, 0.8, resolvedTheme === 'dark' ? 0.55 : 0.35),
+          glassBlur: clampNumber(parsed?.glassBlur, 0, 36, 18),
+          glassOpacity: clampNumber(parsed?.glassOpacity, 0.28, 0.92, 0.72),
+          glassBorderOpacity: clampNumber(parsed?.glassBorderOpacity, 0.12, 0.65, 0.34),
+          cardSurfaceOpacity: clampNumber(parsed?.cardSurfaceOpacity, 0.45, 0.96, 0.86),
+          cardInnerOpacity: clampNumber(parsed?.cardInnerOpacity, 0.35, 0.92, 0.72),
         };
       } catch (error) {
-        return { collapseProcessMini: false, wallpaperEnabled: false, wallpaperUrl: '', wallpaperBlur: 6 };
+        return {
+          collapseProcessMini: false,
+          collapseDashboardGroups: false,
+          groupCollapseState: {},
+          wallpaperEnabled: false,
+          wallpaperUrl: '',
+          wallpaperFit: 'contain',
+          wallpaperPositionX: 50,
+          wallpaperPositionY: 50,
+          wallpaperBlur: 6,
+          wallpaperOpacity: 0.92,
+          wallpaperScrimOpacity: resolvedTheme === 'dark' ? 0.55 : 0.35,
+          glassBlur: 18,
+          glassOpacity: 0.72,
+          glassBorderOpacity: 0.34,
+          cardSurfaceOpacity: 0.86,
+          cardInnerOpacity: 0.72,
+        };
       }
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, n));
     }
 
     function saveUiPrefs() {
@@ -1900,6 +2842,48 @@
       }
     }
 
+    function setDashboardGroupsCollapsed(enabled) {
+      uiPrefs.collapseDashboardGroups = enabled === true;
+      const nextState = {};
+      buildDashboardSections().forEach((section) => {
+        nextState[section.id] = uiPrefs.collapseDashboardGroups;
+      });
+      uiPrefs.groupCollapseState = nextState;
+      saveUiPrefs();
+      renderDashboardGroups();
+      if (currentView === 'settings') {
+        renderSettings();
+      }
+    }
+
+    function setSingleDashboardGroupCollapsed(sectionId, enabled) {
+      uiPrefs.groupCollapseState = uiPrefs.groupCollapseState || {};
+      uiPrefs.groupCollapseState[sectionId] = enabled === true;
+      saveUiPrefs();
+      renderDashboardGroups();
+      if (currentView === 'settings') {
+        renderSettings();
+      }
+    }
+
+    function toggleDashboardGroup(sectionId) {
+      uiPrefs.groupCollapseState = uiPrefs.groupCollapseState || {};
+      const current = isDashboardGroupCollapsed(sectionId);
+      uiPrefs.groupCollapseState[sectionId] = !current;
+      saveUiPrefs();
+      renderDashboardGroups();
+      if (currentView === 'settings') {
+        renderSettings();
+      }
+    }
+
+    function isDashboardGroupCollapsed(sectionId) {
+      if (uiPrefs.groupCollapseState && Object.prototype.hasOwnProperty.call(uiPrefs.groupCollapseState, sectionId)) {
+        return uiPrefs.groupCollapseState[sectionId] === true;
+      }
+      return uiPrefs.collapseDashboardGroups === true;
+    }
+
     function applyWallpaper() {
       const layer = document.getElementById('wallpaperLayer');
       if (!layer) return;
@@ -1907,7 +2891,16 @@
       const url = String(uiPrefs.wallpaperUrl || '').trim();
       const blur = Number.isFinite(Number(uiPrefs.wallpaperBlur)) ? Number(uiPrefs.wallpaperBlur) : 6;
       const safeBlur = Math.min(24, Math.max(0, blur));
+      const fit = ['contain', 'cover', 'stretch'].includes(uiPrefs.wallpaperFit) ? uiPrefs.wallpaperFit : 'contain';
+      const positionX = clampNumber(uiPrefs.wallpaperPositionX, 0, 100, 50);
+      const positionY = clampNumber(uiPrefs.wallpaperPositionY, 0, 100, 50);
+      const scrimOpacity = clampNumber(uiPrefs.wallpaperScrimOpacity, 0, 0.8, resolvedTheme === 'dark' ? 0.55 : 0.35);
       layer.style.setProperty('--wallpaper-blur', `${safeBlur}px`);
+      layer.style.setProperty('--wallpaper-opacity', String(uiPrefs.wallpaperOpacity ?? 0.92));
+      layer.style.setProperty('--wallpaper-scale', safeBlur === 0 ? '1' : '1.03');
+      document.documentElement.style.setProperty('--wallpaper-scrim-opacity', enabled && url ? String(scrimOpacity) : '0');
+      layer.style.backgroundSize = fit === 'stretch' ? '100% 100%' : fit;
+      layer.style.backgroundPosition = `${positionX}% ${positionY}%`;
 
       if (!enabled || !url) {
         layer.style.display = 'none';
@@ -1917,6 +2910,15 @@
 
       layer.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
       layer.style.display = 'block';
+    }
+
+    function applyGlassPrefs() {
+      const root = document.documentElement;
+      root.style.setProperty('--glass-blur', `${uiPrefs.glassBlur ?? 18}px`);
+      root.style.setProperty('--glass-surface-opacity', String(uiPrefs.glassOpacity ?? 0.72));
+      root.style.setProperty('--glass-border-opacity', String(uiPrefs.glassBorderOpacity ?? 0.34));
+      root.style.setProperty('--card-surface-mix', `${Math.round((uiPrefs.cardSurfaceOpacity ?? 0.86) * 100)}%`);
+      root.style.setProperty('--card-inner-mix', `${Math.round((uiPrefs.cardInnerOpacity ?? 0.72) * 100)}%`);
     }
 
     function setWallpaperEnabled(enabled) {
@@ -1931,6 +2933,78 @@
       applyWallpaper();
     }
 
+    function isLocalWallpaperUrl(value = uiPrefs.wallpaperUrl) {
+      return String(value || '').startsWith('data:image/');
+    }
+
+    function formatWallpaperUrlForInput() {
+      const url = String(uiPrefs.wallpaperUrl || '');
+      if (!isLocalWallpaperUrl(url)) return url;
+      const sizeKb = Math.max(1, Math.round(url.length * 0.75 / 1024));
+      const sizeLabel = sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+      return `本地上传图片（浏览器缓存，约 ${sizeLabel}）`;
+    }
+
+    async function copyWallpaperData() {
+      if (!uiPrefs.wallpaperUrl) {
+        showToast('没有可复制的壁纸数据', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(uiPrefs.wallpaperUrl);
+        showToast('壁纸数据已复制');
+      } catch (error) {
+        showToast('复制失败', 'error');
+      }
+    }
+
+    function uploadWallpaperFile(input) {
+      const file = input?.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('请选择图片文件', 'error');
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          uiPrefs.wallpaperUrl = String(reader.result || '');
+          uiPrefs.wallpaperEnabled = true;
+          saveUiPrefs();
+          applyWallpaper();
+      if (currentView === 'settings') renderSettings();
+      showToast('本地壁纸已应用');
+        } catch (error) {
+          showToast('图片过大，无法存入浏览器本地缓存', 'error');
+        } finally {
+          input.value = '';
+        }
+      };
+      reader.onerror = () => {
+        showToast('读取图片失败', 'error');
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateWallpaperFit(value) {
+      uiPrefs.wallpaperFit = ['contain', 'cover', 'stretch'].includes(value) ? value : 'contain';
+      saveUiPrefs();
+      applyWallpaper();
+      if (currentView === 'settings') renderSettings();
+    }
+
+    function updateWallpaperPosition(axis, value) {
+      const key = axis === 'y' ? 'wallpaperPositionY' : 'wallpaperPositionX';
+      uiPrefs[key] = clampNumber(value, 0, 100, 50);
+      saveUiPrefs();
+      applyWallpaper();
+      const valueEl = document.getElementById(axis === 'y' ? 'wallpaperPositionYValue' : 'wallpaperPositionXValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs[key])}%`;
+    }
+
     function updateWallpaperBlur(value) {
       const n = Number(value);
       uiPrefs.wallpaperBlur = Number.isFinite(n) ? Math.min(24, Math.max(0, n)) : 6;
@@ -1938,6 +3012,109 @@
       applyWallpaper();
       const valueEl = document.getElementById('wallpaperBlurValue');
       if (valueEl) valueEl.textContent = `${uiPrefs.wallpaperBlur}px`;
+    }
+
+    function updateWallpaperOpacity(value) {
+      uiPrefs.wallpaperOpacity = clampNumber(value, 0.35, 1, 0.92);
+      saveUiPrefs();
+      applyWallpaper();
+      const valueEl = document.getElementById('wallpaperOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.wallpaperOpacity * 100)}%`;
+    }
+
+    function updateWallpaperScrimOpacity(value) {
+      uiPrefs.wallpaperScrimOpacity = clampNumber(value, 0, 0.8, resolvedTheme === 'dark' ? 0.55 : 0.35);
+      saveUiPrefs();
+      applyWallpaper();
+      const valueEl = document.getElementById('wallpaperScrimOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.wallpaperScrimOpacity * 100)}%`;
+    }
+
+    function updateGlassBlur(value) {
+      uiPrefs.glassBlur = clampNumber(value, 0, 36, 18);
+      saveUiPrefs();
+      applyGlassPrefs();
+      const valueEl = document.getElementById('glassBlurValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.glassBlur)}px`;
+    }
+
+    function updateGlassOpacity(value) {
+      uiPrefs.glassOpacity = clampNumber(value, 0.28, 0.92, 0.72);
+      saveUiPrefs();
+      applyGlassPrefs();
+      const valueEl = document.getElementById('glassOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.glassOpacity * 100)}%`;
+    }
+
+    function updateGlassBorderOpacity(value) {
+      uiPrefs.glassBorderOpacity = clampNumber(value, 0.12, 0.65, 0.34);
+      saveUiPrefs();
+      applyGlassPrefs();
+      const valueEl = document.getElementById('glassBorderOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.glassBorderOpacity * 100)}%`;
+    }
+
+    function updateCardSurfaceOpacity(value) {
+      uiPrefs.cardSurfaceOpacity = clampNumber(value, 0.45, 0.96, 0.86);
+      saveUiPrefs();
+      applyGlassPrefs();
+      const valueEl = document.getElementById('cardSurfaceOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.cardSurfaceOpacity * 100)}%`;
+    }
+
+    function updateCardInnerOpacity(value) {
+      uiPrefs.cardInnerOpacity = clampNumber(value, 0.35, 0.92, 0.72);
+      saveUiPrefs();
+      applyGlassPrefs();
+      const valueEl = document.getElementById('cardInnerOpacityValue');
+      if (valueEl) valueEl.textContent = `${Math.round(uiPrefs.cardInnerOpacity * 100)}%`;
+    }
+
+    function clearWallpaperPrefs() {
+      uiPrefs.wallpaperEnabled = false;
+      uiPrefs.wallpaperUrl = '';
+      uiPrefs.wallpaperFit = 'contain';
+      uiPrefs.wallpaperPositionX = 50;
+      uiPrefs.wallpaperPositionY = 50;
+      uiPrefs.wallpaperBlur = 0;
+      uiPrefs.wallpaperOpacity = 0.92;
+      uiPrefs.wallpaperScrimOpacity = resolvedTheme === 'dark' ? 0.55 : 0.35;
+      saveUiPrefs();
+      applyWallpaper();
+      if (currentView === 'settings') renderSettings();
+      showToast('壁纸已清空');
+    }
+
+    function clearUiCache() {
+      uiPrefs.groupCollapseState = {};
+      uiPrefs.collapseDashboardGroups = false;
+      uiPrefs.collapseProcessMini = false;
+      diagnosticsByModule = {};
+      localStorage.removeItem('hubkit-terminal-width');
+      terminalDrawerWidth = 720;
+      document.getElementById('terminalDrawer')?.style.setProperty('--terminal-width', `${terminalDrawerWidth}px`);
+      saveUiPrefs();
+      renderDashboard();
+      if (currentView === 'settings') renderSettings();
+      showToast('界面缓存已清理');
+    }
+
+    function clearAllLocalData() {
+      if (!window.confirm('将清理壁纸、主题、界面偏好和终端面板宽度。后端日志和脚本历史不会删除。继续？')) {
+        return;
+      }
+      localStorage.removeItem(THEME_STORAGE_KEY);
+      localStorage.removeItem(UI_PREFS_STORAGE_KEY);
+      localStorage.removeItem('hubkit-terminal-width');
+      themeMode = 'auto';
+      uiPrefs = loadUiPrefs();
+      terminalDrawerWidth = 720;
+      applyTheme('auto', true);
+      applyGlassPrefs();
+      applyWallpaper();
+      renderDashboard();
+      if (currentView === 'settings') renderSettings();
+      showToast('本地偏好已清理');
     }
 
     function resolveTheme(mode) {
@@ -2019,6 +3196,21 @@
       if (refreshEvents.has(data.type)) {
         fetchModules();
       }
+      if (data.type === 'script_action_updated') {
+        fetchScriptBundles();
+      }
+      if (data.type === 'system_action_updated') {
+        fetchSystemActions();
+      }
+      if (data.type === 'terminal_output') {
+        handleTerminalOutput(data);
+      }
+      if (data.type === 'terminal_exit') {
+        handleTerminalExit(data);
+      }
+      if (data.type === 'terminal_error') {
+        handleTerminalError(data);
+      }
     }
 
     async function fetchModules(showNotice = false) {
@@ -2033,6 +3225,35 @@
         console.error('Failed to fetch modules:', error);
         renderDashboardError();
         if (showNotice) showToast('刷新失败', 'error');
+      }
+    }
+
+    async function fetchScriptBundles(showNotice = false) {
+      try {
+        const response = await fetch('/api/script-bundles');
+        const json = await response.json();
+        scriptBundles = Array.isArray(json.data) ? json.data : [];
+        renderDashboardGroups();
+        if (showNotice) showToast('脚本工具箱已刷新');
+      } catch (error) {
+        console.error('Failed to fetch script bundles:', error);
+        renderDashboardGroups();
+        if (showNotice) showToast('脚本工具箱刷新失败', 'error');
+      }
+    }
+
+    async function fetchSystemActions(showNotice = false) {
+      try {
+        const response = await fetch('/api/system-actions');
+        const json = await response.json();
+        systemActions = Array.isArray(json.data) ? json.data : [];
+        renderDashboardGroups();
+        if (showNotice) showToast('系统调优已刷新');
+      } catch (error) {
+        console.error('Failed to fetch system actions:', error);
+        systemActions = [];
+        renderDashboardGroups();
+        if (showNotice) showToast('系统调优刷新失败', 'error');
       }
     }
 
@@ -2064,6 +3285,8 @@
           body: JSON.stringify({
             autoStart: settings.autoStart,
             startOrder: settings.startOrder,
+            groups: settings.groups,
+            moduleGroups: settings.moduleGroups,
           }),
         });
         const json = await response.json();
@@ -2123,14 +3346,253 @@
       }
     }
 
+    async function fetchScriptLogs(bundleId, actionId, runId = '') {
+      try {
+        const search = runId ? `?runId=${encodeURIComponent(runId)}` : '';
+        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/logs${search}`);
+        const json = await response.json();
+        if (json.success) return json.data || '';
+        return json.error || '无法加载日志';
+      } catch (error) {
+        console.error('Failed to fetch script logs:', error);
+        return '无法加载日志';
+      }
+    }
+
+    function ensureWebTerminal() {
+      if (terminalInstance) return terminalInstance;
+      if (typeof Terminal !== 'function') {
+        throw new Error('Web 终端组件未加载');
+      }
+
+      terminalInstance = new Terminal({
+        cursorBlink: true,
+        convertEol: true,
+        fontFamily: '"SF Mono", "Roboto Mono", Consolas, monospace',
+        fontSize: 13,
+        lineHeight: 1.25,
+        scrollback: 5000,
+        theme: {
+          background: '#0b0f12',
+          foreground: '#e2e5df',
+          cursor: '#98d4bc',
+          selectionBackground: '#355347',
+        },
+      });
+      terminalFitAddon = new FitAddon.FitAddon();
+      terminalInstance.loadAddon(terminalFitAddon);
+      if (typeof WebLinksAddon !== 'undefined') {
+        terminalInstance.loadAddon(new WebLinksAddon.WebLinksAddon());
+      }
+      terminalInstance.open(document.getElementById('webTerminal'));
+      terminalInstance.onData((data) => {
+        if (!activeTerminalSessionId || !ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ type: 'terminal_input', sessionId: activeTerminalSessionId, data }));
+      });
+      document.getElementById('webTerminal').addEventListener('pointerdown', () => {
+        terminalInstance?.focus();
+      });
+      fitWebTerminal();
+      return terminalInstance;
+    }
+
+    function openTerminalPanel(title = 'Web 终端', subtitle = '准备中') {
+      const drawer = document.getElementById('terminalDrawer');
+      drawer.style.setProperty('--terminal-width', `${terminalDrawerWidth}px`);
+      drawer.classList.add('active');
+      terminalSessionState = activeTerminalSessionId ? 'running' : terminalSessionState === 'closed' ? 'idle' : terminalSessionState;
+      document.getElementById('terminalTitle').textContent = title;
+      updateTerminalStatus(subtitle);
+      updateTerminalPeek();
+      requestAnimationFrame(() => {
+        ensureWebTerminal();
+        fitWebTerminal();
+        terminalInstance.focus();
+      });
+    }
+
+    function collapseTerminalPanel() {
+      document.getElementById('terminalDrawer').classList.remove('active');
+      updateTerminalPeek();
+    }
+
+    function restoreTerminalPanel() {
+      const title = activeTerminalAction?.actionName || document.getElementById('terminalTitle').textContent || 'Web 终端';
+      const subtitle = document.getElementById('terminalSubtitle').textContent || '已收起';
+      openTerminalPanel(title, subtitle);
+    }
+
+    function updateTerminalPeek() {
+      const peek = document.getElementById('terminalPeek');
+      const label = document.getElementById('terminalPeekLabel');
+      if (!peek || !label) return;
+      const drawerActive = document.getElementById('terminalDrawer')?.classList.contains('active');
+      const visible = !drawerActive && (activeTerminalSessionId || terminalHasContent);
+      peek.classList.toggle('visible', Boolean(visible));
+      if (activeTerminalSessionId) {
+        label.textContent = `运行中：${activeTerminalAction?.actionName || 'Web 终端'}`;
+      } else if (terminalSessionState === 'exited') {
+        label.textContent = '已退出：显示 Web 终端';
+      } else {
+        label.textContent = '显示 Web 终端';
+      }
+    }
+
+    function updateTerminalStatus(text) {
+      const subtitle = document.getElementById('terminalSubtitle');
+      if (subtitle) subtitle.textContent = text || '';
+    }
+
+    function clearWebTerminal() {
+      ensureWebTerminal().clear();
+      terminalHasContent = false;
+      updateTerminalPeek();
+    }
+
+    function resetTerminalPanelState() {
+      activeTerminalSessionId = null;
+      activeTerminalAction = null;
+      terminalHasContent = false;
+      terminalSessionState = 'closed';
+      document.getElementById('terminalTitle').textContent = 'Web 终端';
+      updateTerminalStatus('未连接');
+      terminalInstance?.reset();
+      document.getElementById('terminalDrawer')?.classList.remove('active');
+      updateTerminalPeek();
+    }
+
+    async function killWebTerminal() {
+      if (!activeTerminalSessionId) {
+        showToast('没有运行中的 Web 终端会话', 'error');
+        return;
+      }
+      try {
+        const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(activeTerminalSessionId)}/kill`, {
+          method: 'POST',
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '停止失败');
+        }
+        activeTerminalSessionId = null;
+        terminalSessionState = 'stopped';
+        updateTerminalStatus('已停止，可关闭或查看输出');
+        updateTerminalPeek();
+        showToast(json.message || '终端会话已停止');
+      } catch (error) {
+        showToast(error.message || '停止失败', 'error');
+      }
+    }
+
+    async function closeWebTerminal() {
+      const sessionId = activeTerminalSessionId;
+      if (!sessionId) {
+        resetTerminalPanelState();
+        showToast('Web 终端已关闭');
+        return;
+      }
+
+      if (!window.confirm('当前 Web 终端仍在运行。关闭会停止脚本进程并清空面板输出。继续？')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(sessionId)}/kill`, {
+          method: 'POST',
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok && response.status !== 404) {
+          throw new Error(json.error || '关闭失败');
+        }
+        resetTerminalPanelState();
+        showToast(response.status === 404 ? '终端会话已结束，面板已关闭' : 'Web 终端已停止并关闭');
+        fetchScriptBundles();
+      } catch (error) {
+        showToast(error.message || '关闭失败', 'error');
+      }
+    }
+
+    function handleTerminalOutput(data) {
+      if (!terminalInstance || data.sessionId !== activeTerminalSessionId) return;
+      terminalHasContent = true;
+      terminalInstance.write(data.data || '');
+      updateTerminalPeek();
+    }
+
+    function handleTerminalExit(data) {
+      if (data.sessionId !== activeTerminalSessionId) return;
+      const exitCode = data.exitCode ?? 'null';
+      updateTerminalStatus(`已退出，退出码 ${exitCode}`);
+      activeTerminalSessionId = null;
+      terminalSessionState = 'exited';
+      updateTerminalPeek();
+      fetchScriptBundles();
+    }
+
+    function handleTerminalError(data) {
+      if (data.sessionId && data.sessionId !== activeTerminalSessionId) return;
+      const message = data.message || 'Web 终端错误';
+      updateTerminalStatus(message);
+      showToast(message, 'error');
+    }
+
+    function fitWebTerminal() {
+      if (!terminalInstance || !terminalFitAddon) return;
+      terminalFitAddon.fit();
+      sendTerminalResize();
+    }
+
+    function getTerminalDimensions() {
+      if (!terminalInstance) return { cols: 100, rows: 30 };
+      return { cols: terminalInstance.cols || 100, rows: terminalInstance.rows || 30 };
+    }
+
+    function sendTerminalResize() {
+      if (!activeTerminalSessionId || !terminalInstance || !ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({
+        type: 'terminal_resize',
+        sessionId: activeTerminalSessionId,
+        ...getTerminalDimensions(),
+      }));
+    }
+
+    function setupTerminalResizeHandle() {
+      const resizer = document.getElementById('terminalResizer');
+      const drawer = document.getElementById('terminalDrawer');
+      if (!resizer || !drawer) return;
+
+      resizer.addEventListener('pointerdown', (event) => {
+        terminalResizing = true;
+        resizer.setPointerCapture(event.pointerId);
+      });
+
+      resizer.addEventListener('pointermove', (event) => {
+        if (!terminalResizing) return;
+        const width = Math.min(window.innerWidth - 24, Math.max(360, window.innerWidth - event.clientX));
+        terminalDrawerWidth = width;
+        localStorage.setItem('hubkit-terminal-width', String(width));
+        drawer.style.setProperty('--terminal-width', `${width}px`);
+        fitWebTerminal();
+      });
+
+      resizer.addEventListener('pointerup', (event) => {
+        terminalResizing = false;
+        resizer.releasePointerCapture(event.pointerId);
+        fitWebTerminal();
+      });
+    }
+
     function renderDashboard() {
       updateSummary();
-      renderModules();
+      renderDashboardGroups();
     }
 
     function renderDashboardError() {
-      const grid = document.getElementById('modulesGrid');
-      grid.innerHTML = `
+      const content = document.getElementById('dashboardGroupContent');
+      const rail = document.getElementById('dashboardGroupRail');
+      if (rail) rail.innerHTML = '';
+      if (!content) return;
+      content.innerHTML = `
         <div class="empty-state">
           <div>
             ${icon('error')}
@@ -2159,23 +3621,663 @@
       }
     }
 
-    function renderModules() {
-      const grid = document.getElementById('modulesGrid');
-      const visibleModules = modules.filter(m => m.visible !== false);
+    function renderDashboardGroups() {
+      const content = document.getElementById('dashboardGroupContent');
+      const rail = document.getElementById('dashboardGroupRail');
+      if (!content || !rail) return;
 
-      if (visibleModules.length === 0) {
-        grid.innerHTML = `
+      const sections = buildDashboardSections();
+      if (sections.length === 0) {
+        rail.innerHTML = '';
+        content.innerHTML = `
           <div class="empty-state">
             <div>
               ${icon('visibility_off')}
-              <div>没有可显示的模块。</div>
+              <div>没有可显示的卡片。</div>
             </div>
           </div>
         `;
         return;
       }
 
-      grid.innerHTML = visibleModules.map(createModuleCard).join('');
+      rail.innerHTML = sections.map((section, index) => `
+        <button class="group-rail-item ${index === 0 ? 'active' : ''}" type="button" data-group-rail="${escapeAttr(section.id)}" onclick="scrollToDashboardGroup('${jsString(section.id)}')">
+          <span class="group-rail-kicker">${String(index + 1).padStart(2, '0')}</span>
+          <span class="group-rail-label">${escapeHtml(section.name)}</span>
+        </button>
+      `).join('');
+
+      content.innerHTML = `<div class="module-group-stack">${sections.map(createDashboardSection).join('')}</div>`;
+      requestAnimationFrame(syncDashboardRailState);
+    }
+
+    function buildVisibleModuleGroups(visibleModules) {
+      const groups = Array.isArray(settings.groups) && settings.groups.length > 0
+        ? settings.groups
+        : [{ id: 'default', name: '默认分组' }];
+      const moduleGroups = settings.moduleGroups || {};
+
+      const groupMap = new Map(groups.map((group) => [group.id, { ...group, modules: [] }]));
+      if (!groupMap.has('default')) {
+        groupMap.set('default', { id: 'default', name: '默认分组', modules: [] });
+      }
+
+      visibleModules.forEach((module) => {
+        const groupId = module.groupId || moduleGroups[module.id] || 'default';
+        const target = groupMap.get(groupId) || groupMap.get('default');
+        target.modules.push(module);
+      });
+
+      return Array.from(groupMap.values()).filter((group) => group.modules.length > 0);
+    }
+
+    function createModuleGroupSection(group) {
+      return `
+        <section class="module-group">
+          <div class="module-group-header">
+            <div>
+              <h3 class="module-group-title">${escapeHtml(group.name)}</h3>
+            </div>
+            <span class="module-group-meta">${group.modules.length} 张卡片</span>
+          </div>
+          <div class="modules-grid">
+            ${group.modules.map(createModuleCard).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function buildDashboardSections() {
+      const sections = [];
+      const moduleSections = buildVisibleModuleGroups(modules.filter(m => m.visible !== false));
+      sections.push(...moduleSections.map((group) => ({
+        id: `group-${group.id}`,
+        kind: 'module',
+        name: group.name,
+        icon: 'dashboard',
+        accent: getDashboardGroupAccent(group.id, 'module'),
+        kicker: '模块分组',
+        items: group.modules,
+      })));
+
+      const bundle = scriptBundles[0];
+      if (bundle && Array.isArray(bundle.groups)) {
+        sections.push(...getScriptDashboardSections(bundle));
+      }
+
+      appendSystemActionSections(sections);
+
+      return sections;
+    }
+
+    function appendSystemActionSections(sections) {
+      if (!Array.isArray(systemActions) || systemActions.length === 0) return;
+
+      systemActions.forEach((action) => {
+        const targetSectionId = `script-${action.groupId}`;
+        const section = sections.find((item) => item.id === targetSectionId);
+        if (section) {
+          section.items = [...section.items, action];
+          section.kind = 'mixed';
+          return;
+        }
+
+        sections.push({
+          id: `system-action-${action.groupId}`,
+          kind: 'system-action',
+          name: action.groupId === 'system-tuning' ? '系统调优' : action.groupId,
+          icon: action.groupId === 'system-tuning' ? 'tune' : 'dashboard',
+          accent: getDashboardGroupAccent(action.groupId, 'script'),
+          kicker: '原生调优',
+          items: [action],
+        });
+      });
+    }
+
+    function getScriptDashboardSections(bundleArg) {
+      const bundle = bundleArg || scriptBundles[0];
+      if (!bundle || !Array.isArray(bundle.groups)) return [];
+      return bundle.groups.map((group) => ({
+        id: `script-${group.id}`,
+        kind: 'script',
+        name: group.title,
+        icon: getScriptGroupIcon(group.id),
+        accent: getDashboardGroupAccent(group.id, 'script'),
+        kicker: '脚本工具箱',
+        description: group.description || '',
+        bundleId: bundle.id,
+        items: group.actions || [],
+      }));
+    }
+
+    function getScriptGroupIcon(groupId) {
+      if (groupId === 'environment') return 'download';
+      if (groupId === 'system-tuning') return 'tune';
+      if (groupId === 'data-tools') return 'article';
+      return 'dashboard';
+    }
+
+    function getDashboardGroupAccent(groupId, kind) {
+      if (kind === 'script') {
+        if (groupId === 'environment') return 'var(--md-primary)';
+        if (groupId === 'system-tuning') return 'var(--md-warning)';
+        if (groupId === 'data-tools') return 'var(--md-tertiary)';
+      }
+      if (groupId === 'default') return 'var(--md-primary)';
+      return 'var(--md-secondary)';
+    }
+
+    function createDashboardSection(section) {
+      const collapsed = isDashboardGroupCollapsed(section.id);
+      return `
+        <section class="module-group ${collapsed ? 'collapsed' : ''}" id="dashboard-section-${escapeAttr(section.id)}" data-dashboard-group="${escapeAttr(section.id)}" style="--group-accent: ${escapeAttr(section.accent || 'var(--md-primary)')}">
+          <div class="module-group-header">
+            <button class="group-toggle" type="button" onclick="toggleDashboardGroup('${jsString(section.id)}')" aria-label="折叠或展开 ${escapeAttr(section.name)}">
+              ${icon('expand_more')}
+              ${icon(section.icon || 'dashboard')}
+              <div class="group-toggle-copy">
+                <span class="group-toggle-kicker">${escapeHtml(section.kicker || '分组')}</span>
+                <h3 class="module-group-title">${escapeHtml(section.name)}</h3>
+              </div>
+            </button>
+            <span class="module-group-meta">${section.items.length} 张卡片</span>
+          </div>
+          <div class="modules-grid">
+            ${renderSectionCards(section)}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderSectionCards(section) {
+      if (section.kind === 'module') {
+        return section.items.map(createModuleCard).join('');
+      }
+      return section.items.map((item) => {
+        if (isSystemActionItem(item)) {
+          return createSystemActionCard(item);
+        }
+        return createScriptActionCard(section.bundleId, section.name, item);
+      }).join('');
+    }
+
+    function isSystemActionItem(item) {
+      return item && typeof item.id === 'string' && item.id === 'boot-preference' && Object.prototype.hasOwnProperty.call(item, 'supported');
+    }
+
+    function scrollToDashboardGroup(sectionId) {
+      const target = document.getElementById(`dashboard-section-${sectionId}`);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      requestAnimationFrame(syncDashboardRailState);
+    }
+
+    function syncDashboardRailState() {
+      const sections = [...document.querySelectorAll('[data-dashboard-group]')];
+      const railItems = [...document.querySelectorAll('[data-group-rail]')];
+      if (sections.length === 0 || railItems.length === 0) return;
+
+      const anchor = sections.find((section) => section.getBoundingClientRect().top >= 84) || sections[sections.length - 1];
+      railItems.forEach((item) => item.classList.toggle('active', item.dataset.groupRail === anchor.dataset.dashboardGroup));
+    }
+
+    function createScriptActionCard(bundleId, groupName, action) {
+      const latestRun = action.latestRun || null;
+      const startedAt = latestRun?.startedAt ? formatStartedAt(latestRun.startedAt) : '未执行';
+      const isTerminalAction = action.executionMode === 'terminal';
+      const modeLabel = isTerminalAction ? 'Web 终端' : '后台执行';
+      const runButtonLabel = isTerminalAction ? 'Web 终端运行' : '后台运行';
+      const loading = scriptRunLoading[`${bundleId}:${action.id}`] === true;
+      const riskText = action.riskLevel === 'high' ? '高风险' : action.riskLevel === 'medium' ? '中风险' : '低风险';
+      const description = action.description || `${groupName} 脚本动作`;
+      const latestMessage = latestRun?.message || '等待执行';
+
+      return `
+        <article class="module-card script-card glass-panel" data-script-action-id="${escapeAttr(action.id)}">
+          <div class="module-header">
+            <div class="module-title">
+              <h3>${escapeHtml(action.name)}</h3>
+              <span class="module-id">${escapeHtml(groupName)}</span>
+            </div>
+            <span class="run-chip ${getRunChipClass(latestRun?.status)}">${escapeHtml(getRunStateLabel(latestRun))}</span>
+          </div>
+
+          <p class="module-description">${escapeHtml(description)}</p>
+
+          <div class="script-card-meta">
+            <span class="mode-chip">${escapeHtml(modeLabel)}</span>
+            <span class="risk-chip ${escapeAttr(action.riskLevel || 'medium')}">${escapeHtml(riskText)}</span>
+            <span class="run-chip">${escapeHtml(startedAt)}</span>
+          </div>
+
+          <div class="script-card-result">
+            <span class="metric-label">最近结果</span>
+            <span class="metric-value">${escapeHtml(latestMessage)}</span>
+          </div>
+
+          <div class="module-actions">
+            <button class="btn btn-filled" type="button" ${loading ? 'disabled' : ''} onclick="runScriptAction('${jsString(bundleId)}', '${jsString(action.id)}')">
+              ${loading ? `${icon('progress_activity')}<span>处理中...</span>` : `${icon('play_circle')}<span>${escapeHtml(runButtonLabel)}</span>`}
+            </button>
+            ${isTerminalAction ? `
+              <button class="btn btn-outlined" type="button" ${loading ? 'disabled' : ''} onclick="runScriptActionInSystemTerminal('${jsString(bundleId)}', '${jsString(action.id)}')">
+                ${icon('open_in_new')}
+                <span>系统终端</span>
+              </button>
+            ` : ''}
+            <button class="btn btn-text" type="button" onclick="showScriptLogs('${jsString(bundleId)}', '${jsString(action.id)}', '${jsString(action.name)}')">
+              ${icon('article')}
+              <span>日志</span>
+            </button>
+            <button class="btn btn-tonal" type="button" onclick="showScriptHistory('${jsString(bundleId)}', '${jsString(action.id)}', '${jsString(action.name)}')">
+              ${icon('refresh')}
+              <span>历史</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function createSystemActionCard(action) {
+      const latestRun = action.latestRun || null;
+      const currentMode = action.currentModeLabel || '状态未知';
+      const currentModeDescription = action.currentModeDescription || describeBootPreferenceMode(action.currentMode);
+      const supportText = action.supported ? '已支持' : (action.disabledReason || '当前设备不支持');
+      const latestMessage = latestRun?.message || '等待执行';
+      const startedAt = latestRun?.startedAt ? formatStartedAt(latestRun.startedAt) : '未执行';
+      const loading = systemActionLoading[action.id] === true;
+      const refreshing = systemActionRefreshing[action.id] === true;
+      const checkedAt = action.checkedAt ? formatStartedAt(action.checkedAt) : '未检查';
+      const actionButtons = [
+        { mode: 'default', label: '恢复默认', style: 'btn-tonal' },
+        { mode: 'block_all', label: '全阻止', style: 'btn-filled' },
+        { mode: 'block_lid', label: '仅阻止开盖', style: 'btn-outlined' },
+        { mode: 'block_power', label: '仅阻止接电', style: 'btn-outlined' },
+      ];
+
+      return `
+        <article class="module-card system-action-card glass-panel ${action.supported ? '' : 'error'}" data-system-action-id="${escapeAttr(action.id)}">
+          <div class="module-header">
+            <div class="module-title">
+              <h3>${escapeHtml(action.name)}</h3>
+              <span class="module-id">Apple Silicon + macOS 15+</span>
+            </div>
+            <span class="run-chip ${getRunChipClass(latestRun?.status)}">${escapeHtml(currentMode)}</span>
+          </div>
+
+          <p class="module-description">${escapeHtml(currentModeDescription)}</p>
+
+          <div class="module-primary-row">
+            <div class="module-primary-meta">
+              <span class="module-kicker">当前状态</span>
+              <span class="module-emphasis">${escapeHtml(currentMode)}</span>
+            </div>
+            <div class="module-primary-meta" style="text-align: right;">
+              <span class="module-kicker">最近检查</span>
+              <span class="module-emphasis">${escapeHtml(checkedAt)}</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">支持状态</span>
+              <span class="metric-value">${escapeHtml(supportText)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">最近执行</span>
+              <span class="metric-value">${escapeHtml(startedAt)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">最近结果</span>
+              <span class="metric-value">${escapeHtml(latestMessage)}</span>
+            </div>
+          </div>
+
+          <div class="module-actions">
+            <button class="btn btn-text" type="button" ${refreshing ? 'disabled' : ''} onclick="refreshSystemActionStatus('${jsString(action.id)}', true)">
+              ${refreshing ? `${icon('progress_activity')}<span>检查中...</span>` : `${icon('refresh')}<span>检查当前状态</span>`}
+            </button>
+            <button class="btn btn-text" type="button" onclick="showSystemActionLogs('${jsString(action.id)}', '${jsString(action.name)}')">
+              ${icon('article')}
+              <span>日志</span>
+            </button>
+            <button class="btn btn-tonal" type="button" onclick="showSystemActionHistory('${jsString(action.id)}', '${jsString(action.name)}')">
+              ${icon('refresh')}
+              <span>历史</span>
+            </button>
+          </div>
+
+          <div class="system-action-preset-grid">
+            ${actionButtons.map((item) => `
+              <button
+                class="btn ${item.style}"
+                type="button"
+                ${loading || refreshing || !action.supported ? 'disabled' : ''}
+                onclick="applyBootPreferenceMode('${jsString(item.mode)}')"
+              >
+                ${loading ? `${icon('progress_activity')}<span>处理中...</span>` : `<span>${escapeHtml(item.label)}</span>`}
+              </button>
+            `).join('')}
+          </div>
+        </article>
+      `;
+    }
+
+    function getRunChipClass(status) {
+      if (status === 'succeeded') return 'success';
+      if (status === 'failed') return 'error';
+      if (status === 'running' || status === 'launched') return 'running';
+      return '';
+    }
+
+    function getRunStateLabel(run) {
+      if (!run) return '未执行';
+      if (run.status === 'succeeded') return '最近成功';
+      if (run.status === 'failed') return '最近失败';
+      if (run.status === 'running') return '后台运行中';
+      if (run.status === 'launched') return '已在终端打开';
+      return '未执行';
+    }
+
+    function formatBootPreferenceMode(mode) {
+      if (mode === 'default') return '当前允许自动启动';
+      if (mode === 'block_all') return '已阻止开盖与接电启动';
+      if (mode === 'block_lid') return '仅阻止开盖启动';
+      if (mode === 'block_power') return '仅阻止接电启动';
+      return '状态未知';
+    }
+
+    function describeBootPreferenceMode(mode) {
+      if (mode === 'default') return '现在是默认状态，开盖和接入电源都可能触发自动启动。';
+      if (mode === 'block_all') return '现在已同时阻止开盖启动和接电启动。';
+      if (mode === 'block_lid') return '现在只阻止开盖启动，接入电源仍可能自动启动。';
+      if (mode === 'block_power') return '现在只阻止接电启动，开盖仍可能自动启动。';
+      return '当前读取失败，暂时无法确认真实状态。';
+    }
+
+    function findScriptAction(bundleId, actionId) {
+      const bundle = scriptBundles.find((item) => item.id === bundleId);
+      if (!bundle) return null;
+      for (const group of bundle.groups || []) {
+        const action = (group.actions || []).find((item) => item.id === actionId);
+        if (action) {
+          return { bundle, action };
+        }
+      }
+      return null;
+    }
+
+    async function runScriptAction(bundleId, actionId) {
+      const target = findScriptAction(bundleId, actionId);
+      if (!target) {
+        showToast('脚本动作不存在', 'error');
+        return;
+      }
+
+      if (target.action.executionMode === 'terminal') {
+        await runScriptActionInWebTerminal(bundleId, actionId, target.action.name);
+        return;
+      }
+
+      const key = `${bundleId}:${actionId}`;
+      if (scriptRunLoading[key]) return;
+      scriptRunLoading[key] = true;
+      renderDashboardGroups();
+
+      try {
+        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
+          method: 'POST',
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '执行失败');
+        }
+        showToast(json.message || '脚本已启动');
+        await fetchScriptBundles();
+      } catch (error) {
+        console.error('Failed to run script action:', error);
+        showToast(error.message || '执行失败', 'error');
+      } finally {
+        delete scriptRunLoading[key];
+        renderDashboardGroups();
+      }
+    }
+
+    async function runScriptActionInSystemTerminal(bundleId, actionId) {
+      const target = findScriptAction(bundleId, actionId);
+      if (!target) {
+        showToast('脚本动作不存在', 'error');
+        return;
+      }
+
+      const key = `${bundleId}:${actionId}`;
+      if (scriptRunLoading[key]) return;
+      scriptRunLoading[key] = true;
+      renderDashboardGroups();
+
+      try {
+        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
+          method: 'POST',
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '执行失败');
+        }
+        showToast(json.message || '已在系统终端打开');
+        await fetchScriptBundles();
+      } catch (error) {
+        console.error('Failed to run script action in system terminal:', error);
+        showToast(error.message || '执行失败', 'error');
+      } finally {
+        delete scriptRunLoading[key];
+        renderDashboardGroups();
+      }
+    }
+
+    async function runScriptActionInWebTerminal(bundleId, actionId, actionName) {
+      if (activeTerminalSessionId) {
+        openTerminalPanel(activeTerminalAction?.actionName || 'Web 终端', `正在运行：${activeTerminalAction?.actionName || activeTerminalSessionId}`);
+        terminalInstance?.focus();
+        showToast('已有 Web 终端正在运行。请先停止当前会话，或使用系统终端并行运行。', 'error');
+        return;
+      }
+
+      const key = `${bundleId}:${actionId}`;
+      if (scriptRunLoading[key]) return;
+      scriptRunLoading[key] = true;
+      renderDashboardGroups();
+      openTerminalPanel(actionName || actionId, '正在启动 Web 终端...');
+
+      try {
+        ensureWebTerminal();
+        terminalSessionState = 'starting';
+        terminalInstance.reset();
+        terminalHasContent = true;
+        terminalInstance.writeln(`[HubKit] 启动 ${actionName || actionId}...`);
+        const dimensions = getTerminalDimensions();
+        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/web-terminal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dimensions),
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || 'Web 终端启动失败');
+        }
+
+        const session = json.data?.session || {};
+        activeTerminalSessionId = session.sessionId || null;
+        activeTerminalAction = {
+          bundleId: session.bundleId || bundleId,
+          actionId: session.actionId || actionId,
+          actionName: session.actionName || actionName,
+        };
+        document.getElementById('terminalTitle').textContent = activeTerminalAction.actionName || actionName || actionId;
+        terminalSessionState = activeTerminalSessionId ? 'running' : 'idle';
+        updateTerminalStatus(activeTerminalSessionId ? `会话 ${activeTerminalSessionId}` : 'Web 终端运行中');
+        const runId = session.runId || json.data?.record?.runId || '';
+        const initialLog = runId
+          ? await fetchScriptLogs(activeTerminalAction.bundleId, activeTerminalAction.actionId, runId)
+          : '';
+        if (initialLog) {
+          terminalInstance.reset();
+          terminalHasContent = true;
+          terminalInstance.write(initialLog);
+        }
+        sendTerminalResize();
+        terminalInstance.focus();
+        updateTerminalPeek();
+        showToast(json.message || 'Web 终端已启动');
+        await fetchScriptBundles();
+      } catch (error) {
+        console.error('Failed to run script action in web terminal:', error);
+        updateTerminalStatus(error.message || 'Web 终端启动失败');
+        showToast(error.message || 'Web 终端启动失败', 'error');
+      } finally {
+        delete scriptRunLoading[key];
+        renderDashboardGroups();
+      }
+    }
+
+    async function showScriptLogs(bundleId, actionId, actionName) {
+      currentLogTarget = { kind: 'script', bundleId, actionId };
+      currentLogModuleId = null;
+      currentLogModuleName = actionName;
+      document.getElementById('logDialogTitle').textContent = actionName;
+      document.getElementById('logDialogSubtitle').textContent = '最近执行日志';
+      document.getElementById('logFilter').value = '';
+      document.getElementById('logLevelFilter').value = 'all';
+      document.getElementById('logContent').textContent = '加载中...';
+      document.getElementById('logDialog').classList.add('active');
+      await refreshLogs();
+      toggleLogTail();
+    }
+
+    async function showScriptHistory(bundleId, actionId, actionName) {
+      try {
+        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/history`);
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '无法加载历史');
+        }
+
+        const history = Array.isArray(json.data) ? json.data : [];
+        if (history.length === 0) {
+          showToast(`${actionName} 暂无历史记录`);
+          return;
+        }
+
+        const message = history.slice(0, 5).map((item) => {
+          const time = item.startedAt ? formatStartedAt(item.startedAt) : '未知时间';
+          const state = getRunStateLabel(item);
+          return `${time} · ${state}${item.exitCode !== undefined && item.exitCode !== null ? ` · code ${item.exitCode}` : ''}`;
+        }).join('\n');
+        showToast(message);
+      } catch (error) {
+        console.error('Failed to fetch script history:', error);
+        showToast(error.message || '无法加载历史', 'error');
+      }
+    }
+
+    async function applyBootPreferenceMode(mode) {
+      const key = 'boot-preference';
+      if (systemActionLoading[key]) return;
+      systemActionLoading[key] = true;
+      renderDashboardGroups();
+
+      try {
+        const response = await fetch('/api/system-actions/boot-preference/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode }),
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '应用失败');
+        }
+        showToast(json.message || '设置已应用');
+        await fetchSystemActions();
+      } catch (error) {
+        console.error('Failed to apply BootPreference mode:', error);
+        showToast(error.message || '应用失败', 'error');
+      } finally {
+        delete systemActionLoading[key];
+        renderDashboardGroups();
+      }
+    }
+
+    async function refreshSystemActionStatus(actionId, showNotice = false) {
+      if (actionId !== 'boot-preference') return;
+      if (systemActionRefreshing[actionId]) return;
+      systemActionRefreshing[actionId] = true;
+      renderDashboardGroups();
+
+      try {
+        await fetchSystemActions(showNotice);
+      } finally {
+        delete systemActionRefreshing[actionId];
+        renderDashboardGroups();
+      }
+    }
+
+    async function fetchSystemActionLogs(actionId, runId = '') {
+      try {
+        const search = runId ? `?runId=${encodeURIComponent(runId)}` : '';
+        if (actionId !== 'boot-preference') {
+          return '暂不支持该系统调优日志';
+        }
+        const response = await fetch(`/api/system-actions/boot-preference/logs${search}`);
+        const json = await response.json();
+        if (json.success) return json.data || '';
+        return json.error || '无法加载日志';
+      } catch (error) {
+        console.error('Failed to fetch system action logs:', error);
+        return '无法加载日志';
+      }
+    }
+
+    async function showSystemActionLogs(actionId, actionName) {
+      currentLogTarget = { kind: 'system-action', actionId };
+      currentLogModuleId = null;
+      currentLogModuleName = actionName;
+      document.getElementById('logDialogTitle').textContent = actionName;
+      document.getElementById('logDialogSubtitle').textContent = '最近执行日志';
+      document.getElementById('logFilter').value = '';
+      document.getElementById('logLevelFilter').value = 'all';
+      document.getElementById('logContent').textContent = '加载中...';
+      document.getElementById('logDialog').classList.add('active');
+      await refreshLogs();
+      toggleLogTail();
+    }
+
+    async function showSystemActionHistory(actionId, actionName) {
+      try {
+        if (actionId !== 'boot-preference') {
+          throw new Error('暂不支持该系统调优历史');
+        }
+        const response = await fetch('/api/system-actions/boot-preference/history');
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok || json.success === false) {
+          throw new Error(json.error || '无法加载历史');
+        }
+
+        const history = Array.isArray(json.data) ? json.data : [];
+        if (history.length === 0) {
+          showToast(`${actionName} 暂无历史记录`);
+          return;
+        }
+
+        const message = history.slice(0, 5).map((item) => {
+          const time = item.startedAt ? formatStartedAt(item.startedAt) : '未知时间';
+          const state = getRunStateLabel(item);
+          const targetMode = item.targetMode ? ` · ${formatBootPreferenceMode(item.targetMode)}` : '';
+          return `${time} · ${state}${targetMode}`;
+        }).join('\n');
+        showToast(message);
+      } catch (error) {
+        console.error('Failed to fetch system action history:', error);
+        showToast(error.message || '无法加载历史', 'error');
+      }
     }
 
     function createModuleCard(module) {
@@ -2193,7 +4295,7 @@
       const keyAction = module.status === 'running' ? '在线服务中' : module.updateable ? '待机，可更新' : '待机，可启动';
 
       return `
-        <article class="module-card ${statusClass}" data-module-id="${escapeAttr(module.id)}">
+        <article class="module-card glass-panel ${statusClass}" data-module-id="${escapeAttr(module.id)}">
           <div class="module-header">
             <div class="module-title">
               <h3>${escapeHtml(module.name)}</h3>
@@ -2287,7 +4389,7 @@
       const portBadgeText = portValue ? (portOccupied ? '端口占用' : '端口空闲') : '无端口';
 
       return `
-        <section class="process-mini ${collapsed ? 'collapsed' : ''}">
+        <section class="process-mini glass-panel ${collapsed ? 'collapsed' : ''}">
           <div class="process-mini-head">
             <span class="process-mini-title">进程检查</span>
             <span class="process-mini-time">${escapeHtml(checkedAt)}</span>
@@ -2616,6 +4718,9 @@
       const container = document.getElementById('settingsContent');
       const orderedModules = getOrderedModules();
       const webUrlModules = modules.filter(m => m.webUrl !== undefined || m.webPort);
+      const groups = Array.isArray(settings.groups) && settings.groups.length > 0
+        ? settings.groups
+        : [{ id: 'default', name: '默认分组' }];
 
       container.innerHTML = `
         <div class="section-heading">
@@ -2634,8 +4739,15 @@
           ${renderSettingsPanel(
             'display',
             '界面显示',
-            '控制卡片信息密度。',
+            '控制壁纸、玻璃材质与卡片信息密度。',
             `<div class="settings-list">${createDisplayPrefsItem()}</div>`
+          )}
+
+          ${renderSettingsPanel(
+            'grouping',
+            '卡片分组',
+            '创建分组并为模块分配归属。',
+            `<div class="settings-list">${createGroupingSettings(groups, orderedModules)}</div>`
           )}
 
           ${renderSettingsPanel(
@@ -2665,6 +4777,13 @@
             '按指定时间启动或停止模块。',
             `<div class="settings-list">${orderedModules.map(createScheduleItem).join('') || emptySettings('暂无模块')}</div>`
           )}
+
+          ${renderSettingsPanel(
+            'cleanup',
+            '数据清理',
+            '清理浏览器本地壁纸、界面缓存与临时显示状态。',
+            `<div class="settings-list">${createCleanupSettingsItem()}</div>`
+          )}
         </section>
       `;
 
@@ -2675,7 +4794,7 @@
     function renderSettingsPanel(panelId, title, description, content) {
       const openAttr = settingsPanels[panelId] === false ? '' : 'open';
       return `
-        <details class="settings-panel" data-settings-panel="${panelId}" ${openAttr}>
+        <details class="settings-panel glass-panel" data-settings-panel="${panelId}" ${openAttr}>
           <summary class="settings-panel-summary">
             <div class="section-heading">
               <div>
@@ -2743,6 +4862,17 @@
 
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
               <div>
+                <span class="settings-item-name">分组内容</span>
+                <span class="settings-item-id">控制仪表盘分组默认展开或折叠</span>
+              </div>
+              <label class="switch" title="默认折叠分组">
+                <input type="checkbox" ${uiPrefs.collapseDashboardGroups ? 'checked' : ''} onchange="setDashboardGroupsCollapsed(this.checked)">
+                <span class="switch-track"></span>
+              </label>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <div>
                 <span class="settings-item-name">壁纸显示</span>
                 <span class="settings-item-id">可设置背景图并调节模糊度</span>
               </div>
@@ -2757,10 +4887,70 @@
               <input
                 class="input mono"
                 id="wallpaper-url-input"
-                type="url"
-                value="${escapeAttr(uiPrefs.wallpaperUrl || '')}"
+                type="text"
+                value="${escapeAttr(formatWallpaperUrlForInput())}"
                 placeholder="https://images.example.com/bg.jpg"
+                ${isLocalWallpaperUrl() ? 'readonly' : ''}
                 oninput="updateWallpaperUrl(this.value)"
+              >
+            </div>
+
+            <div class="inline-actions">
+              <input
+                id="wallpaper-file-input"
+                type="file"
+                accept="image/*"
+                style="display: none;"
+                onchange="uploadWallpaperFile(this)"
+              >
+              <button class="btn btn-tonal btn-sm" type="button" onclick="document.getElementById('wallpaper-file-input').click()">
+                ${icon('download')}
+                <span>上传本地壁纸</span>
+              </button>
+              <button class="btn btn-text btn-sm" type="button" onclick="clearWallpaperPrefs()">
+                ${icon('close')}
+                <span>清空壁纸</span>
+              </button>
+              ${isLocalWallpaperUrl() ? `
+                <button class="btn btn-text btn-sm" type="button" onclick="copyWallpaperData()">
+                  ${icon('article')}
+                  <span>复制数据</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <div class="text-field select-field" style="min-width: 0;">
+              <label for="wallpaper-fit-input">壁纸显示方式</label>
+              <select class="select" id="wallpaper-fit-input" onchange="updateWallpaperFit(this.value)">
+                <option value="contain" ${uiPrefs.wallpaperFit === 'contain' ? 'selected' : ''}>完整适应窗口</option>
+                <option value="cover" ${uiPrefs.wallpaperFit === 'cover' ? 'selected' : ''}>填满窗口并裁剪</option>
+                <option value="stretch" ${uiPrefs.wallpaperFit === 'stretch' ? 'selected' : ''}>拉伸铺满窗口</option>
+              </select>
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-position-x-input">裁剪水平位置 <span id="wallpaperPositionXValue">${escapeHtml(String(Math.round(uiPrefs.wallpaperPositionX ?? 50)))}%</span></label>
+              <input
+                id="wallpaper-position-x-input"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="${escapeAttr(String(uiPrefs.wallpaperPositionX ?? 50))}"
+                oninput="updateWallpaperPosition('x', this.value)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-position-y-input">裁剪垂直位置 <span id="wallpaperPositionYValue">${escapeHtml(String(Math.round(uiPrefs.wallpaperPositionY ?? 50)))}%</span></label>
+              <input
+                id="wallpaper-position-y-input"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="${escapeAttr(String(uiPrefs.wallpaperPositionY ?? 50))}"
+                oninput="updateWallpaperPosition('y', this.value)"
               >
             </div>
 
@@ -2776,6 +4966,225 @@
                 oninput="updateWallpaperBlur(this.value)"
               >
             </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-opacity-input">壁纸可见度 <span id="wallpaperOpacityValue">${escapeHtml(String(Math.round((uiPrefs.wallpaperOpacity ?? 0.92) * 100)))}%</span></label>
+              <input
+                id="wallpaper-opacity-input"
+                type="range"
+                min="35"
+                max="100"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.wallpaperOpacity ?? 0.92) * 100)))}"
+                oninput="updateWallpaperOpacity(Number(this.value) / 100)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="wallpaper-scrim-opacity-input">背景遮罩强度 <span id="wallpaperScrimOpacityValue">${escapeHtml(String(Math.round((uiPrefs.wallpaperScrimOpacity ?? (resolvedTheme === 'dark' ? 0.55 : 0.35)) * 100)))}%</span></label>
+              <input
+                id="wallpaper-scrim-opacity-input"
+                type="range"
+                min="0"
+                max="80"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.wallpaperScrimOpacity ?? (resolvedTheme === 'dark' ? 0.55 : 0.35)) * 100)))}"
+                oninput="updateWallpaperScrimOpacity(Number(this.value) / 100)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="glass-blur-input">玻璃模糊 <span id="glassBlurValue">${escapeHtml(String(uiPrefs.glassBlur ?? 18))}px</span></label>
+              <input
+                id="glass-blur-input"
+                type="range"
+                min="0"
+                max="36"
+                step="1"
+                value="${escapeAttr(String(uiPrefs.glassBlur ?? 18))}"
+                oninput="updateGlassBlur(this.value)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="glass-opacity-input">玻璃底色 <span id="glassOpacityValue">${escapeHtml(String(Math.round((uiPrefs.glassOpacity ?? 0.72) * 100)))}%</span></label>
+              <input
+                id="glass-opacity-input"
+                type="range"
+                min="28"
+                max="92"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.glassOpacity ?? 0.72) * 100)))}"
+                oninput="updateGlassOpacity(Number(this.value) / 100)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="glass-border-opacity-input">玻璃描边 <span id="glassBorderOpacityValue">${escapeHtml(String(Math.round((uiPrefs.glassBorderOpacity ?? 0.34) * 100)))}%</span></label>
+              <input
+                id="glass-border-opacity-input"
+                type="range"
+                min="12"
+                max="65"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.glassBorderOpacity ?? 0.34) * 100)))}"
+                oninput="updateGlassBorderOpacity(Number(this.value) / 100)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="card-surface-opacity-input">卡片底色 <span id="cardSurfaceOpacityValue">${escapeHtml(String(Math.round((uiPrefs.cardSurfaceOpacity ?? 0.86) * 100)))}%</span></label>
+              <input
+                id="card-surface-opacity-input"
+                type="range"
+                min="45"
+                max="96"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.cardSurfaceOpacity ?? 0.86) * 100)))}"
+                oninput="updateCardSurfaceOpacity(Number(this.value) / 100)"
+              >
+            </div>
+
+            <div class="text-field" style="min-width: 0;">
+              <label for="card-inner-opacity-input">信息块底色 <span id="cardInnerOpacityValue">${escapeHtml(String(Math.round((uiPrefs.cardInnerOpacity ?? 0.72) * 100)))}%</span></label>
+              <input
+                id="card-inner-opacity-input"
+                type="range"
+                min="35"
+                max="92"
+                step="1"
+                value="${escapeAttr(String(Math.round((uiPrefs.cardInnerOpacity ?? 0.72) * 100)))}"
+                oninput="updateCardInnerOpacity(Number(this.value) / 100)"
+              >
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createCleanupSettingsItem() {
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr);">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div class="settings-item-info">
+              <span class="settings-item-name">浏览器本地数据</span>
+              <span class="settings-item-id">清理当前浏览器保存的壁纸、界面偏好、分组折叠状态和终端面板宽度；不删除后端日志和脚本历史</span>
+            </div>
+            <div class="inline-actions">
+              <button class="btn btn-tonal btn-sm" type="button" onclick="clearWallpaperPrefs()">
+                ${icon('close')}
+                <span>清空壁纸</span>
+              </button>
+              <button class="btn btn-outlined btn-sm" type="button" onclick="clearUiCache()">
+                ${icon('refresh')}
+                <span>清理界面缓存</span>
+              </button>
+              <button class="btn btn-error btn-sm" type="button" onclick="clearAllLocalData()">
+                ${icon('stop_circle')}
+                <span>清理全部本地偏好</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createGroupingSettings(groups, orderedModules) {
+      const scriptGroupItems = getScriptDashboardSections();
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div class="inline-actions">
+              <span class="settings-item-name">分组列表</span>
+              <button class="btn btn-tonal btn-sm" type="button" onclick="addDashboardGroup()">${icon('save')}<span>新增分组</span></button>
+            </div>
+            <div class="settings-list">
+              ${groups.map((group) => createGroupEditorItem(group, orderedModules)).join('')}
+            </div>
+            ${scriptGroupItems.length > 0 ? `
+              <div class="inline-actions">
+                <span class="settings-item-name">脚本分组</span>
+                <span class="settings-item-id">固定来源，仅控制折叠状态</span>
+              </div>
+              <div class="settings-list">
+                ${scriptGroupItems.map(createScriptGroupSettingsItem).join('')}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function createScriptGroupSettingsItem(section) {
+      return `
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(section.name)}</span>
+            <span class="settings-item-id">${escapeHtml(section.id)} · ${section.items.length} 张卡片</span>
+          </div>
+          <div class="settings-controls">
+            <label class="switch" title="默认折叠该分组">
+              <input type="checkbox" ${isDashboardGroupCollapsed(section.id) ? 'checked' : ''} onchange="setSingleDashboardGroupCollapsed('${jsString(section.id)}', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function createGroupEditorItem(group, orderedModules) {
+      const locked = group.id === 'default';
+      const sectionId = `group-${group.id}`;
+      const assignedModules = orderedModules.filter((module) => (module.groupId || settings.moduleGroups[module.id] || 'default') === group.id);
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div style="display: flex; align-items: start; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: grid; gap: 4px; min-width: 0;">
+                <span class="settings-item-name">${escapeHtml(group.name)}</span>
+                <span class="settings-item-id">${escapeHtml(group.id)} · ${assignedModules.length} 张卡片</span>
+              </div>
+              <div class="settings-controls" style="width: min(100%, 520px); justify-content: stretch;">
+                <div class="text-field" style="min-width: 0; flex: 1 1 180px;">
+                  <label for="group-name-${escapeAttr(group.id)}">名称</label>
+                  <input
+                    class="input"
+                    id="group-name-${escapeAttr(group.id)}"
+                    type="text"
+                    value="${escapeAttr(group.name)}"
+                    ${locked ? 'disabled' : ''}
+                    oninput="renameDashboardGroup('${jsString(group.id)}', this.value)"
+                  >
+                </div>
+                <label class="switch" title="默认折叠该分组">
+                  <input type="checkbox" ${isDashboardGroupCollapsed(sectionId) ? 'checked' : ''} onchange="setSingleDashboardGroupCollapsed('${jsString(sectionId)}', this.checked)">
+                  <span class="switch-track"></span>
+                </label>
+                ${locked ? '' : `<button class="btn btn-text btn-sm" type="button" onclick="removeDashboardGroup('${jsString(group.id)}')">${icon('close')}<span>移除</span></button>`}
+              </div>
+            </div>
+            <div class="settings-list">
+              ${orderedModules.map((module) => createGroupModuleToggle(group, module)).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createGroupModuleToggle(group, module) {
+      const selected = module.groupId || settings.moduleGroups[module.id] || 'default';
+      const checked = selected === group.id;
+      return `
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(module.name)}</span>
+            <span class="settings-item-id">${escapeHtml(module.id)}</span>
+          </div>
+          <div class="settings-controls">
+            <label class="switch" title="加入当前分组">
+              <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleGroupModule('${jsString(group.id)}', '${jsString(module.id)}', this.checked)">
+              <span class="switch-track"></span>
+            </label>
           </div>
         </div>
       `;
@@ -2944,6 +5353,61 @@
       settings.autoStart[moduleId] = enabled;
     }
 
+    function ensureSettingsGroups() {
+      if (!Array.isArray(settings.groups) || settings.groups.length === 0) {
+        settings.groups = [{ id: 'default', name: '默认分组' }];
+      }
+      if (!settings.groups.find((group) => group.id === 'default')) {
+        settings.groups.unshift({ id: 'default', name: '默认分组' });
+      }
+      settings.moduleGroups = settings.moduleGroups || {};
+    }
+
+    function addDashboardGroup() {
+      ensureSettingsGroups();
+      const id = `group-${Date.now().toString(36)}`;
+      settings.groups.push({ id, name: '新分组' });
+      renderSettings();
+    }
+
+    function renameDashboardGroup(groupId, name) {
+      ensureSettingsGroups();
+      const target = settings.groups.find((group) => group.id === groupId);
+      if (!target) return;
+      target.name = String(name || '').trim() || '未命名分组';
+    }
+
+    function removeDashboardGroup(groupId) {
+      if (groupId === 'default') return;
+      ensureSettingsGroups();
+      settings.groups = settings.groups.filter((group) => group.id !== groupId);
+      Object.keys(settings.moduleGroups).forEach((moduleId) => {
+        if (settings.moduleGroups[moduleId] === groupId) {
+          settings.moduleGroups[moduleId] = 'default';
+        }
+      });
+      renderSettings();
+      renderDashboard();
+    }
+
+    function setModuleGroup(moduleId, groupId) {
+      ensureSettingsGroups();
+      settings.moduleGroups[moduleId] = groupId || 'default';
+      const module = modules.find((item) => item.id === moduleId);
+      if (module) module.groupId = settings.moduleGroups[moduleId];
+      renderDashboard();
+    }
+
+    function toggleGroupModule(groupId, moduleId, enabled) {
+      ensureSettingsGroups();
+      const targetGroupId = enabled ? groupId : 'default';
+      settings.moduleGroups[moduleId] = targetGroupId;
+      const module = modules.find((item) => item.id === moduleId);
+      if (module) module.groupId = targetGroupId;
+      renderSettings();
+      renderDashboard();
+    }
+
     function resetSettings() {
       fetchSettings().then(() => renderSettings());
     }
@@ -3004,14 +5468,19 @@
     function closeLogDialog() {
       document.getElementById('logDialog').classList.remove('active');
       currentLogModuleId = null;
+      currentLogTarget = null;
       clearInterval(logTailTimer);
       logTailTimer = null;
     }
 
     async function refreshLogs() {
-      if (!currentLogModuleId) return;
+      if (!currentLogModuleId && !currentLogTarget) return;
       const content = document.getElementById('logContent');
-      const rawLogs = await fetchLogs(currentLogModuleId);
+      const rawLogs = currentLogTarget?.kind === 'script'
+        ? await fetchScriptLogs(currentLogTarget.bundleId, currentLogTarget.actionId)
+        : currentLogTarget?.kind === 'system-action'
+          ? await fetchSystemActionLogs(currentLogTarget.actionId)
+        : await fetchLogs(currentLogModuleId);
       content.innerHTML = renderLogLines(rawLogs || '暂无日志');
       applyLogFilter();
       if (document.getElementById('logTailToggle').checked) {
@@ -3053,7 +5522,7 @@
     function toggleLogTail() {
       clearInterval(logTailTimer);
       logTailTimer = null;
-      if (currentLogModuleId && document.getElementById('logTailToggle').checked) {
+      if ((currentLogModuleId || currentLogTarget) && document.getElementById('logTailToggle').checked) {
         logTailTimer = setInterval(refreshLogs, 5000);
       }
     }
@@ -3126,6 +5595,8 @@
 
     document.getElementById('snackbar').addEventListener('mouseenter', pauseToastTimer);
     document.getElementById('snackbar').addEventListener('mouseleave', resumeToastTimer);
+    window.addEventListener('scroll', syncDashboardRailState, { passive: true });
+    window.addEventListener('resize', fitWebTerminal, { passive: true });
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') closeLogDialog();
@@ -3142,11 +5613,17 @@
     }
 
     applyTheme(themeMode, false);
+    applyGlassPrefs();
     applyWallpaper();
+    setupTerminalResizeHandle();
     connectWebSocket();
     fetchModules();
+    fetchScriptBundles();
+    fetchSystemActions();
     fetchSettings();
     setInterval(fetchModules, 5000);
+    setInterval(fetchScriptBundles, 10000);
+    setInterval(fetchSystemActions, 10000);
   </script>
 </body>
 </html>

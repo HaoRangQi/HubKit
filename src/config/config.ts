@@ -30,6 +30,10 @@ export interface ModuleSettings {
   visibility: Record<string, boolean>;
   /** moduleId -> 定时任务规则 */
   schedules: Record<string, ModuleSchedule>;
+  /** 分组列表 */
+  groups: Array<{ id: string; name: string }>;
+  /** moduleId -> groupId */
+  moduleGroups: Record<string, string>;
 }
 
 /**
@@ -61,6 +65,10 @@ const DEFAULT_CONFIG: HubKitConfig = {
     moduleWebUrls: {},
     visibility: {},
     schedules: {},
+    groups: [
+      { id: 'default', name: '默认分组' },
+    ],
+    moduleGroups: {},
   },
 };
 
@@ -96,6 +104,10 @@ export class ConfigManager {
             moduleWebUrls: loaded.settings?.moduleWebUrls ?? {},
             visibility: loaded.settings?.visibility ?? {},
             schedules: loaded.settings?.schedules ?? {},
+            groups: Array.isArray(loaded.settings?.groups) && loaded.settings.groups.length > 0
+              ? loaded.settings.groups
+              : DEFAULT_CONFIG.settings.groups,
+            moduleGroups: loaded.settings?.moduleGroups ?? {},
           },
         };
       }
@@ -179,6 +191,8 @@ export class ConfigManager {
       moduleWebUrls: { ...this.config.settings.moduleWebUrls },
       visibility: { ...this.config.settings.visibility },
       schedules: JSON.parse(JSON.stringify(this.config.settings.schedules)),
+      groups: JSON.parse(JSON.stringify(this.config.settings.groups)),
+      moduleGroups: { ...this.config.settings.moduleGroups },
     };
   }
 
@@ -192,6 +206,8 @@ export class ConfigManager {
       moduleWebUrls: settings.moduleWebUrls ?? this.config.settings.moduleWebUrls,
       visibility: settings.visibility ?? this.config.settings.visibility,
       schedules: settings.schedules ?? this.config.settings.schedules,
+      groups: settings.groups ?? this.config.settings.groups,
+      moduleGroups: settings.moduleGroups ?? this.config.settings.moduleGroups,
     };
     this.save();
   }

@@ -10,6 +10,8 @@ import { createApiRouter } from './api/routes';
 import { NodeJSAdapter } from '../adapters/nodejs-adapter';
 import { PythonAdapter } from '../adapters/python-adapter';
 import { ShellAdapter } from '../adapters/shell-adapter';
+import { ScriptBundleManager } from '../script-bundle/script-bundle-manager';
+import { BootPreferenceService } from '../system-actions/boot-preference-service';
 import { ModuleProtocol } from '../types/module';
 import { ModuleScheduler } from '../scheduler/module-scheduler';
 
@@ -21,6 +23,8 @@ export class WebServer {
   private server: ReturnType<typeof createServer>;
   private wss: WebSocketServer;
   private registry: ModuleRegistry;
+  private scriptBundleManager: ScriptBundleManager;
+  private bootPreferenceService: BootPreferenceService;
   private scheduler: ModuleScheduler;
   private port: number;
 
@@ -30,6 +34,8 @@ export class WebServer {
     this.server = createServer(this.app);
     this.wss = new WebSocketServer({ server: this.server });
     this.registry = new ModuleRegistry();
+    this.scriptBundleManager = new ScriptBundleManager(config.getDataDir(), (message) => this.broadcast(message));
+    this.bootPreferenceService = new BootPreferenceService(config.getDataDir(), (message) => this.broadcast(message));
     this.scheduler = new ModuleScheduler(this.registry);
     this.scheduler.setEventListener((event) => this.broadcast(event));
 
@@ -44,6 +50,10 @@ export class WebServer {
   private setupMiddleware(): void {
     this.app.use(cors());
     this.app.use(express.json());
+    this.app.use('/vendor/xterm', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'xterm', 'lib')));
+    this.app.use('/vendor/xterm-css', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'xterm', 'css')));
+    this.app.use('/vendor/xterm-fit', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'addon-fit', 'lib')));
+    this.app.use('/vendor/xterm-web-links', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'addon-web-links', 'lib')));
     this.app.use(express.static(path.join(__dirname, 'public')));
   }
 
@@ -52,7 +62,7 @@ export class WebServer {
    */
   private setupRoutes(): void {
     // API 路由
-    this.app.use('/api', createApiRouter(this.registry, this.wss));
+    this.app.use('/api', createApiRouter(this.registry, this.wss, this.scriptBundleManager, this.bootPreferenceService));
 
     // 首页
     this.app.get('/', (req: Request, res: Response) => {
@@ -68,7 +78,27 @@ export class WebServer {
       console.log('WebSocket 客户端已连接');
 
       ws.on('message', (message) => {
-        console.log('收到消息:', message.toString());
+        try {
+          const data = JSON.parse(message.toString());
+          if (data.type === 'terminal_input' && typeof data.sessionId === 'string' && typeof data.data === 'string') {
+            const ok = this.scriptBundleManager.writeTerminalInput(data.sessionId, data.data);
+            if (!ok) {
+              ws.send(JSON.stringify({ type: 'terminal_error', sessionId: data.sessionId, message: '终端会话不存在或已结束' }));
+            }
+            return;
+          }
+          if (data.type === 'terminal_resize' && typeof data.sessionId === 'string') {
+            this.scriptBundleManager.resizeTerminalSession(data.sessionId, Number(data.cols), Number(data.rows));
+            return;
+          }
+          if (data.type === 'terminal_kill' && typeof data.sessionId === 'string') {
+            this.scriptBundleManager.killTerminalSession(data.sessionId);
+            return;
+          }
+          console.log('收到消息:', message.toString());
+        } catch {
+          console.log('收到消息:', message.toString());
+        }
       });
 
       ws.on('close', () => {
@@ -91,6 +121,8 @@ export class WebServer {
       const modules = await scanner.scan(dir);
       modules.forEach(m => this.registry.register(m));
     }
+
+    await this.scriptBundleManager.loadFromDirectories(moduleDirs);
 
     console.log(`已加载 ${this.registry.list().length} 个模块`);
   }
