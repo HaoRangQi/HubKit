@@ -1,6 +1,6 @@
-# HubKit - 个人自动化中控台
+# HubKit - 本地优先的个人自动化中控台
 
-统一管理所有脚本和自动化任务的中控台系统。
+HubKit 是一个本地优先、开源公益、非商业化的个人自动化中控台，用来统一管理本机脚本、开发工具和自动化任务。默认只服务本机，不以商业化付费分层或远程执行平台为目标。
 
 ## 功能特性
 
@@ -12,7 +12,14 @@
 - ✅ **Web Dashboard**: Material Design 3 风格界面，支持浅色 / 深色 / 跟随系统
 - ✅ **进程诊断**: 卡片内可检查端口占用、PID 候选、监听进程
 - ✅ **强制关闭**: 支持按模块清理残留进程与端口占用
-- ✅ **模块集成**: 轻松集成现有项目作为可管理模块
+- ✅ **模块接入向导**: 使用 `init-module` 为现有项目生成 `.hubkit.json`
+
+## 项目定位
+
+- **本地优先**：配置、日志和运行状态默认保存在本机 `~/.hubkit` 下。
+- **开源公益**：项目优先服务个人开发者、脚本作者和本地自动化用户。
+- **非商业化**：不做付费分层，不把本地工具包装成商业 SaaS。
+- **默认安全边界清晰**：Web Dashboard 默认绑定本机地址，远程访问必须显式配置。
 
 ## 快速开始
 
@@ -26,12 +33,6 @@ npm install
 
 ```bash
 npm run build
-```
-
-### 初始化模块配置
-
-```bash
-node setup-modules.js
 ```
 
 ### 使用 CLI
@@ -49,17 +50,23 @@ node dist/cli/index.js status <module-id>
 # 停止模块
 node dist/cli/index.js stop <module-id>
 
+# 重启模块
+node dist/cli/index.js restart <module-id>
+
 # 查看日志
 node dist/cli/index.js logs <module-id> --lines 50
+
+# 生成模块配置
+node dist/cli/index.js init-module /path/to/your-project
 ```
 
 ### 使用 Web Dashboard
 
 ```bash
 # 启动 Web 服务器
-npm run web -- -p 2281
+node dist/cli/index.js web --port 2281
 
-# 访问 http://localhost:2281
+# 访问 http://127.0.0.1:2281
 ```
 
 Web Dashboard 功能：
@@ -75,36 +82,36 @@ Web Dashboard 功能：
 当前仓库已集成多个示例与本地服务模块（含 `zsh-config` 等），可通过 HubKit 统一管理。
 
 详细模块清单、配置与使用方式请参考：
-- [INTEGRATION.md](./INTEGRATION.md)
+- [模块接入指南](./docs/module-integration-guide.md)
 
 ## 集成新模块
 
-详细说明请参考 [INTEGRATION.md](./INTEGRATION.md)
+详细说明请参考 [模块接入指南](./docs/module-integration-guide.md)。
 
 ### 快速步骤
 
-1. **复制项目到 modules 目录**
+1. **预览接入配置**
    ```bash
-   cp -r /path/to/your-project modules/
+   node dist/cli/index.js init-module /path/to/your-project --dry-run
    ```
 
-2. **创建 `.hubkit.json` 配置**
-   ```json
-   {
-     "id": "your-module-id",
-     "name": "Your Module Name",
-     "description": "Module description",
-     "type": "nodejs",
-     "scriptPath": "src/index.js",
-     "autoStart": false,
-     "enabled": true
-   }
+2. **生成 `.hubkit.json`**
+   ```bash
+   node dist/cli/index.js init-module /path/to/your-project \
+     --id your-module-id \
+     --name "Your Module Name" \
+     --type nodejs \
+     --script src/index.js
    ```
 
-3. **重新构建并测试**
+3. **接入预检与体检**
    ```bash
    npm run build
    node dist/cli/index.js list
+   node dist/cli/index.js status your-module-id
+   node dist/cli/index.js start your-module-id
+   node dist/cli/index.js logs your-module-id --lines 50
+   node dist/cli/index.js stop your-module-id
    ```
 
 ## 项目结构
@@ -125,9 +132,8 @@ HubKit/
 ├── modules/               # 集成的模块
 │   └── zsh-config/        # zsh 配置中心
 ├── dist/                  # 编译输出
-├── setup-modules.js       # 模块配置初始化
 ├── test-integration.sh    # 集成测试脚本
-├── INTEGRATION.md         # 集成指南
+├── docs/                  # 入门、接入和开源路线文档
 └── package.json
 ```
 
@@ -161,6 +167,8 @@ HubKit/
   "enabled": true
 }
 ```
+
+> 旧版文档中出现的 `module.json`、`~/.hub`、`install-launcher`、`install-service` 属于过期口径或未实现能力。当前主流程以 `.hubkit.json`、`~/.hubkit` 和 `init-module` 为准。
 
 ## 端口分配
 
@@ -249,7 +257,9 @@ MIT
 
 ## 贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎提交 Issue 和 Pull Request。HubKit 的贡献方向以本地优先、开源公益、非商业化为边界。
+
+- 提交前建议先看 [变更梳理与远程提交准备](./docs/release-prep.md)（提交切片、验证链、文档治理要求）。
 
 ## 致谢
 
@@ -264,5 +274,5 @@ MIT
 - [ ] 支持健康检查
 - [ ] 支持自动重启
 - [ ] 支持资源限制
-- [ ] 支持远程管理
+- [ ] 完善本地预检和体检闭环
 - [ ] 支持插件系统

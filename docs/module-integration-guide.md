@@ -2,11 +2,46 @@
 
 ## 概述
 
-HubKit 提供了统一的模块管理协议，支持 Node.js、Python 和 Shell 三种脚本类型。本指南将帮助你快速接入自定义模块。
+HubKit 提供本地优先的模块管理能力，支持 Node.js、Python 和 Shell 三种脚本类型。本指南以当前真实接入主流程为准：使用 `init-module` 生成 `.hubkit.json`，通过 CLI 做预检、启动、状态查询、日志查看和接入体检。
+
+HubKit 是开源公益、非商业化项目。默认配置和运行数据保存在本机 `~/.hubkit`，不把本地脚本管理包装成商业 SaaS 或默认远程执行平台。
 
 ## 快速开始
 
-### 1. 选择脚本类型
+### 1. 生成模块配置
+
+在现有项目目录中运行接入向导：
+
+```bash
+node dist/cli/index.js init-module /path/to/your-project
+```
+
+HubKit 会根据目录内容推断模块类型和入口脚本：
+
+- 存在 `package.json` 时默认推断为 Node.js 模块
+- 存在 `main.py` 或 `requirements.txt` 时默认推断为 Python 模块
+- 其他情况默认推断为 Shell 模块
+
+你也可以显式指定关键字段：
+
+```bash
+node dist/cli/index.js init-module /path/to/your-project \
+  --id my-tool \
+  --name "My Tool" \
+  --type nodejs \
+  --script server.js \
+  --web-port 3000
+```
+
+如果只想预览生成结果，不写入文件：
+
+```bash
+node dist/cli/index.js init-module /path/to/your-project --dry-run
+```
+
+已有 `.hubkit.json` 时默认不会覆盖；确认要覆盖时使用 `--force`。
+
+### 2. 选择脚本类型
 
 根据你的需求选择合适的脚本类型：
 
@@ -14,35 +49,89 @@ HubKit 提供了统一的模块管理协议，支持 Node.js、Python 和 Shell 
 - **Python** - 适合数据处理、机器学习、科学计算
 - **Shell** - 适合系统管理、简单的自动化任务
 
-### 2. 实现协议接口
+### 3. 检查 `.hubkit.json`
 
-每个模块需要实现 5 个标准接口：
+接入向导会生成 `.hubkit.json`：
 
-1. **status** - 查询模块状态
-2. **start** - 启动模块
-3. **stop** - 停止模块
-4. **logs** - 获取日志
-5. **settings** - 配置管理
+```json
+{
+  "id": "my-tool",
+  "name": "My Tool",
+  "description": "",
+  "type": "nodejs",
+  "scriptPath": "server.js",
+  "webPort": 3000,
+  "autoStart": false,
+  "enabled": true
+}
+```
 
-### 3. 通信方式
+字段说明：
 
-所有接口通过标准输入输出（stdin/stdout/stderr）进行 JSON 格式通信：
+- `id` - 模块 ID，建议使用小写字母、数字、短横线、下划线或点号
+- `name` - Dashboard 中显示的模块名称
+- `type` - 模块类型：`nodejs`、`python` 或 `shell`
+- `scriptPath` - 相对模块目录的入口脚本路径；Node.js 项目也可以使用 `.` 表示项目目录
+- `webPort` - 可选，模块 Web UI 端口
+- `webUrl` - 可选，模块 Web UI 完整入口地址
+- `autoStart` - 是否加入自动启动队列
+- `enabled` - 是否启用模块
 
-- **请求** - 通过 stdin 接收 JSON 格式的请求
-- **响应** - 通过 stdout 返回 JSON 格式的响应
-- **错误** - 通过 stderr 输出错误信息，并返回非 0 exit code
+### 4. 接入预检
 
-### 4. 示例模块
+生成配置后，先确认 HubKit 能扫描到模块：
 
-参考 `examples/modules/` 目录下的示例：
+```bash
+npm run build
+node dist/cli/index.js list
+node dist/cli/index.js status my-tool
+```
 
-- `node-example/` - Node.js 示例模块
-- `python-example/` - Python 示例模块
-- `shell-example/` - Shell 示例模块
+预检重点：
+
+- `.hubkit.json` 是否存在且字段通过校验
+- `scriptPath` 是否指向真实入口
+- 模块目录是否在 `~/.hubkit/config.json` 的 `moduleDirs` 中
+- Node.js、Python 或 Shell 运行时是否可用
+- 依赖是否已安装
+- `webPort` 是否被占用
+
+### 5. 启动和体检
+
+使用当前 CLI 验证模块生命周期：
+
+```bash
+node dist/cli/index.js start my-tool
+node dist/cli/index.js status my-tool
+node dist/cli/index.js logs my-tool --lines 50
+node dist/cli/index.js restart my-tool
+node dist/cli/index.js stop my-tool
+```
+
+体检方向：
+
+- 启动失败时先看 `logs`
+- 状态异常时检查 PID、端口占用和入口脚本
+- Web 模块确认 `webPort` 或 `webUrl` 能打开
+- 需要长期运行的模块确认退出信号能正常收尾
+
+### 6. Web Dashboard
+
+```bash
+node dist/cli/index.js web --port 2281
+```
+
+默认访问 `http://127.0.0.1:2281`。远程访问必须显式传 `--host` 并自行确认本机安全边界。
 
 ---
 
-## 协议详解
+## 高级扩展：stdio 协议参考
+
+以下 stdin/stdout 协议内容用于自定义适配器或未来高级扩展参考，不是当前模块接入的必做步骤。普通 Node.js、Python 和 Shell 项目优先使用 `.hubkit.json` 加内置适配器接入。
+
+当前稳定主流程只要求模块能被 `init-module` 生成配置，并能通过 `list`、`status`、`start`、`stop`、`restart`、`logs`、`web` 验证。
+
+### 协议详解
 
 ### 请求格式
 
@@ -276,7 +365,7 @@ HubKit 提供了统一的模块管理协议，支持 Node.js、Python 和 Shell 
 
 ## 适配器使用
 
-HubKit 为每种脚本类型提供了适配器，自动处理进程管理和通信。
+HubKit 为每种脚本类型提供了适配器，自动处理基础进程管理。普通模块不需要实现上面的 stdio 协议；只有在需要自定义生命周期或设置接口时，才参考高级扩展内容。
 
 ### Node.js 适配器
 
@@ -528,6 +617,19 @@ process.on('SIGINT', () => {
 
 ## 测试指南
 
+优先使用 HubKit CLI 做接入测试：
+
+```bash
+node dist/cli/index.js list
+node dist/cli/index.js status my-tool
+node dist/cli/index.js start my-tool
+node dist/cli/index.js logs my-tool --lines 50
+node dist/cli/index.js restart my-tool
+node dist/cli/index.js stop my-tool
+```
+
+下面的 stdin/stdout 测试仅适用于你主动实现了高级协议的模块。
+
 ### 手动测试
 
 **测试 status 接口**
@@ -687,16 +789,16 @@ const logFile = `/tmp/my-module-${instanceId}.log`;
 
 ## 下一步
 
-1. 查看 `examples/modules/` 目录下的完整示例
-2. 阅读 `docs/module-protocol.md` 了解协议详细规范
-3. 参考适配器源码 `src/adapters/` 了解实现细节
-4. 开始编写你的第一个模块！
+1. 使用 `init-module --dry-run` 预览 `.hubkit.json`
+2. 写入 `.hubkit.json` 后运行 `list`、`status`、`start`、`logs`、`stop`
+3. 打开 Web Dashboard 做接入体检
+4. 只有需要自定义生命周期时，再参考适配器源码 `src/adapters/`
 
 ---
 
 ## 相关资源
 
-- [模块协议规范](./module-protocol.md)
+- [模块协议规范](./module-protocol.md)（高级扩展参考，非当前接入主流程）
 - [Node.js 示例](../examples/modules/node-example/)
 - [Python 示例](../examples/modules/python-example/)
 - [Shell 示例](../examples/modules/shell-example/)
