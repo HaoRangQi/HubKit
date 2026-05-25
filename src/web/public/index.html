@@ -523,6 +523,38 @@
       gap: 10px;
     }
 
+    .dashboard-refresh-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 52%, transparent);
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-surface-container-low) 68%, transparent);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .dashboard-refresh-control input {
+      width: 72px;
+      min-height: 30px;
+      padding: 0 8px;
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 62%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container-high) 78%, transparent);
+      color: var(--md-on-surface);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .dashboard-refresh-state {
+      color: var(--md-on-surface-variant);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
     .dashboard-layout {
       display: block;
       margin-top: 18px;
@@ -684,6 +716,21 @@
       background: color-mix(in srgb, var(--md-primary-container) 82%, transparent);
       color: var(--md-on-primary-container);
       box-shadow: var(--elevation-1);
+    }
+
+    .diagnostics-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .diagnostics-filter-count {
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      font-weight: 500;
     }
 
     .toolbox-card {
@@ -914,6 +961,16 @@
       background: linear-gradient(
         180deg,
         color-mix(in srgb, var(--md-warning-container) 22%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
+      );
+    }
+
+    .module-card.checkin-card {
+      max-width: 560px;
+      min-height: 452px;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-primary-container) 20%, transparent),
         color-mix(in srgb, var(--md-surface-container-low) var(--card-surface-mix), transparent)
       );
     }
@@ -1359,6 +1416,218 @@
       grid-column: 1 / -1;
     }
 
+    .checkin-card-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .checkin-card-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .checkin-card-toolbar .text-field {
+      min-width: 0;
+    }
+
+    .checkin-site-editor {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .checkin-site-editor .text-field {
+      min-width: 0;
+    }
+
+    .checkin-command-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .checkin-command-row .text-field {
+      min-width: 0;
+    }
+
+    .checkin-command-panel {
+      display: grid;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-high) 84%, transparent);
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 62%, transparent);
+    }
+
+    .checkin-command-panel textarea {
+      min-height: 144px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+    .checkin-card .input,
+    .checkin-card .select,
+    .checkin-card textarea.input {
+      border-color: color-mix(in srgb, var(--md-outline-variant) 70%, transparent);
+      background: color-mix(in srgb, var(--md-surface-container-low) 82%, transparent);
+    }
+
+    .checkin-card .input:focus,
+    .checkin-card .select:focus,
+    .checkin-card textarea.input:focus {
+      border-color: color-mix(in srgb, var(--md-primary) 56%, var(--md-outline-variant));
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 18%, transparent);
+    }
+
+    .checkin-command-hint {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .checkin-command-hint strong {
+      color: var(--md-on-surface);
+      font-weight: 700;
+    }
+
+    .checkin-run-meta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--md-primary-container) 52%, transparent);
+      color: var(--md-on-primary-container);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .checkin-auto-controls {
+      align-items: center;
+    }
+
+    .checkin-auto-toggle {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .checkin-auto-controls .checkin-command-hint {
+      grid-column: 1 / -1;
+      margin-top: 4px;
+    }
+
+    .checkin-site-status {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .checkin-site-status.ready {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+
+    .checkin-site-status.waiting {
+      background: var(--md-warning-container);
+      color: var(--md-on-warning-container);
+    }
+
+    .checkin-site-status.success {
+      background: var(--md-success-container);
+      color: var(--md-on-success-container);
+    }
+
+    .checkin-site-status.disabled {
+      background: var(--md-surface-container-highest);
+      color: var(--md-on-surface-variant);
+    }
+
+    .checkin-queue-note {
+      padding: 10px 12px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-secondary-container) 56%, transparent);
+      border: 1px solid color-mix(in srgb, var(--md-secondary) 24%, transparent);
+      color: var(--md-on-secondary-container);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .captcha-dialog .dialog-content {
+      width: min(1280px, 100%);
+      max-height: min(90vh, 960px);
+    }
+
+    .captcha-dialog-body {
+      display: grid;
+      gap: 14px;
+      padding: 14px;
+      background: color-mix(in srgb, var(--md-surface-container-low) 52%, transparent);
+    }
+
+    .captcha-status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-high) 85%, transparent);
+      border: 1px solid var(--md-outline-variant);
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+    }
+
+    .captcha-frame-shell {
+      position: relative;
+      min-height: min(68vh, 760px);
+      border-radius: var(--shape-lg);
+      overflow: hidden;
+      background: #0b1220;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 42%, transparent);
+    }
+
+    .captcha-frame {
+      width: 100%;
+      height: min(68vh, 760px);
+      border: 0;
+      background: #0b1220;
+    }
+
+    .captcha-frame-hint {
+      display: grid;
+      gap: 6px;
+      padding: 12px 14px;
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-warning-container) 42%, transparent);
+      border: 1px solid color-mix(in srgb, var(--md-warning) 16%, transparent);
+      color: var(--md-on-warning-container);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .captcha-frame-hint code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
     .system-action-preset-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1477,12 +1746,169 @@
     .settings-container {
       display: grid;
       gap: 26px;
-      width: min(980px, 100%);
+      width: min(1240px, 100%);
     }
 
     .settings-section {
       display: grid;
       gap: 12px;
+    }
+
+    .settings-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      padding: 18px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      border-radius: var(--shape-lg);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--md-primary-container) 24%, transparent),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent)
+      );
+    }
+
+    .settings-hero-copy {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .settings-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .settings-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .settings-overview-card {
+      display: grid;
+      gap: 6px;
+      min-height: 92px;
+      padding: 14px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      border-radius: var(--shape-md);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 58%, transparent);
+    }
+
+    .settings-overview-label {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .settings-overview-value {
+      color: var(--md-on-surface);
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .settings-overview-note {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .settings-nav {
+      position: sticky;
+      top: 96px;
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      border-radius: var(--shape-lg);
+      background: color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent);
+    }
+
+    .settings-nav-link {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-height: 38px;
+      padding: 7px 10px;
+      border-radius: var(--shape-pill);
+      color: var(--md-on-surface-variant);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .settings-nav-link:hover {
+      background: color-mix(in srgb, var(--md-on-surface) 8%, transparent);
+      color: var(--md-on-surface);
+    }
+
+    .settings-nav-link .icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .settings-status-chip,
+    .settings-panel-chip {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 10px;
+      border-radius: var(--shape-pill);
+      background: var(--md-surface-container-high);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .settings-status-chip.dirty,
+    .settings-panel-chip.save {
+      background: var(--md-warning-container);
+      color: var(--md-on-warning-container);
+    }
+
+    .settings-panel-chip.instant {
+      background: var(--md-tertiary-container);
+      color: var(--md-on-tertiary-container);
+    }
+
+    .settings-panel-chip.local {
+      background: var(--md-secondary-container);
+      color: var(--md-on-secondary-container);
+    }
+
+    .settings-panel-chip.danger {
+      background: var(--md-error-container);
+      color: var(--md-on-error-container);
+    }
+
+    .settings-save-note {
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .settings-panel-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
     }
 
     .settings-panel {
@@ -1678,6 +2104,31 @@
       color: var(--md-on-surface-variant);
       font-family: var(--font-mono);
       font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .settings-chip {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      border-radius: var(--shape-pill);
+      padding: 0 10px;
+      background: color-mix(in srgb, var(--md-surface-container-high) 74%, transparent);
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .audit-log-excerpt {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-scrim) 8%, transparent);
+      color: var(--md-on-surface);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
 
@@ -2264,6 +2715,35 @@
       .summary-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+
+      .settings-hero,
+      .settings-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .settings-hero-actions {
+        justify-content: flex-start;
+      }
+
+      .settings-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .settings-nav {
+        position: sticky;
+        top: 92px;
+        z-index: 18;
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        grid-template-columns: none;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+      }
+
+      .settings-nav-link {
+        grid-template-columns: 20px max-content;
+        white-space: nowrap;
+      }
     }
 
     @media (max-width: 760px) {
@@ -2360,6 +2840,37 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .settings-hero {
+        padding: 16px;
+      }
+
+      .settings-hero-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .settings-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .settings-overview-card {
+        min-height: 112px;
+      }
+
+      .settings-nav {
+        top: 76px;
+        margin-inline: -2px;
+        padding: 8px;
+      }
+
+      .settings-panel-summary .section-heading {
+        align-items: flex-start;
+      }
+
+      .settings-panel-meta {
+        justify-content: flex-start;
+      }
+
       .modules-grid {
         grid-template-columns: minmax(0, 1fr);
       }
@@ -2447,6 +2958,30 @@
         align-items: stretch;
       }
 
+      .checkin-card-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .checkin-site-editor {
+        grid-template-columns: 1fr;
+      }
+
+      .checkin-auto-toggle {
+        grid-template-columns: 1fr;
+      }
+
+      .checkin-command-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .checkin-command-row .text-field {
+        grid-column: 1 / -1;
+      }
+
+      .checkin-card .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
       .btn {
         width: 100%;
       }
@@ -2479,6 +3014,7 @@
 <body>
   <svg width="0" height="0" style="position: absolute;" aria-hidden="true" focusable="false">
     <defs>
+      <symbol id="icon-add" viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4Z"/></symbol>
       <symbol id="icon-article" viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm2 5h10V6H7v2Zm0 5h10v-2H7v2Zm0 5h7v-2H7v2Z"/></symbol>
       <symbol id="icon-auto_mode" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1-9 9 9 9 0 0 1 9-9Zm0 2a7 7 0 0 0-5.66 11.1A7 7 0 1 0 12 5Zm0 2a5 5 0 0 1 0 10V7Z"/></symbol>
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="m12 10.6 4.95-4.95 1.4 1.4L13.4 12l4.95 4.95-1.4 1.4L12 13.4l-4.95 4.95-1.4-1.4L10.6 12 5.65 7.05l1.4-1.4L12 10.6Z"/></symbol>
@@ -2564,7 +3100,24 @@
             <p class="settings-section-desc">按需启动、停止和查看模块输出。</p>
           </div>
           <div class="dashboard-actions">
-            <button class="btn btn-tonal" type="button" onclick="fetchModules(true)">
+            <button class="btn btn-outlined" type="button" onclick="showGlobalLogs()">
+              <svg class="icon" aria-hidden="true"><use href="#icon-article"></use></svg>
+              <span>全局日志</span>
+            </button>
+            <div class="dashboard-refresh-control" title="自动刷新间隔（秒），0 表示关闭">
+              <span>自动刷新</span>
+              <input
+                id="dashboardRefreshIntervalInput"
+                type="number"
+                min="0"
+                max="600"
+                step="1"
+                value="30"
+                onchange="updateDashboardRefreshInterval(this.value)"
+              >
+              <span class="dashboard-refresh-state" id="dashboardRefreshState">30s</span>
+            </div>
+            <button class="btn btn-tonal" type="button" onclick="refreshDashboardNow(true)">
               <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
               <span>刷新</span>
             </button>
@@ -2644,6 +3197,7 @@
             <option value="error">错误</option>
             <option value="warn">警告</option>
             <option value="info">信息</option>
+            <option value="debug">调试</option>
           </select>
         </div>
         <label class="switch" title="自动刷新">
@@ -2661,6 +3215,52 @@
       </div>
       <div class="dialog-body" id="logBody">
         <pre class="log-content" id="logContent">加载中...</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog captcha-dialog" id="checkinDialog" role="dialog" aria-modal="true" aria-labelledby="checkinDialogTitle">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="dialog-title">
+          <h2 id="checkinDialogTitle">签到验证</h2>
+          <p id="checkinDialogSubtitle">准备打开站点签到页</p>
+        </div>
+        <button class="icon-btn" type="button" onclick="closeCheckinDialog()" title="关闭" aria-label="关闭">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
+      <div class="log-toolbar">
+        <button class="btn btn-tonal btn-sm" type="button" onclick="refreshCheckinFrame()">
+          <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+          <span>刷新页面</span>
+        </button>
+        <button class="btn btn-outlined btn-sm" type="button" onclick="openCheckinInNewWindow()">
+          <svg class="icon" aria-hidden="true"><use href="#icon-open_in_new"></use></svg>
+          <span>新窗口打开</span>
+        </button>
+        <button class="btn btn-filled btn-sm" type="button" onclick="markCheckinVerificationComplete()">
+          <svg class="icon" aria-hidden="true"><use href="#icon-event_available"></use></svg>
+          <span>我已完成验证</span>
+        </button>
+      </div>
+      <div class="dialog-body captcha-dialog-body">
+        <div class="captcha-status-banner">
+          <span id="checkinDialogStatus">正在载入签到页。如果页面空白或浏览器提示禁止嵌入，请直接用新窗口打开。</span>
+          <span class="checkin-site-status ready" id="checkinDialogStatusChip">准备中</span>
+        </div>
+        <div class="captcha-frame-shell">
+          <iframe
+            id="checkinFrame"
+            class="captcha-frame"
+            title="签到验证页面"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+        <div class="captcha-frame-hint">
+          <span id="checkinDialogHint">这一步不会尝试破解验证码，只是把站点原生验证页带进 HubKit，方便你在统一卡片里触发并手动点击。</span>
+          <code id="checkinDialogUrl">about:blank</code>
+        </div>
       </div>
     </div>
   </div>
@@ -2713,11 +3313,34 @@
   <script src="/vendor/xterm/xterm.js"></script>
   <script src="/vendor/xterm-fit/addon-fit.js"></script>
   <script src="/vendor/xterm-web-links/addon-web-links.js"></script>
+  <script src="/app-api.js"></script>
+  <script src="/app-log-renderer.js"></script>
+  <script src="/app-formatters.js"></script>
+  <script src="/app-diagnostics.js"></script>
+  <script src="/app-workspace.js"></script>
+  <script src="/app-dashboard.js"></script>
+  <script src="/app-ui-prefs.js"></script>
+  <script src="/app-settings.js"></script>
   <script>
     const THEME_STORAGE_KEY = 'hubkit-theme-mode';
     const UI_PREFS_STORAGE_KEY = 'hubkit-ui-prefs';
+    const CHECKIN_PREFS_STORAGE_KEY = 'hubkit-checkin-prefs';
+    const CHECKIN_SITES_STORAGE_KEY = 'hubkit-checkin-sites';
+    const CHECKIN_AUTO_RUN_INTERVAL_MS = 30_000;
+    const DEFAULT_CHECKIN_RUN_TIME = '09:00';
+    const DEFAULT_CHECKIN_SITES = [
+      {
+        id: 'site-1',
+        name: '请求站点 1',
+        shortName: '站点 1',
+        url: '',
+        defaultCurl: 'curl --compressed "https://example.com/api"',
+      },
+    ];
     let ws = null;
     let modules = [];
+    let workspaces = [];
+    let checkinSites = loadCheckinSites();
     const defaultStartPolicy = {
       retryCount: 1,
       retryDelayMs: 1500,
@@ -2732,8 +3355,11 @@
       visibility: {},
       schedules: {},
       moduleWebUrls: {},
+      groups: [{ id: 'default', name: '默认分组' }],
+      moduleGroups: {},
       startPolicies: {},
       groupStartPolicyTemplates: {},
+      workspaces: [],
     };
     let reconnectInterval = null;
     let currentView = 'dashboard';
@@ -2750,13 +3376,23 @@
     let forceCloseLoadingByModule = {};
     let forceCloseAllLoading = false;
     let moduleActionLoading = {};
+    let workspaceActionLoading = {};
+    let workspacePlanLoading = {};
+    let workspacePlansById = {};
     let moduleAuditReports = [];
+    let diagnosticsFilter = 'all';
+    let expandedAuditModules = new Set();
     let startPolicyTemplates = [];
+    let configBackups = [];
+    let configBackupsLoading = false;
     let scriptBundles = [];
     let scriptRunLoading = {};
     let systemActions = [];
     let systemActionLoading = {};
     let systemActionRefreshing = {};
+    let checkinPrefs = loadCheckinPrefs();
+    let checkinRunLoadingBySite = {};
+    let checkinAutoRunTimer = null;
     let terminalInstance = null;
     let terminalFitAddon = null;
     let activeTerminalSessionId = null;
@@ -2766,8 +3402,12 @@
     let terminalResizing = false;
     let terminalDrawerWidth = Number(localStorage.getItem('hubkit-terminal-width')) || 720;
     let uiPrefs = loadUiPrefs();
+    let dashboardRefreshTimer = null;
+    let dashboardRefreshRunning = false;
+    let pendingDashboardRefresh = false;
     let settingsPanels = {
-      display: true,
+      display: false,
+      operations: true,
       autoStart: false,
       grouping: false,
       visibility: false,
@@ -2776,6 +3416,7 @@
       schedule: false,
       cleanup: false,
     };
+    let settingsDirty = false;
     const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const dayLabels = ['日', '一', '二', '三', '四', '五', '六'];
@@ -2802,72 +3443,491 @@
     }
 
     function loadUiPrefs() {
-      try {
-        const raw = localStorage.getItem(UI_PREFS_STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : {};
-        const blurRaw = Number(parsed?.wallpaperBlur);
-        const wallpaperBlur = Number.isFinite(blurRaw)
-          ? Math.min(24, Math.max(0, blurRaw))
-          : 6;
-        return {
-          collapseProcessMini: parsed?.collapseProcessMini === true,
-          collapseDashboardGroups: parsed?.collapseDashboardGroups === true,
-          groupCollapseState: parsed?.groupCollapseState && typeof parsed.groupCollapseState === 'object'
-            ? parsed.groupCollapseState
-            : {},
-          wallpaperEnabled: parsed?.wallpaperEnabled === true,
-          wallpaperUrl: typeof parsed?.wallpaperUrl === 'string' ? parsed.wallpaperUrl : '',
-          wallpaperFit: ['contain', 'cover', 'stretch'].includes(parsed?.wallpaperFit) ? parsed.wallpaperFit : 'contain',
-          wallpaperPositionX: clampNumber(parsed?.wallpaperPositionX, 0, 100, 50),
-          wallpaperPositionY: clampNumber(parsed?.wallpaperPositionY, 0, 100, 50),
-          wallpaperBlur,
-          wallpaperOpacity: clampNumber(parsed?.wallpaperOpacity, 0.35, 1, 0.92),
-          wallpaperScrimOpacity: clampNumber(parsed?.wallpaperScrimOpacity, 0, 0.8, resolvedTheme === 'dark' ? 0.55 : 0.35),
-          glassBlur: clampNumber(parsed?.glassBlur, 0, 36, 18),
-          glassOpacity: clampNumber(parsed?.glassOpacity, 0.28, 0.92, 0.72),
-          glassBorderOpacity: clampNumber(parsed?.glassBorderOpacity, 0.12, 0.65, 0.34),
-          cardSurfaceOpacity: clampNumber(parsed?.cardSurfaceOpacity, 0.45, 0.96, 0.86),
-          cardInnerOpacity: clampNumber(parsed?.cardInnerOpacity, 0.35, 0.92, 0.72),
-        };
-      } catch (error) {
-        return {
-          collapseProcessMini: false,
-          collapseDashboardGroups: false,
-          groupCollapseState: {},
-          wallpaperEnabled: false,
-          wallpaperUrl: '',
-          wallpaperFit: 'contain',
-          wallpaperPositionX: 50,
-          wallpaperPositionY: 50,
-          wallpaperBlur: 6,
-          wallpaperOpacity: 0.92,
-          wallpaperScrimOpacity: resolvedTheme === 'dark' ? 0.55 : 0.35,
-          glassBlur: 18,
-          glassOpacity: 0.72,
-          glassBorderOpacity: 0.34,
-          cardSurfaceOpacity: 0.86,
-          cardInnerOpacity: 0.72,
-        };
-      }
+      return window.HubKitUiPrefs.normalizeUiPrefs(localStorage.getItem(UI_PREFS_STORAGE_KEY), resolvedTheme);
     }
 
     function clampNumber(value, min, max, fallback) {
-      const n = Number(value);
-      if (!Number.isFinite(n)) return fallback;
-      return Math.min(max, Math.max(min, n));
+      return window.HubKitUiPrefs.clampNumber(value, min, max, fallback);
     }
 
     function saveUiPrefs() {
       localStorage.setItem(UI_PREFS_STORAGE_KEY, JSON.stringify(uiPrefs));
     }
 
+    function getDashboardRefreshIntervalSeconds() {
+      const value = Number(uiPrefs.dashboardRefreshIntervalSeconds);
+      if (!Number.isFinite(value)) return 30;
+      return Math.max(0, Math.min(600, Math.round(value)));
+    }
+
+    function applyDashboardRefreshIntervalDisplay() {
+      const interval = getDashboardRefreshIntervalSeconds();
+      const input = document.getElementById('dashboardRefreshIntervalInput');
+      if (input) {
+        input.value = String(interval);
+      }
+      const state = document.getElementById('dashboardRefreshState');
+      if (state) {
+        state.textContent = interval <= 0 ? '已关闭' : `${interval}s`;
+      }
+    }
+
+    function setupDashboardRefreshTimer() {
+      if (dashboardRefreshTimer) {
+        clearInterval(dashboardRefreshTimer);
+        dashboardRefreshTimer = null;
+      }
+      const interval = getDashboardRefreshIntervalSeconds();
+      if (interval <= 0) {
+        applyDashboardRefreshIntervalDisplay();
+        return;
+      }
+      dashboardRefreshTimer = setInterval(() => {
+        if (currentView === 'dashboard') {
+          refreshDashboardNow(false);
+          return;
+        }
+        if (currentView === 'diagnostics') {
+          fetchModuleAudit();
+        }
+      }, interval * 1000);
+      applyDashboardRefreshIntervalDisplay();
+    }
+
+    function updateDashboardRefreshInterval(value) {
+      uiPrefs.dashboardRefreshIntervalSeconds = clampNumber(value, 0, 600, 30);
+      uiPrefs.dashboardRefreshIntervalSeconds = Math.round(uiPrefs.dashboardRefreshIntervalSeconds);
+      saveUiPrefs();
+      setupDashboardRefreshTimer();
+      showToast(uiPrefs.dashboardRefreshIntervalSeconds === 0
+        ? '自动刷新已关闭'
+        : `自动刷新间隔已设置为 ${uiPrefs.dashboardRefreshIntervalSeconds} 秒`);
+    }
+
+    async function refreshDashboardNow(showNotice = false) {
+      if (dashboardRefreshRunning) {
+        pendingDashboardRefresh = true;
+        return;
+      }
+      dashboardRefreshRunning = true;
+      try {
+        await Promise.all([
+          fetchModules(),
+          fetchWorkspaces(),
+          fetchScriptBundles(),
+          fetchSystemActions(),
+        ]);
+        if (showNotice) showToast('卡片数据已刷新');
+      } catch (error) {
+        if (showNotice) showToast(error?.message || '刷新失败', 'error');
+      } finally {
+        dashboardRefreshRunning = false;
+      }
+      if (pendingDashboardRefresh) {
+        pendingDashboardRefresh = false;
+        return refreshDashboardNow(false);
+      }
+    }
+
+    function normalizeDailyTime(value, fallback = DEFAULT_CHECKIN_RUN_TIME) {
+      const text = String(value || '').trim();
+      if (!/^\d{2}:\d{2}$/.test(text)) return fallback;
+      const [hhRaw, mmRaw] = text.split(':');
+      const hh = Number(hhRaw);
+      const mm = Number(mmRaw);
+      if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+        return fallback;
+      }
+      return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    }
+
+    function normalizeCurlTimeoutMs(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return 30_000;
+      return Math.max(1_000, Math.min(300_000, Math.round(n)));
+    }
+
+    function normalizeCheckinSiteId(value, fallbackId, usedIds) {
+      const raw = String(value || '').trim().toLowerCase();
+      const normalized = (raw || fallbackId).replace(/[^a-z0-9-_]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || fallbackId;
+      let candidate = normalized;
+      let suffix = 2;
+      while (usedIds.has(candidate)) {
+        candidate = `${normalized}-${suffix}`;
+        suffix += 1;
+      }
+      usedIds.add(candidate);
+      return candidate;
+    }
+
+    function normalizeCheckinSites(sites) {
+      const source = Array.isArray(sites) ? sites : [];
+      const usedIds = new Set();
+      const normalized = source
+        .slice(0, 16)
+        .map((item, index) => {
+          const fallbackName = `请求站点 ${index + 1}`;
+          const name = String(item?.name || item?.shortName || '').trim() || fallbackName;
+          const url = String(item?.url || '').trim();
+          const id = normalizeCheckinSiteId(item?.id, `site-${index + 1}`, usedIds);
+          const defaultCurl = String(item?.defaultCurl || '').trim() || (url ? `curl --compressed "${url}"` : 'curl --compressed "https://example.com/api"');
+          return {
+            id,
+            name,
+            shortName: name,
+            url,
+            defaultCurl,
+          };
+        });
+      return normalized.length > 0 ? normalized : DEFAULT_CHECKIN_SITES.map((site, index) => ({
+        ...site,
+        id: normalizeCheckinSiteId(site.id, `site-${index + 1}`, usedIds),
+      }));
+    }
+
+    function loadCheckinSites() {
+      try {
+        const raw = localStorage.getItem(CHECKIN_SITES_STORAGE_KEY);
+        if (!raw) return normalizeCheckinSites(DEFAULT_CHECKIN_SITES);
+        const parsed = JSON.parse(raw);
+        return normalizeCheckinSites(parsed);
+      } catch {
+        return normalizeCheckinSites(DEFAULT_CHECKIN_SITES);
+      }
+    }
+
+    function saveCheckinSites() {
+      localStorage.setItem(CHECKIN_SITES_STORAGE_KEY, JSON.stringify(checkinSites));
+    }
+
+    function getNextCheckinSiteId() {
+      const usedIds = new Set(checkinSites.map((site) => site.id));
+      return normalizeCheckinSiteId('', `site-${usedIds.size + 1}`, usedIds);
+    }
+
+    function getDefaultCurlCommand(site) {
+      if (typeof site?.defaultCurl === 'string' && site.defaultCurl.trim()) {
+        return site.defaultCurl.trim();
+      }
+      if (typeof site?.url === 'string' && site.url.trim()) {
+        return `curl "${site.url.trim()}"`;
+      }
+      return 'curl "https://httpbin.org/get"';
+    }
+
+    function normalizeCheckinCommandIndex(value, total, fallback = 0) {
+      const count = Number.isFinite(Number(total)) ? Math.max(1, Math.round(Number(total))) : 1;
+      const n = Number(value);
+      if (!Number.isFinite(n)) {
+        return Math.max(0, Math.min(count - 1, fallback));
+      }
+      return Math.max(0, Math.min(count - 1, Math.round(n)));
+    }
+
+    function normalizeCheckinCommands(value, fallbackCommand) {
+      const defaultCommand = String(fallbackCommand || '').replace(/\r/g, '').trim() || 'curl "https://httpbin.org/get"';
+      const source = Array.isArray(value) ? value : [];
+      const commands = source
+        .slice(0, 12)
+        .map((item) => String(item ?? '').replace(/\r/g, ''));
+      if (commands.length === 0) {
+        return [defaultCommand];
+      }
+      if (!commands.some((command) => command.trim())) {
+        commands[0] = defaultCommand;
+      }
+      return commands;
+    }
+
+    function getCheckinActiveCommand(config) {
+      if (!config || typeof config !== 'object') return '';
+      const index = normalizeCheckinCommandIndex(config.selectedCommandIndex, config.curlCommands?.length || 1, 0);
+      return String(config.curlCommands?.[index] || '').replace(/\r/g, '');
+    }
+
+    function getCheckinRunnableCommands(config) {
+      const commands = Array.isArray(config?.curlCommands) ? config.curlCommands : [];
+      return commands
+        .map((command, index) => ({
+          index,
+          command: String(command || ''),
+        }))
+        .filter((entry) => entry.command.trim());
+    }
+
+    function buildDefaultCheckinConfig(site) {
+      const defaultCommand = getDefaultCurlCommand(site);
+      return {
+        curlCommand: defaultCommand,
+        curlCommands: [defaultCommand],
+        selectedCommandIndex: 0,
+        autoRunCursor: 0,
+        autoRunEnabled: false,
+        runTime: DEFAULT_CHECKIN_RUN_TIME,
+        timeoutMs: 30_000,
+      };
+    }
+
+    function normalizeCheckinConfig(site, value) {
+      const defaults = buildDefaultCheckinConfig(site);
+      const source = value && typeof value === 'object' ? value : {};
+      const legacyCommand = String(source.curlCommand || source.command || '').replace(/\r/g, '');
+      const rawCommands = Array.isArray(source.curlCommands) ? source.curlCommands : [];
+      const commands = normalizeCheckinCommands(
+        rawCommands.length > 0 ? rawCommands : [legacyCommand || defaults.curlCommand],
+        defaults.curlCommand,
+      );
+      const selectedCommandIndex = normalizeCheckinCommandIndex(
+        source.selectedCommandIndex,
+        commands.length,
+        0,
+      );
+      const autoRunCursor = normalizeCheckinCommandIndex(
+        source.autoRunCursor,
+        getCheckinRunnableCommands({ curlCommands: commands }).length || 1,
+        0,
+      );
+      return {
+        curlCommand: String(commands[selectedCommandIndex] || ''),
+        curlCommands: commands,
+        selectedCommandIndex,
+        autoRunCursor,
+        autoRunEnabled: source.autoRunEnabled === true,
+        runTime: normalizeDailyTime(source.runTime, defaults.runTime),
+        timeoutMs: normalizeCurlTimeoutMs(source.timeoutMs),
+      };
+    }
+
+    function normalizeCheckinRunRecord(value) {
+      const source = value && typeof value === 'object' ? value : {};
+      const phase = typeof source.phase === 'string' ? source.phase : 'idle';
+      return {
+        phase: ['idle', 'running', 'success', 'failed'].includes(phase) ? phase : 'idle',
+        message: typeof source.message === 'string' ? source.message : '',
+        stdout: typeof source.stdout === 'string' ? source.stdout : '',
+        stderr: typeof source.stderr === 'string' ? source.stderr : '',
+        startedAt: typeof source.startedAt === 'string' ? source.startedAt : '',
+        finishedAt: typeof source.finishedAt === 'string' ? source.finishedAt : '',
+        exitCode: Number.isFinite(Number(source.exitCode)) ? Number(source.exitCode) : null,
+      };
+    }
+
+    function loadCheckinPrefs() {
+      const defaultSiteId = checkinSites[0]?.id || null;
+      const fallback = {
+        selectedSiteId: defaultSiteId,
+        configsBySite: {},
+        runRecordsBySite: {},
+        lastAutoRunKeyBySite: {},
+      };
+
+      try {
+        const raw = localStorage.getItem(CHECKIN_PREFS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        const selectedSiteId = getCheckinSite(parsed?.selectedSiteId)?.id || defaultSiteId;
+        const configsBySite = {};
+        const runRecordsBySite = {};
+        const parsedConfigs = parsed?.configsBySite && typeof parsed.configsBySite === 'object' ? parsed.configsBySite : {};
+        const parsedRecords = parsed?.runRecordsBySite && typeof parsed.runRecordsBySite === 'object' ? parsed.runRecordsBySite : {};
+        const parsedAutoRunKeys = parsed?.lastAutoRunKeyBySite && typeof parsed.lastAutoRunKeyBySite === 'object'
+          ? parsed.lastAutoRunKeyBySite
+          : {};
+
+        checkinSites.forEach((site) => {
+          configsBySite[site.id] = normalizeCheckinConfig(site, parsedConfigs[site.id]);
+          runRecordsBySite[site.id] = normalizeCheckinRunRecord(parsedRecords[site.id]);
+        });
+
+        return {
+          selectedSiteId,
+          configsBySite,
+          runRecordsBySite,
+          lastAutoRunKeyBySite: parsedAutoRunKeys,
+        };
+      } catch {
+        checkinSites.forEach((site) => {
+          fallback.configsBySite[site.id] = buildDefaultCheckinConfig(site);
+          fallback.runRecordsBySite[site.id] = normalizeCheckinRunRecord(undefined);
+        });
+        return fallback;
+      }
+    }
+
+    function saveCheckinPrefs() {
+      localStorage.setItem(CHECKIN_PREFS_STORAGE_KEY, JSON.stringify(checkinPrefs));
+    }
+
+    function reconcileCheckinPrefsWithSites(selectedSiteId = '') {
+      const normalizedSites = normalizeCheckinSites(checkinSites);
+      checkinSites = normalizedSites;
+      saveCheckinSites();
+
+      const validIds = new Set(checkinSites.map((site) => site.id));
+      const nextConfigsBySite = {};
+      const nextRunRecordsBySite = {};
+      const nextAutoRunKeysBySite = {};
+      checkinPrefs.configsBySite = checkinPrefs.configsBySite || {};
+      checkinPrefs.runRecordsBySite = checkinPrefs.runRecordsBySite || {};
+      checkinPrefs.lastAutoRunKeyBySite = checkinPrefs.lastAutoRunKeyBySite || {};
+
+      checkinSites.forEach((site) => {
+        nextConfigsBySite[site.id] = normalizeCheckinConfig(site, checkinPrefs.configsBySite[site.id]);
+        nextRunRecordsBySite[site.id] = normalizeCheckinRunRecord(checkinPrefs.runRecordsBySite[site.id]);
+        if (Object.prototype.hasOwnProperty.call(checkinPrefs.lastAutoRunKeyBySite, site.id)) {
+          nextAutoRunKeysBySite[site.id] = String(checkinPrefs.lastAutoRunKeyBySite[site.id]);
+        }
+      });
+
+      checkinPrefs.configsBySite = nextConfigsBySite;
+      checkinPrefs.runRecordsBySite = nextRunRecordsBySite;
+      checkinPrefs.lastAutoRunKeyBySite = nextAutoRunKeysBySite;
+
+      const preferred = String(selectedSiteId || checkinPrefs.selectedSiteId || '').trim();
+      checkinPrefs.selectedSiteId = validIds.has(preferred)
+        ? preferred
+        : (checkinSites[0]?.id || null);
+      saveCheckinPrefs();
+    }
+
+    function updateCheckinSiteMeta(siteId, patch = {}) {
+      const target = getCheckinSite(siteId);
+      if (!target) return;
+      checkinSites = normalizeCheckinSites(checkinSites.map((site) => {
+        if (site.id !== target.id) return site;
+        const nextName = Object.prototype.hasOwnProperty.call(patch, 'name')
+          ? String(patch.name || '').trim()
+          : site.name;
+        const nextUrl = Object.prototype.hasOwnProperty.call(patch, 'url')
+          ? String(patch.url || '').trim()
+          : site.url;
+        const fallbackName = nextName || site.name || '请求站点';
+        return {
+          ...site,
+          name: fallbackName,
+          shortName: fallbackName,
+          url: nextUrl,
+          defaultCurl: nextUrl ? `curl --compressed "${nextUrl}"` : site.defaultCurl,
+        };
+      }));
+      reconcileCheckinPrefsWithSites(target.id);
+      renderDashboardGroups();
+    }
+
+    function addCheckinSite() {
+      const siteId = getNextCheckinSiteId();
+      checkinSites = [
+        ...checkinSites,
+        {
+          id: siteId,
+          name: `请求站点 ${checkinSites.length + 1}`,
+          shortName: `请求站点 ${checkinSites.length + 1}`,
+          url: '',
+          defaultCurl: 'curl --compressed "https://example.com/api"',
+        },
+      ];
+      reconcileCheckinPrefsWithSites(siteId);
+      renderDashboardGroups();
+    }
+
+    function removeCheckinSite(siteId) {
+      const target = getCheckinSite(siteId);
+      if (!target) return;
+      if (checkinSites.length <= 1) {
+        showToast('至少保留一个请求站点');
+        return;
+      }
+      checkinSites = checkinSites.filter((site) => site.id !== target.id);
+      reconcileCheckinPrefsWithSites(checkinSites[0]?.id || '');
+      renderDashboardGroups();
+    }
+
+    function getCheckinSite(siteId) {
+      return checkinSites.find((item) => item.id === siteId) || checkinSites[0] || null;
+    }
+
+    function getSelectedCheckinSite() {
+      return getCheckinSite(checkinPrefs.selectedSiteId);
+    }
+
+    function getCheckinSiteConfig(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return buildDefaultCheckinConfig(undefined);
+      checkinPrefs.configsBySite = checkinPrefs.configsBySite || {};
+      checkinPrefs.configsBySite[site.id] = normalizeCheckinConfig(site, checkinPrefs.configsBySite[site.id]);
+      return checkinPrefs.configsBySite[site.id];
+    }
+
+    function updateCheckinSiteConfig(siteId, patch) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const current = getCheckinSiteConfig(site.id);
+      checkinPrefs.configsBySite[site.id] = normalizeCheckinConfig(site, {
+        ...current,
+        ...(patch && typeof patch === 'object' ? patch : {}),
+      });
+      saveCheckinPrefs();
+    }
+
+    function getCheckinRunRecord(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return normalizeCheckinRunRecord(undefined);
+      checkinPrefs.runRecordsBySite = checkinPrefs.runRecordsBySite || {};
+      checkinPrefs.runRecordsBySite[site.id] = normalizeCheckinRunRecord(checkinPrefs.runRecordsBySite[site.id]);
+      return checkinPrefs.runRecordsBySite[site.id];
+    }
+
+    function updateCheckinRunRecord(siteId, patch) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const current = getCheckinRunRecord(site.id);
+      checkinPrefs.runRecordsBySite[site.id] = normalizeCheckinRunRecord({
+        ...current,
+        ...(patch && typeof patch === 'object' ? patch : {}),
+      });
+      saveCheckinPrefs();
+    }
+
+    function getCheckinSiteStatus(siteId) {
+      const record = getCheckinRunRecord(siteId);
+      if (record.phase === 'running') {
+        return {
+          label: '执行中',
+          className: 'waiting',
+          note: record.message || '正在执行 curl 请求...',
+        };
+      }
+      if (record.phase === 'success') {
+        return {
+          label: '最近成功',
+          className: 'success',
+          note: record.message || 'curl 请求执行成功',
+        };
+      }
+      if (record.phase === 'failed') {
+        return {
+          label: '最近失败',
+          className: 'disabled',
+          note: record.message || 'curl 请求执行失败',
+        };
+      }
+      return {
+        label: '待命',
+        className: 'ready',
+        note: '可手动运行，也可按设定时间自动执行。',
+      };
+    }
+
+    function getCheckinLastRunAt(siteId) {
+      const record = getCheckinRunRecord(siteId);
+      const value = record.finishedAt || record.startedAt || '';
+      return value ? formatStartedAt(value) : '未执行';
+    }
+
     function setProcessMiniCollapsed(enabled) {
       uiPrefs.collapseProcessMini = enabled === true;
       saveUiPrefs();
       renderDashboard();
-      if (currentView === 'settings') {
-        renderSettings();
-      }
+      requestSettingsRender();
     }
 
     function setDashboardGroupsCollapsed(enabled) {
@@ -2879,9 +3939,7 @@
       uiPrefs.groupCollapseState = nextState;
       saveUiPrefs();
       renderDashboardGroups();
-      if (currentView === 'settings') {
-        renderSettings();
-      }
+      requestSettingsRender();
     }
 
     function setSingleDashboardGroupCollapsed(sectionId, enabled) {
@@ -2889,9 +3947,7 @@
       uiPrefs.groupCollapseState[sectionId] = enabled === true;
       saveUiPrefs();
       renderDashboardGroups();
-      if (currentView === 'settings') {
-        renderSettings();
-      }
+      requestSettingsRender();
     }
 
     function toggleDashboardGroup(sectionId) {
@@ -2900,9 +3956,7 @@
       uiPrefs.groupCollapseState[sectionId] = !current;
       saveUiPrefs();
       renderDashboardGroups();
-      if (currentView === 'settings') {
-        renderSettings();
-      }
+      requestSettingsRender();
     }
 
     function isDashboardGroupCollapsed(sectionId) {
@@ -2962,15 +4016,11 @@
     }
 
     function isLocalWallpaperUrl(value = uiPrefs.wallpaperUrl) {
-      return String(value || '').startsWith('data:image/');
+      return window.HubKitFormatters.isLocalWallpaperUrl(value);
     }
 
     function formatWallpaperUrlForInput() {
-      const url = String(uiPrefs.wallpaperUrl || '');
-      if (!isLocalWallpaperUrl(url)) return url;
-      const sizeKb = Math.max(1, Math.round(url.length * 0.75 / 1024));
-      const sizeLabel = sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
-      return `本地上传图片（浏览器缓存，约 ${sizeLabel}）`;
+      return window.HubKitFormatters.formatWallpaperUrlForInput(uiPrefs.wallpaperUrl);
     }
 
     async function copyWallpaperData() {
@@ -3002,7 +4052,7 @@
           uiPrefs.wallpaperEnabled = true;
           saveUiPrefs();
           applyWallpaper();
-      if (currentView === 'settings') renderSettings();
+      requestSettingsRender();
       showToast('本地壁纸已应用');
         } catch (error) {
           showToast('图片过大，无法存入浏览器本地缓存', 'error');
@@ -3021,7 +4071,7 @@
       uiPrefs.wallpaperFit = ['contain', 'cover', 'stretch'].includes(value) ? value : 'contain';
       saveUiPrefs();
       applyWallpaper();
-      if (currentView === 'settings') renderSettings();
+      requestSettingsRender();
     }
 
     function updateWallpaperPosition(axis, value) {
@@ -3109,7 +4159,7 @@
       uiPrefs.wallpaperScrimOpacity = resolvedTheme === 'dark' ? 0.55 : 0.35;
       saveUiPrefs();
       applyWallpaper();
-      if (currentView === 'settings') renderSettings();
+      requestSettingsRender();
       showToast('壁纸已清空');
     }
 
@@ -3117,18 +4167,28 @@
       uiPrefs.groupCollapseState = {};
       uiPrefs.collapseDashboardGroups = false;
       uiPrefs.collapseProcessMini = false;
+      uiPrefs.dashboardRefreshIntervalSeconds = 30;
       diagnosticsByModule = {};
       localStorage.removeItem('hubkit-terminal-width');
       terminalDrawerWidth = 720;
       document.getElementById('terminalDrawer')?.style.setProperty('--terminal-width', `${terminalDrawerWidth}px`);
       saveUiPrefs();
+      setupDashboardRefreshTimer();
       renderDashboard();
-      if (currentView === 'settings') renderSettings();
+      requestSettingsRender();
       showToast('界面缓存已清理');
     }
 
     function clearAllLocalData() {
-      if (!window.confirm('将清理壁纸、主题、界面偏好和终端面板宽度。后端日志和脚本历史不会删除。继续？')) {
+      if (!confirmHighRiskAction({
+        title: '清理全部本地偏好',
+        impact: [
+          '将清理壁纸、主题、界面偏好和终端面板宽度。',
+          '后端日志、脚本历史和 HubKit 配置不会删除。',
+        ],
+        recovery: '清理后只能重新设置这些浏览器本地偏好。',
+        confirmLabel: '继续清理',
+      })) {
         return;
       }
       localStorage.removeItem(THEME_STORAGE_KEY);
@@ -3140,8 +4200,9 @@
       applyTheme('auto', true);
       applyGlassPrefs();
       applyWallpaper();
+      setupDashboardRefreshTimer();
       renderDashboard();
-      if (currentView === 'settings') renderSettings();
+      requestSettingsRender();
       showToast('本地偏好已清理');
     }
 
@@ -3184,8 +4245,9 @@
         updateConnectionStatus(true);
         clearInterval(reconnectInterval);
         reconnectInterval = null;
-        fetchModules();
+        refreshDashboardNow(false);
         fetchSettings();
+        fetchConfigBackups();
       };
 
       ws.onmessage = (event) => {
@@ -3213,17 +4275,40 @@
       statusText.textContent = connected ? '已连接' : '未连接';
     }
 
+    function applyModuleRuntimeUpdate(message) {
+      const moduleId = typeof message?.moduleId === 'string' ? message.moduleId.trim() : '';
+      if (!moduleId || !message?.runtimeState || typeof message.runtimeState !== 'object') return;
+      const module = modules.find((item) => item.id === moduleId);
+      if (!module) return;
+
+      module.runtimeState = message.runtimeState;
+      if (message.runtimeState.phase === 'running') {
+        module.status = 'running';
+      } else if (message.runtimeState.phase === 'stopped' || message.runtimeState.phase === 'failed') {
+        module.status = 'stopped';
+      }
+
+      if (currentView === 'dashboard') {
+        updateSummary();
+        patchModuleDashboardSections();
+      }
+    }
+
     function handleWebSocketMessage(data) {
       const refreshEvents = new Set([
         'module_started',
         'module_stopped',
         'module_restarted',
         'module_updated',
-        'module_runtime_updated',
         'schedule_triggered',
+        'workspace_started',
+        'workspace_stopped',
       ]);
+      if (data.type === 'module_runtime_updated') {
+        applyModuleRuntimeUpdate(data);
+      }
       if (refreshEvents.has(data.type)) {
-        fetchModules();
+        refreshDashboardNow(false);
         if (currentView === 'diagnostics') fetchModuleAudit();
       }
       if (data.type === 'script_action_updated') {
@@ -3245,88 +4330,396 @@
 
     async function fetchModules(showNotice = false) {
       try {
-        const response = await fetch('/api/modules');
-        const json = await response.json();
-        modules = Array.isArray(json) ? json : (json.data || []);
-        renderDashboard();
-        if (currentView === 'settings') renderSettings();
+        if (window.HubKitApi?.getModules) {
+          modules = await window.HubKitApi.getModules();
+        } else {
+          const response = await fetch('/api/modules');
+          const json = await response.json();
+          modules = Array.isArray(json) ? json : (json.data || []);
+        }
+        updateSummary();
+        patchModuleDashboardSections();
+        requestSettingsRender();
         if (showNotice) showToast('模块状态已刷新');
       } catch (error) {
         console.error('Failed to fetch modules:', error);
-        renderDashboardError();
+        if (!document.querySelector('#dashboardGroupContent .module-group-stack')) {
+          renderDashboardError();
+        }
         if (showNotice) showToast('刷新失败', 'error');
       }
     }
 
+    async function fetchWorkspaces(showNotice = false) {
+      try {
+        if (window.HubKitApi?.getWorkspaces) {
+          workspaces = await window.HubKitApi.getWorkspaces();
+        } else {
+          const response = await fetch('/api/workspaces');
+          const json = await response.json();
+          if (!json.success) throw new Error(json.error || '工作区加载失败');
+          workspaces = Array.isArray(json.data) ? json.data : [];
+        }
+        updateSummary();
+        patchWorkspaceDashboardSections();
+        requestSettingsRender();
+        if (showNotice) showToast('工作区已刷新');
+      } catch (error) {
+        console.error('Failed to fetch workspaces:', error);
+        workspaces = [];
+        updateSummary();
+        patchWorkspaceDashboardSections();
+        if (showNotice) showToast(error.message || '工作区刷新失败', 'error');
+      }
+    }
+
+    async function fetchWorkspacePlan(workspaceId) {
+      workspacePlanLoading[workspaceId] = true;
+      renderDashboardGroups();
+      try {
+        if (window.HubKitApi?.getWorkspaceStartPlan) {
+          workspacePlansById[workspaceId] = await window.HubKitApi.getWorkspaceStartPlan(workspaceId);
+        } else {
+          const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/plan?action=start`);
+          const json = await response.json();
+          if (!json.success) throw new Error(json.error || '工作区计划加载失败');
+          workspacePlansById[workspaceId] = json.data;
+        }
+      } catch (error) {
+        showToast(error.message || '工作区计划加载失败', 'error');
+      } finally {
+        delete workspacePlanLoading[workspaceId];
+        renderDashboardGroups();
+      }
+    }
+
+    async function workspaceAction(workspaceId, action) {
+      const workspace = workspaces.find((item) => item.id === workspaceId);
+      const name = workspace?.name || workspaceId;
+      const labels = { start: '启动', stop: '停止' };
+      if (workspaceActionLoading[workspaceId]) return;
+      if (action === 'stop' && !confirmHighRiskAction({
+        title: `停止工作区：${name}`,
+        impact: [
+          '将按工作区停止顺序批量停止其中的模块。',
+          '如果某个模块当前未运行，HubKit 会跳过该模块。',
+        ],
+        recovery: '可重新点击“启动工作区”按计划恢复。',
+        confirmLabel: '继续停止',
+      })) {
+        return;
+      }
+
+      try {
+        workspaceActionLoading[workspaceId] = action;
+        renderDashboardGroups();
+        const json = action === 'start' && window.HubKitApi?.startWorkspace
+          ? await window.HubKitApi.startWorkspace(workspaceId)
+          : action === 'stop' && window.HubKitApi?.stopWorkspace
+            ? await window.HubKitApi.stopWorkspace(workspaceId, await highRiskHeaders(`workspace:${workspaceId}:stop`))
+          : await (async () => {
+            const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/${action}`, {
+              method: 'POST',
+              headers: action === 'stop' ? await highRiskHeaders(`workspace:${workspaceId}:stop`) : undefined,
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || `${labels[action]}工作区失败`);
+            }
+            return fallbackJson;
+          })();
+        if (json.data) workspacePlansById[workspaceId] = json.data;
+        showToast(json.message || `${labels[action]}工作区成功`);
+        await Promise.all([fetchModules(), fetchWorkspaces()]);
+      } catch (error) {
+        showToast(error.message || `${labels[action]}工作区失败`, 'error');
+      } finally {
+        delete workspaceActionLoading[workspaceId];
+        renderDashboardGroups();
+      }
+    }
+
+    function startWorkspace(workspaceId) {
+      workspaceAction(workspaceId, 'start');
+    }
+
+    function stopWorkspace(workspaceId) {
+      workspaceAction(workspaceId, 'stop');
+    }
+
     async function fetchScriptBundles(showNotice = false) {
       try {
-        const response = await fetch('/api/script-bundles');
-        const json = await response.json();
-        scriptBundles = Array.isArray(json.data) ? json.data : [];
-        renderDashboardGroups();
+        if (window.HubKitApi?.getScriptBundles) {
+          scriptBundles = await window.HubKitApi.getScriptBundles();
+        } else {
+          const response = await fetch('/api/script-bundles');
+          const json = await response.json();
+          scriptBundles = Array.isArray(json.data) ? json.data : [];
+        }
+        patchScriptDashboardSections();
         if (showNotice) showToast('脚本工具箱已刷新');
       } catch (error) {
         console.error('Failed to fetch script bundles:', error);
-        renderDashboardGroups();
+        patchScriptDashboardSections();
         if (showNotice) showToast('脚本工具箱刷新失败', 'error');
       }
     }
 
     async function fetchSystemActions(showNotice = false) {
       try {
-        const response = await fetch('/api/system-actions');
-        const json = await response.json();
-        systemActions = Array.isArray(json.data) ? json.data : [];
-        renderDashboardGroups();
+        if (window.HubKitApi?.getSystemActions) {
+          systemActions = await window.HubKitApi.getSystemActions();
+        } else {
+          const response = await fetch('/api/system-actions');
+          const json = await response.json();
+          systemActions = Array.isArray(json.data) ? json.data : [];
+        }
+        patchScriptDashboardSections();
         if (showNotice) showToast('系统调优已刷新');
       } catch (error) {
         console.error('Failed to fetch system actions:', error);
         systemActions = [];
-        renderDashboardGroups();
+        patchScriptDashboardSections();
         if (showNotice) showToast('系统调优刷新失败', 'error');
       }
     }
 
-    async function fetchSettings() {
+    async function fetchSettings({ forceRender = false } = {}) {
       try {
-        const response = await fetch('/api/settings');
-        const json = await response.json();
-        if (json.success) {
-          settings = {
-            autoStart: {},
-            startOrder: [],
-            visibility: {},
-            schedules: {},
-            moduleWebUrls: {},
-            startPolicies: {},
-            groupStartPolicyTemplates: {},
-            ...json.data,
-          };
-          if (currentView === 'settings') renderSettings();
+        if (window.HubKitApi?.getSettings) {
+          const data = await window.HubKitApi.getSettings();
+          if (data) {
+            settings = {
+              autoStart: {},
+              startOrder: [],
+              visibility: {},
+              schedules: {},
+              moduleWebUrls: {},
+              groups: [{ id: 'default', name: '默认分组' }],
+              moduleGroups: {},
+              startPolicies: {},
+              groupStartPolicyTemplates: {},
+              workspaces: [],
+              ...data,
+            };
+            settingsDirty = false;
+            requestSettingsRender({ force: forceRender });
+          }
+        } else {
+          const response = await fetch('/api/settings');
+          const json = await response.json();
+          if (json.success) {
+            settings = {
+              autoStart: {},
+              startOrder: [],
+              visibility: {},
+              schedules: {},
+              moduleWebUrls: {},
+              groups: [{ id: 'default', name: '默认分组' }],
+              moduleGroups: {},
+              startPolicies: {},
+              groupStartPolicyTemplates: {},
+              workspaces: [],
+              ...json.data,
+            };
+            settingsDirty = false;
+            requestSettingsRender({ force: forceRender });
+          }
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       }
     }
 
+    async function fetchConfigBackups(showNotice = false) {
+      configBackupsLoading = true;
+      try {
+        if (window.HubKitApi?.getConfigBackups) {
+          configBackups = await window.HubKitApi.getConfigBackups();
+        } else {
+          const response = await fetch('/api/config/backups');
+          const json = await response.json();
+          if (!json.success) throw new Error(json.error || '备份列表加载失败');
+          configBackups = Array.isArray(json.data) ? json.data : [];
+        }
+        if (showNotice) showToast('配置备份已刷新');
+      } catch (error) {
+        console.error('Failed to fetch config backups:', error);
+        if (showNotice) showToast(error.message || '备份列表加载失败', 'error');
+      } finally {
+        configBackupsLoading = false;
+        requestSettingsRender();
+      }
+    }
+
+    async function fetchConfigRestorePreview(backupId) {
+      if (window.HubKitApi?.getConfigRestorePreview) {
+        return await window.HubKitApi.getConfigRestorePreview(backupId);
+      }
+      const response = await fetch(`/api/config/backups/${encodeURIComponent(backupId)}/preview`);
+      const json = await response.json();
+      if (!json.success) throw new Error(json.error || '恢复影响预览失败');
+      return json.data;
+    }
+
+    async function restoreConfigBackup(backupId) {
+      const backup = configBackups.find((item) => item.id === backupId);
+      const backupLabel = backup ? formatStartedAt(backup.createdAt) : backupId;
+
+      try {
+        const preview = await fetchConfigRestorePreview(backupId);
+        const unsavedWarning = settingsDirty ? '当前还有未保存的运行配置，恢复后这些临时修改会丢失。\n\n' : '';
+        const impactMessage = formatConfigRestoreImpact(preview, backupLabel);
+        if (!confirmHighRiskAction({
+          title: '恢复 HubKit 配置备份',
+          impact: [
+            unsavedWarning.trim(),
+            impactMessage,
+          ].filter(Boolean),
+          recovery: '当前配置会先自动备份，可继续从备份列表恢复回来。',
+          confirmLabel: '继续恢复',
+        })) {
+          return;
+        }
+
+        const json = window.HubKitApi?.restoreConfigBackup
+          ? await window.HubKitApi.restoreConfigBackup(backupId, await highRiskHeaders(`config-backup:${backupId}:restore`))
+          : await (async () => {
+            const response = await fetch(`/api/config/backups/${encodeURIComponent(backupId)}/restore`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`config-backup:${backupId}:restore`),
+            });
+            return await response.json();
+          })();
+        if (!json.success) throw new Error(json.error || '配置恢复失败');
+        if (json.data?.settings) {
+          settings = {
+            autoStart: {},
+            startOrder: [],
+            visibility: {},
+            schedules: {},
+            moduleWebUrls: {},
+            groups: [{ id: 'default', name: '默认分组' }],
+            moduleGroups: {},
+            startPolicies: {},
+            groupStartPolicyTemplates: {},
+            workspaces: [],
+            ...json.data.settings,
+          };
+        }
+        configBackups = Array.isArray(json.data?.backups) ? json.data.backups : configBackups;
+        settingsDirty = false;
+        await fetchModules();
+        renderDashboard();
+        requestSettingsRender({ force: true });
+        showToast(json.message || '配置已恢复');
+      } catch (error) {
+        showToast(error.message || '配置恢复失败', 'error');
+      }
+    }
+
+    function formatConfigRestoreImpact(preview, backupLabel) {
+      const totals = preview?.totals || {};
+      const changedAreas = Array.isArray(preview?.changedAreas) && preview.changedAreas.length > 0
+        ? preview.changedAreas.join('、')
+        : '未发现明显差异';
+      const lines = [
+        `将恢复 ${backupLabel} 的 HubKit 配置。`,
+        `影响范围：${changedAreas}`,
+        `影响统计：新增 ${totals.added || 0} 项，移除/关闭 ${totals.removed || 0} 项，变更 ${totals.changed || 0} 项。`,
+      ];
+
+      const details = [];
+      addRestoreImpactLine(details, '模块目录新增', preview?.moduleDirs?.added);
+      addRestoreImpactLine(details, '模块目录移除', preview?.moduleDirs?.removed);
+      addRestoreImpactLine(details, '新增分组', preview?.groups?.added?.map((group) => group.name || group.id));
+      addRestoreImpactLine(details, '移除分组', preview?.groups?.removed?.map((group) => group.name || group.id));
+      addRestoreImpactLine(details, '重命名分组', preview?.groups?.renamed?.map((group) => `${group.from} -> ${group.to}`));
+      addRestoreImpactLine(details, '启用自启', preview?.autoStart?.enabled);
+      addRestoreImpactLine(details, '关闭自启', preview?.autoStart?.disabled);
+      addRestoreImpactLine(details, '新增定时', preview?.schedules?.added);
+      addRestoreImpactLine(details, '移除定时', preview?.schedules?.removed);
+      addRestoreImpactLine(details, '变更定时', preview?.schedules?.changed);
+      addRestoreImpactLine(details, '分组归属变更', preview?.moduleGroupChanges);
+      addRestoreImpactLine(details, '启动策略变更', preview?.startPolicyChanges);
+      addRestoreImpactLine(details, 'Web 入口变更', preview?.webUrlChanges);
+      addRestoreImpactLine(details, '卡片显示变更', preview?.visibilityChanges);
+      if (preview?.startOrderChanged) {
+        details.push('启动顺序：将按备份配置恢复');
+      }
+
+      return details.length > 0
+        ? `${lines.join('\n')}\n\n主要变化：\n${details.slice(0, 10).map((item) => `- ${item}`).join('\n')}`
+        : `${lines.join('\n')}\n\n备份内容与当前配置基本一致。`;
+    }
+
+    function addRestoreImpactLine(lines, label, values) {
+      if (!Array.isArray(values) || values.length === 0) return;
+      const visible = values.slice(0, 4).map((value) => String(value));
+      const suffix = values.length > visible.length ? ` 等 ${values.length} 项` : '';
+      lines.push(`${label}：${visible.join('、')}${suffix}`);
+    }
+
+    function confirmHighRiskAction({ title, impact = [], recovery = '', confirmLabel = '继续' }) {
+      if (window.HubKitApi?.confirmHighRiskAction) {
+        return window.HubKitApi.confirmHighRiskAction({ title, impact, recovery, confirmLabel });
+      }
+      const sections = [
+        `高风险操作：${title}`,
+        ...impact.filter(Boolean),
+        recovery ? `回退路径：${recovery}` : '',
+        `确认后将执行：${confirmLabel}`,
+      ].filter(Boolean);
+      return window.confirm(sections.join('\n\n'));
+    }
+
+    async function highRiskHeaders(actionId, extra = {}) {
+      if (window.HubKitApi?.highRiskHeaders) {
+        return window.HubKitApi.highRiskHeaders(actionId, extra);
+      }
+      const response = await fetch('/api/high-risk-confirmations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: actionId }),
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok || json.success === false || !json.data?.token) {
+        throw new Error(json.error || '高风险确认票据签发失败');
+      }
+      return {
+        ...extra,
+        'x-hubkit-high-risk-confirmation': actionId,
+        'x-hubkit-high-risk-token': json.data.token,
+      };
+    }
+
     async function saveSettings() {
       try {
-        const response = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            autoStart: settings.autoStart,
-            startOrder: settings.startOrder,
-            groups: settings.groups,
-            moduleGroups: settings.moduleGroups,
-            startPolicies: settings.startPolicies,
-            groupStartPolicyTemplates: settings.groupStartPolicyTemplates,
-          }),
-        });
-        const json = await response.json();
+        const payload = {
+          autoStart: settings.autoStart,
+          startOrder: settings.startOrder,
+          groups: settings.groups,
+          moduleGroups: settings.moduleGroups,
+          startPolicies: settings.startPolicies,
+          groupStartPolicyTemplates: settings.groupStartPolicyTemplates,
+          workspaces: settings.workspaces || [],
+        };
+        const json = window.HubKitApi?.saveSettings
+          ? await window.HubKitApi.saveSettings(payload)
+          : await (async () => {
+            const response = await fetch('/api/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            return await response.json();
+          })();
         if (json.success) {
+          settingsDirty = false;
           showToast('设置已保存');
-          fetchSettings();
+          fetchSettings({ forceRender: true });
+          fetchWorkspaces();
+          fetchConfigBackups();
         } else {
           showToast(json.error || '保存失败', 'error');
         }
@@ -3342,15 +4735,20 @@
       try {
         moduleActionLoading[id] = action;
         renderDashboard();
-        const response = await fetch(`/api/modules/${encodeURIComponent(id)}/${action}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: action === 'stop' ? JSON.stringify({ force: false }) : undefined,
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || `${labels[action]}失败`);
-        }
+        const json = window.HubKitApi?.runModuleAction
+          ? await window.HubKitApi.runModuleAction(id, action)
+          : await (async () => {
+            const response = await fetch(`/api/modules/${encodeURIComponent(id)}/${action}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: action === 'stop' ? JSON.stringify({ force: false }) : undefined,
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || `${labels[action]}失败`);
+            }
+            return fallbackJson;
+          })();
         showToast(json.message || `${labels[action]}成功`);
         fetchModules();
       } catch (error) {
@@ -3364,10 +4762,14 @@
 
     async function fetchStartPolicyTemplates() {
       try {
-        const response = await fetch('/api/start-policy-templates');
-        const json = await response.json();
-        startPolicyTemplates = Array.isArray(json.data) ? json.data : [];
-        if (currentView === 'settings') renderSettings();
+        if (window.HubKitApi?.getStartPolicyTemplates) {
+          startPolicyTemplates = await window.HubKitApi.getStartPolicyTemplates();
+        } else {
+          const response = await fetch('/api/start-policy-templates');
+          const json = await response.json();
+          startPolicyTemplates = Array.isArray(json.data) ? json.data : [];
+        }
+        requestSettingsRender();
       } catch (error) {
         console.error('Failed to fetch start policy templates:', error);
       }
@@ -3375,9 +4777,13 @@
 
     async function fetchModuleAudit(showNotice = false) {
       try {
-        const response = await fetch('/api/module-audit');
-        const json = await response.json();
-        moduleAuditReports = Array.isArray(json.data) ? json.data : [];
+        if (window.HubKitApi?.getModuleAudit) {
+          moduleAuditReports = await window.HubKitApi.getModuleAudit();
+        } else {
+          const response = await fetch('/api/module-audit');
+          const json = await response.json();
+          moduleAuditReports = Array.isArray(json.data) ? json.data : [];
+        }
         if (currentView === 'diagnostics') renderDiagnostics();
         if (showNotice) showToast('模块体检已刷新');
       } catch (error) {
@@ -3385,6 +4791,15 @@
         if (currentView === 'diagnostics') renderDiagnosticsError();
         if (showNotice) showToast('模块体检刷新失败', 'error');
       }
+    }
+
+    async function checkModuleStatus(moduleId) {
+      await Promise.all([
+        fetchModules(false),
+        fetchModuleAudit(false),
+      ]);
+      if (currentView === 'diagnostics') renderDiagnostics();
+      showToast(`${moduleId} 状态已刷新`);
     }
 
     function startModule(id) {
@@ -3401,6 +4816,9 @@
 
     async function fetchLogs(id) {
       try {
+        if (window.HubKitApi?.getModuleLogs) {
+          return await window.HubKitApi.getModuleLogs(id, { lines: 200 });
+        }
         const response = await fetch(`/api/modules/${encodeURIComponent(id)}/logs?lines=200`);
         const json = await response.json();
         if (json.success) return json.data || '';
@@ -3413,6 +4831,9 @@
 
     async function fetchScriptLogs(bundleId, actionId, runId = '') {
       try {
+        if (window.HubKitApi?.getScriptActionLogs) {
+          return await window.HubKitApi.getScriptActionLogs(bundleId, actionId, { runId });
+        }
         const search = runId ? `?runId=${encodeURIComponent(runId)}` : '';
         const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/logs${search}`);
         const json = await response.json();
@@ -3421,6 +4842,34 @@
       } catch (error) {
         console.error('Failed to fetch script logs:', error);
         return '无法加载日志';
+      }
+    }
+
+    async function fetchGlobalLogs() {
+      try {
+        const query = document.getElementById('logFilter')?.value?.trim() || '';
+        const level = document.getElementById('logLevelFilter')?.value || 'all';
+        const search = new URLSearchParams({
+          q: query,
+          level,
+          lines: '500',
+          limit: '120',
+        });
+        if (window.HubKitApi?.searchLogs) {
+          return await window.HubKitApi.searchLogs({
+            q: query,
+            level,
+            lines: 500,
+            limit: 120,
+          });
+        }
+        const response = await fetch(`/api/log-search?${search.toString()}`);
+        const json = await response.json();
+        if (json.success) return json.data;
+        return { error: json.error || '无法搜索日志', results: [] };
+      } catch (error) {
+        console.error('Failed to search logs:', error);
+        return { error: '无法搜索日志', results: [] };
       }
     }
 
@@ -3531,14 +4980,31 @@
         showToast('没有运行中的 Web 终端会话', 'error');
         return;
       }
+      if (!confirmHighRiskAction({
+        title: '停止正在运行的 Web 终端',
+        impact: [
+          '会停止当前脚本进程。',
+          '终端输出会保留在当前面板中，直到关闭或清屏。',
+        ],
+        recovery: '脚本历史仍保留在脚本工具箱记录中；必要时可重新启动脚本。',
+        confirmLabel: '停止 Web 终端',
+      })) {
+        return;
+      }
       try {
-        const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(activeTerminalSessionId)}/kill`, {
-          method: 'POST',
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '停止失败');
-        }
+        const { json } = window.HubKitApi?.killTerminalSession
+          ? await window.HubKitApi.killTerminalSession(activeTerminalSessionId, await highRiskHeaders(`terminal-session:${activeTerminalSessionId}:kill`))
+          : await (async () => {
+            const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(activeTerminalSessionId)}/kill`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`terminal-session:${activeTerminalSessionId}:kill`),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || '停止失败');
+            }
+            return { status: response.status, json: fallbackJson };
+          })();
         activeTerminalSessionId = null;
         terminalSessionState = 'stopped';
         updateTerminalStatus('已停止，可关闭或查看输出');
@@ -3557,20 +5023,38 @@
         return;
       }
 
-      if (!window.confirm('当前 Web 终端仍在运行。关闭会停止脚本进程并清空面板输出。继续？')) {
+      if (!confirmHighRiskAction({
+        title: '关闭正在运行的 Web 终端',
+        impact: [
+          '会停止当前脚本进程。',
+          '会清空当前终端面板的实时输出显示。',
+        ],
+        recovery: '脚本历史仍保留在脚本工具箱记录中；必要时可重新启动脚本。',
+        confirmLabel: '停止并关闭',
+      })) {
         return;
       }
 
       try {
-        const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(sessionId)}/kill`, {
-          method: 'POST',
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok && response.status !== 404) {
-          throw new Error(json.error || '关闭失败');
-        }
+        const { status } = window.HubKitApi?.killTerminalSession
+          ? await window.HubKitApi.killTerminalSession(sessionId, await highRiskHeaders(`terminal-session:${sessionId}:kill`), {
+            allowNotFound: true,
+            failureMessage: '关闭失败',
+            throwOnSuccessFalse: false,
+          })
+          : await (async () => {
+            const response = await fetch(`/api/terminal-sessions/${encodeURIComponent(sessionId)}/kill`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`terminal-session:${sessionId}:kill`),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok && response.status !== 404) {
+              throw new Error(fallbackJson.error || '关闭失败');
+            }
+            return { status: response.status, json: fallbackJson };
+          })();
         resetTerminalPanelState();
-        showToast(response.status === 404 ? '终端会话已结束，面板已关闭' : 'Web 终端已停止并关闭');
+        showToast(status === 404 ? '终端会话已结束，面板已关闭' : 'Web 终端已停止并关闭');
         fetchScriptBundles();
       } catch (error) {
         showToast(error.message || '关闭失败', 'error');
@@ -3652,6 +5136,62 @@
       renderDashboardGroups();
     }
 
+    function buildDashboardSectionElement(section) {
+      const template = document.createElement('template');
+      template.innerHTML = createDashboardSection(section).trim();
+      return template.content.firstElementChild;
+    }
+
+    function patchDashboardSections(sectionMatcher, sections) {
+      if (currentView !== 'dashboard') return true;
+      const content = document.getElementById('dashboardGroupContent');
+      const stack = content?.querySelector('.module-group-stack');
+      if (!stack) {
+        renderDashboardGroups();
+        return false;
+      }
+
+      const existingSections = [...stack.querySelectorAll('[data-dashboard-group]')]
+        .filter((sectionEl) => sectionMatcher(sectionEl.dataset.dashboardGroup || ''));
+      const nextSections = sections.filter((section) => sectionMatcher(section.id));
+      const existingIds = existingSections.map((sectionEl) => sectionEl.dataset.dashboardGroup || '');
+      const nextIds = nextSections.map((section) => section.id);
+
+      if (existingIds.length !== nextIds.length || existingIds.some((id, index) => id !== nextIds[index])) {
+        renderDashboardGroups();
+        return false;
+      }
+
+      nextSections.forEach((section, index) => {
+        const nextEl = buildDashboardSectionElement(section);
+        if (!nextEl) return;
+        existingSections[index].replaceWith(nextEl);
+      });
+      requestAnimationFrame(syncDashboardRailState);
+      return true;
+    }
+
+    function patchModuleDashboardSections() {
+      return patchDashboardSections(
+        (sectionId) => sectionId.startsWith('group-'),
+        buildDashboardSections(),
+      );
+    }
+
+    function patchWorkspaceDashboardSections() {
+      return patchDashboardSections(
+        (sectionId) => sectionId === 'workspace-orchestration',
+        buildDashboardSections(),
+      );
+    }
+
+    function patchScriptDashboardSections() {
+      return patchDashboardSections(
+        (sectionId) => sectionId.startsWith('script-') || sectionId.startsWith('system-action-'),
+        buildDashboardSections(),
+      );
+    }
+
     function renderDashboardError() {
       const content = document.getElementById('dashboardGroupContent');
       const rail = document.getElementById('dashboardGroupRail');
@@ -3672,11 +5212,13 @@
       if (!container) return;
 
       const reports = [...moduleAuditReports].sort((a, b) => a.score - b.score || a.moduleName.localeCompare(b.moduleName, 'zh-CN'));
-      const errorCount = reports.filter((report) => report.findings.some((item) => item.severity === 'error')).length;
-      const warnCount = reports.filter((report) => !report.findings.some((item) => item.severity === 'error') && report.findings.some((item) => item.severity === 'warn')).length;
+      const visibleReports = reports.filter((report) => reportMatchesDiagnosticsFilter(report, diagnosticsFilter));
+      const errorCount = reports.filter((report) => reportHasSeverity(report, 'error')).length;
+      const warnCount = reports.filter((report) => !reportHasSeverity(report, 'error') && reportHasSeverity(report, 'warn')).length;
       const healthyCount = reports.length - errorCount - warnCount;
-      const missingCommandCount = reports.filter((report) => (report.environment?.missingCommands || []).length > 0).length;
-      const missingEnvCount = reports.filter((report) => (report.environment?.missingEnvVars || []).length > 0).length;
+      const missingCommandCount = reports.filter(reportHasMissingCommands).length;
+      const missingEnvCount = reports.filter(reportHasMissingEnvVars).length;
+      const filterOptions = getDiagnosticsFilterOptions(reports);
 
       container.innerHTML = `
         <div class="section-heading">
@@ -3724,16 +5266,68 @@
           <div class="summary-item glass-panel" data-summary-tone="stopped">
             <span class="summary-label">缺变量</span>
             <span class="summary-value">${missingEnvCount}</span>
-            <span class="summary-note">来自 `.env.example` 等模板</span>
+            <span class="summary-note">来自 .env.example 等模板</span>
           </div>
+        </div>
+
+        <div class="diagnostics-filter-bar" aria-label="体检筛选">
+          <div class="segmented-tabs" role="tablist" aria-label="体检结果筛选">
+            ${filterOptions.map((option) => `
+              <button
+                class="segmented-tab ${diagnosticsFilter === option.id ? 'active' : ''}"
+                type="button"
+                role="tab"
+                aria-selected="${diagnosticsFilter === option.id ? 'true' : 'false'}"
+                onclick="setDiagnosticsFilter('${jsString(option.id)}')"
+              >
+                <span>${escapeHtml(option.label)}</span>
+                <span>${escapeHtml(String(option.count))}</span>
+              </button>
+            `).join('')}
+          </div>
+          <span class="diagnostics-filter-count">当前显示 ${visibleReports.length} / ${reports.length} 个模块</span>
         </div>
 
         <section class="toolbox-section">
           <div class="toolbox-grid">
-            ${reports.length > 0 ? reports.map(createAuditCard).join('') : emptySettings('暂无体检结果')}
+            ${visibleReports.length > 0 ? visibleReports.map(createAuditCard).join('') : emptySettings(reports.length > 0 ? '当前筛选无匹配体检结果' : '暂无体检结果')}
           </div>
         </section>
       `;
+    }
+
+    function getDiagnosticsFilterOptions(reports) {
+      return window.HubKitDiagnostics.getDiagnosticsFilterOptions(reports);
+    }
+
+    function setDiagnosticsFilter(filter) {
+      diagnosticsFilter = ['all', 'error', 'warn', 'missing-command', 'missing-env'].includes(filter) ? filter : 'all';
+      renderDiagnostics();
+    }
+
+    function reportMatchesDiagnosticsFilter(report, filter) {
+      return window.HubKitDiagnostics.reportMatchesDiagnosticsFilter(report, filter);
+    }
+
+    function reportHasSeverity(report, severity) {
+      return window.HubKitDiagnostics.reportHasSeverity(report, severity);
+    }
+
+    function reportHasMissingCommands(report) {
+      return window.HubKitDiagnostics.reportHasMissingCommands(report);
+    }
+
+    function reportHasMissingEnvVars(report) {
+      return window.HubKitDiagnostics.reportHasMissingEnvVars(report);
+    }
+
+    function toggleAuditFindings(moduleId) {
+      if (expandedAuditModules.has(moduleId)) {
+        expandedAuditModules.delete(moduleId);
+      } else {
+        expandedAuditModules.add(moduleId);
+      }
+      renderDiagnostics();
     }
 
     function renderDiagnosticsError() {
@@ -3752,7 +5346,9 @@
     function createAuditCard(report) {
       const findings = Array.isArray(report.findings) ? report.findings : [];
       const module = modules.find((item) => item.id === report.moduleId);
-      const topFindings = findings.slice(0, 4);
+      const expanded = expandedAuditModules.has(report.moduleId);
+      const visibleFindings = expanded ? findings : findings.slice(0, 4);
+      const hiddenFindingCount = Math.max(0, findings.length - visibleFindings.length);
       const templateName = getStartPolicyTemplateName(report.inheritedTemplateId);
       const environment = report.environment || {};
       const envSummary = [
@@ -3768,7 +5364,7 @@
               <h3>${escapeHtml(report.moduleName)}</h3>
               <p>${escapeHtml(report.moduleId)} · ${escapeHtml(report.groupId)} · 评分 ${escapeHtml(String(report.score))}</p>
             </div>
-            <div class="state-badge ${report.findings.some((item) => item.severity === 'error') ? 'error' : report.findings.some((item) => item.severity === 'warn') ? 'starting' : 'running'}">
+            <div class="state-badge ${reportHasSeverity(report, 'error') ? 'error' : reportHasSeverity(report, 'warn') ? 'starting' : 'running'}">
               <span class="state-dot"></span>
               <span>${escapeHtml(report.healthy ? '稳定' : '需处理')}</span>
             </div>
@@ -3798,23 +5394,63 @@
           </div>
 
           <div class="settings-list">
-            ${topFindings.map((finding) => `
-              <div class="settings-item">
-                <div class="settings-item-info">
-                  <span class="settings-item-name">${escapeHtml(getAuditSeverityText(finding.severity))} · ${escapeHtml(finding.summary)}</span>
-                  <span class="settings-item-id">${escapeHtml(finding.details || finding.recommendation || '无附加说明')}</span>
-                </div>
-              </div>
-            `).join('')}
+            ${visibleFindings.map((finding) => createAuditFindingItem(report, module, finding)).join('')}
           </div>
 
           <div class="inline-actions">
+            ${findings.length > 4 ? `<button class="btn btn-text btn-sm" type="button" onclick="toggleAuditFindings('${jsString(report.moduleId)}')">${icon(expanded ? 'unfold_less' : 'unfold_more')}<span>${expanded ? '收起 findings' : `显示全部 findings（剩余 ${hiddenFindingCount} 条）`}</span></button>` : ''}
             <button class="btn btn-tonal btn-sm" type="button" onclick="checkModuleStatus('${jsString(report.moduleId)}')">${icon('refresh')}<span>检查状态</span></button>
             <button class="btn btn-text btn-sm" type="button" onclick="showLogs('${jsString(report.moduleId)}', '${jsString(report.moduleName)}')">${icon('article')}<span>查看日志</span></button>
             ${module?.webUrl ? `<button class="btn btn-text btn-sm" type="button" onclick="openModuleUrl('${jsString(report.moduleId)}', '${jsString(module.webUrl)}')">${icon('open_in_new')}<span>打开入口</span></button>` : ''}
           </div>
         </article>
       `;
+    }
+
+    function createAuditFindingItem(report, module, finding) {
+      return `
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(getAuditSeverityText(finding.severity))} · ${escapeHtml(finding.summary)}</span>
+            <span class="settings-item-id">${escapeHtml(finding.details || finding.recommendation || '无附加说明')}</span>
+            <span class="settings-item-id">影响：${escapeHtml(finding.impact || '可能影响模块稳定性')}</span>
+            ${finding.logExcerpt ? `<pre class="audit-log-excerpt" aria-label="最近相关日志">${escapeHtml(finding.logExcerpt)}</pre>` : ''}
+            <span class="settings-item-id">修复：${escapeHtml(finding.fix?.label || '手动处理')} · ${escapeHtml(finding.fix?.description || finding.recommendation || '根据详情处理')}</span>
+            <span class="settings-item-id">验证：${escapeHtml(finding.verify?.label || '重新检查')} · ${escapeHtml(finding.verify?.description || '刷新体检结果')}</span>
+            <div class="inline-actions" style="margin-top: 8px;">
+              ${createAuditActionButton(report, module, finding.fix, '修复')}
+              ${createAuditActionButton(report, module, finding.verify, '验证')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createAuditActionButton(report, module, action, role) {
+      if (!action || action.kind === 'manual') {
+        return `<span class="settings-chip">${escapeHtml(role)}：${escapeHtml(action?.label || '手动处理')}</span>`;
+      }
+      const moduleId = jsString(report.moduleId);
+      const moduleName = jsString(report.moduleName);
+      const handlers = {
+        check_status: `checkModuleStatus('${moduleId}')`,
+        open_logs: `showLogs('${moduleId}', '${moduleName}')`,
+        force_close: `forceCloseModule('${moduleId}')`,
+        open_settings: `showView('settings')`,
+        open_url: module?.webUrl ? `openModuleUrl('${moduleId}', '${jsString(module.webUrl)}')` : '',
+      };
+      const icons = {
+        check_status: 'refresh',
+        open_logs: 'article',
+        force_close: 'stop_circle',
+        open_settings: 'tune',
+        open_url: 'open_in_new',
+      };
+      const handler = handlers[action.kind];
+      if (!handler) {
+        return `<span class="settings-chip">${escapeHtml(role)}：${escapeHtml(action.label)}</span>`;
+      }
+      return `<button class="btn btn-text btn-sm" type="button" title="${escapeAttr(action.description || action.label)}" onclick="${handler}">${icon(icons[action.kind] || 'refresh')}<span>${escapeHtml(action.label)}</span></button>`;
     }
 
     function updateSummary() {
@@ -3867,23 +5503,15 @@
     }
 
     function buildVisibleModuleGroups(visibleModules) {
-      const groups = Array.isArray(settings.groups) && settings.groups.length > 0
-        ? settings.groups
-        : [{ id: 'default', name: '默认分组' }];
-      const moduleGroups = settings.moduleGroups || {};
+      return window.HubKitWorkspace.buildVisibleModuleGroups(
+        visibleModules,
+        settings.groups,
+        settings.moduleGroups,
+      );
+    }
 
-      const groupMap = new Map(groups.map((group) => [group.id, { ...group, modules: [] }]));
-      if (!groupMap.has('default')) {
-        groupMap.set('default', { id: 'default', name: '默认分组', modules: [] });
-      }
-
-      visibleModules.forEach((module) => {
-        const groupId = module.groupId || moduleGroups[module.id] || 'default';
-        const target = groupMap.get(groupId) || groupMap.get('default');
-        target.modules.push(module);
-      });
-
-      return Array.from(groupMap.values()).filter((group) => group.modules.length > 0);
+    function buildWorkspaceDashboardSection() {
+      return window.HubKitWorkspace.buildWorkspaceDashboardSection(workspaces, settings.workspaces);
     }
 
     function createModuleGroupSection(group) {
@@ -3903,86 +5531,55 @@
     }
 
     function buildDashboardSections() {
-      const sections = [];
-      const moduleSections = buildVisibleModuleGroups(modules.filter(m => m.visible !== false));
-      sections.push(...moduleSections.map((group) => ({
-        id: `group-${group.id}`,
-        kind: 'module',
-        name: group.name,
-        icon: 'dashboard',
-        accent: getDashboardGroupAccent(group.id, 'module'),
-        kicker: '模块分组',
-        items: group.modules,
-      })));
+      return window.HubKitDashboard.buildDashboardSections({
+        checkinSites,
+        workspaceSection: buildWorkspaceDashboardSection(),
+        moduleGroups: buildVisibleModuleGroups(modules.filter(m => m.visible !== false)),
+        scriptBundle: scriptBundles[0],
+        systemActions,
+        getScriptGroupIcon,
+        getDashboardGroupAccent,
+      });
+    }
 
-      const bundle = scriptBundles[0];
-      if (bundle && Array.isArray(bundle.groups)) {
-        sections.push(...getScriptDashboardSections(bundle));
-      }
-
-      appendSystemActionSections(sections);
-
-      return sections;
+    function appendCheckinSections(sections) {
+      const section = window.HubKitDashboard.buildCheckinDashboardSection(checkinSites);
+      if (section) sections.push(section);
     }
 
     function appendSystemActionSections(sections) {
-      if (!Array.isArray(systemActions) || systemActions.length === 0) return;
+      const nextSections = window.HubKitDashboard.appendSystemActionDashboardSections(
+        sections,
+        systemActions,
+        getDashboardGroupAccent,
+      );
+      sections.splice(0, sections.length, ...nextSections);
+    }
 
-      systemActions.forEach((action) => {
-        const targetSectionId = `script-${action.groupId}`;
-        const section = sections.find((item) => item.id === targetSectionId);
-        if (section) {
-          section.items = [...section.items, action];
-          section.kind = 'mixed';
-          return;
-        }
-
-        sections.push({
-          id: `system-action-${action.groupId}`,
-          kind: 'system-action',
-          name: action.groupId === 'system-tuning' ? '系统调优' : action.groupId,
-          icon: action.groupId === 'system-tuning' ? 'tune' : 'dashboard',
-          accent: getDashboardGroupAccent(action.groupId, 'script'),
-          kicker: '原生调优',
-          items: [action],
-        });
-      });
+    function appendWorkspaceSections(sections) {
+      const section = buildWorkspaceDashboardSection();
+      if (section) sections.push(section);
     }
 
     function getScriptDashboardSections(bundleArg) {
       const bundle = bundleArg || scriptBundles[0];
-      if (!bundle || !Array.isArray(bundle.groups)) return [];
-      return bundle.groups.map((group) => ({
-        id: `script-${group.id}`,
-        kind: 'script',
-        name: group.title,
-        icon: getScriptGroupIcon(group.id),
-        accent: getDashboardGroupAccent(group.id, 'script'),
-        kicker: '脚本工具箱',
-        description: group.description || '',
-        bundleId: bundle.id,
-        items: group.actions || [],
-      }));
+      return window.HubKitDashboard.buildScriptDashboardSections(
+        bundle,
+        getScriptGroupIcon,
+        getDashboardGroupAccent,
+      );
     }
 
     function getScriptGroupIcon(groupId) {
-      if (groupId === 'environment') return 'download';
-      if (groupId === 'system-tuning') return 'tune';
-      if (groupId === 'data-tools') return 'article';
-      return 'dashboard';
+      return window.HubKitFormatters.getScriptGroupIcon(groupId);
     }
 
     function getDashboardGroupAccent(groupId, kind) {
-      if (kind === 'script') {
-        if (groupId === 'environment') return 'var(--md-primary)';
-        if (groupId === 'system-tuning') return 'var(--md-warning)';
-        if (groupId === 'data-tools') return 'var(--md-tertiary)';
-      }
-      if (groupId === 'default') return 'var(--md-primary)';
-      return 'var(--md-secondary)';
+      return window.HubKitFormatters.getDashboardGroupAccent(groupId, kind);
     }
 
     function createDashboardSection(section) {
+      const cardCount = Number(section.cardCount || section.items.length || 0);
       const collapsed = isDashboardGroupCollapsed(section.id);
       return `
         <section class="module-group ${collapsed ? 'collapsed' : ''}" id="dashboard-section-${escapeAttr(section.id)}" data-dashboard-group="${escapeAttr(section.id)}" style="--group-accent: ${escapeAttr(section.accent || 'var(--md-primary)')}">
@@ -3995,7 +5592,7 @@
                 <h3 class="module-group-title">${escapeHtml(section.name)}</h3>
               </div>
             </button>
-            <span class="module-group-meta">${section.items.length} 张卡片</span>
+            <span class="module-group-meta">${cardCount} 张卡片</span>
           </div>
           <div class="modules-grid">
             ${renderSectionCards(section)}
@@ -4005,8 +5602,14 @@
     }
 
     function renderSectionCards(section) {
+      if (section.kind === 'checkin-hub') {
+        return createCheckinHubCard();
+      }
       if (section.kind === 'module') {
         return section.items.map(createModuleCard).join('');
+      }
+      if (section.kind === 'workspace') {
+        return section.items.map(createWorkspaceCard).join('');
       }
       return section.items.map((item) => {
         if (isSystemActionItem(item)) {
@@ -4014,6 +5617,749 @@
         }
         return createScriptActionCard(section.bundleId, section.name, item);
       }).join('');
+    }
+
+    function createWorkspaceCard(workspace) {
+      const workspaceCopy = buildWorkspaceCardCopy(workspace);
+      const id = workspaceCopy.id;
+      const safeId = jsString(id);
+      const workspaceCard = buildWorkspaceCardViewModel(workspace);
+      const moduleIds = workspaceCard.moduleIds;
+      const runtimeState = buildWorkspaceCardRuntimeState(id);
+      const plan = runtimeState.plan;
+      const metrics = buildWorkspaceCardMetrics(moduleIds, plan);
+      const planLoadingText = buildWorkspacePlanLoadingText(plan, runtimeState.planLoading);
+      const actionButtons = buildWorkspaceActionButtons(runtimeState.planLoading, runtimeState.actionLoading);
+      const moduleNames = buildWorkspaceModuleNames(workspaceCard.orderedIds);
+      const workspaceSummaries = buildWorkspacePlanSummaries(plan);
+      const runSummary = workspaceSummaries.runSummary;
+
+      return `
+        <article class="module-card workspace-card glass-panel" data-workspace-id="${escapeAttr(id)}">
+          <div class="module-header">
+            <div class="module-title">
+              <h3>${escapeHtml(workspaceCopy.title)}</h3>
+              <span class="module-id">${escapeHtml(id)}</span>
+            </div>
+            <span class="status-badge running">${escapeHtml(workspaceCard.policyText)}</span>
+          </div>
+
+          <p class="module-description">${escapeHtml(workspaceCopy.description)}</p>
+
+          <div class="module-primary-row">
+            <div class="module-primary-meta">
+              <span class="module-kicker">模块数量</span>
+              <span class="module-emphasis">${escapeHtml(String(metrics.moduleCount))} 个模块</span>
+            </div>
+            <div class="module-primary-meta" style="text-align: right;">
+              <span class="module-kicker">启动顺序</span>
+              <span class="module-emphasis" title="${escapeAttr(moduleNames)}">${escapeHtml(moduleNames)}</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">失败策略</span>
+              <span class="metric-value">${escapeHtml(workspaceCard.policyText)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">可执行</span>
+              <span class="metric-value">${escapeHtml(String(metrics.runnableCount))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">缺失</span>
+              <span class="metric-value">${escapeHtml(String(metrics.missingCount))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">最近计划</span>
+              <span class="metric-value">${escapeHtml(metrics.recentPlanText)}</span>
+            </div>
+          </div>
+
+          <div class="process-mini glass-panel">
+            <div class="process-mini-head">
+              <span class="process-mini-title">执行计划</span>
+              <span class="process-mini-time">${escapeHtml(planLoadingText)}</span>
+            </div>
+            <div class="process-kv">
+              <div class="process-kv-row">
+                <span class="process-kv-key">摘要：</span>
+                <span class="process-kv-value">${escapeHtml(runSummary)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="module-actions">
+            <button class="btn btn-outlined" type="button" ${actionButtons.plan.disabled ? 'disabled' : ''} onclick="fetchWorkspacePlan('${safeId}')">${icon(actionButtons.plan.icon)}<span>${escapeHtml(actionButtons.plan.label)}</span></button>
+            <button class="btn btn-filled" type="button" ${actionButtons.start.disabled ? 'disabled' : ''} onclick="startWorkspace('${safeId}')">${icon(actionButtons.start.icon)}<span>${escapeHtml(actionButtons.start.label)}</span></button>
+            <button class="btn btn-error" type="button" ${actionButtons.stop.disabled ? 'disabled' : ''} onclick="stopWorkspace('${safeId}')">${icon(actionButtons.stop.icon)}<span>${escapeHtml(actionButtons.stop.label)}</span></button>
+          </div>
+        </article>
+      `;
+    }
+
+    function mergeWorkspaceOrder(moduleIds, preferredOrder) {
+      return window.HubKitWorkspace.mergeWorkspaceOrder(moduleIds, preferredOrder);
+    }
+
+    function getModuleGroupId(module) {
+      return window.HubKitWorkspace.getModuleGroupId(module, settings.moduleGroups);
+    }
+
+    function isWorkspaceModuleSelected(workspace, moduleId) {
+      return window.HubKitWorkspace.isWorkspaceModuleSelected(workspace, moduleId);
+    }
+
+    function buildWorkspaceModuleToggleViewModel(workspace, module) {
+      return window.HubKitWorkspace.buildWorkspaceModuleToggleViewModel(workspace, module);
+    }
+
+    function buildWorkspaceDashboardDrafts(workspaceDrafts) {
+      return window.HubKitWorkspace.buildWorkspaceDashboardDrafts(workspaceDrafts);
+    }
+
+    function generateWorkspaceId() {
+      return window.HubKitWorkspace.generateWorkspaceId(getEditableWorkspaces().map((workspace) => workspace.id));
+    }
+
+    function createWorkspaceDraft(id) {
+      return window.HubKitWorkspace.createWorkspaceDraft(id);
+    }
+
+    function updateWorkspaceModuleSelection(workspace, moduleId, enabled) {
+      return window.HubKitWorkspace.updateWorkspaceModuleSelection(workspace, moduleId, enabled);
+    }
+
+    function updateWorkspaceMetadataField(workspace, field, value) {
+      return window.HubKitWorkspace.updateWorkspaceMetadataField(workspace, field, value);
+    }
+
+    function normalizeWorkspaceFailurePolicy(workspace, value) {
+      return window.HubKitWorkspace.updateWorkspaceFailurePolicy(workspace, value);
+    }
+
+    function removeWorkspaceDraft(workspaceDrafts, workspaceId) {
+      return window.HubKitWorkspace.removeWorkspaceDraft(workspaceDrafts, workspaceId);
+    }
+
+    function buildWorkspaceCardViewModel(workspace) {
+      return window.HubKitWorkspace.buildWorkspaceCardViewModel(workspace);
+    }
+
+    function buildWorkspaceCardCopy(workspace) {
+      return window.HubKitWorkspace.buildWorkspaceCardCopy(workspace);
+    }
+
+    function buildWorkspaceCardRuntimeState(workspaceId) {
+      return window.HubKitWorkspace.buildWorkspaceCardRuntimeState(
+        workspaceId,
+        workspacePlansById,
+        workspaceActionLoading,
+        workspacePlanLoading,
+      );
+    }
+
+    function buildWorkspaceEditorViewModel(workspace) {
+      return window.HubKitWorkspace.buildWorkspaceEditorViewModel(workspace);
+    }
+
+    function buildWorkspaceSettingsViewModel(workspaces) {
+      return window.HubKitWorkspace.buildWorkspaceSettingsViewModel(workspaces);
+    }
+
+    function buildWorkspaceEditorModulesViewModel(modules) {
+      return window.HubKitWorkspace.buildWorkspaceEditorModulesViewModel(modules);
+    }
+
+    function buildWorkspaceCardMetrics(moduleIds, plan) {
+      return window.HubKitWorkspace.buildWorkspaceCardMetrics(moduleIds, plan);
+    }
+
+    function buildWorkspacePlanLoadingText(plan, planLoading) {
+      return window.HubKitWorkspace.buildWorkspacePlanLoadingText(plan, planLoading);
+    }
+
+    function buildWorkspaceActionButtons(planLoading, actionLoading) {
+      return window.HubKitWorkspace.buildWorkspaceActionButtons(planLoading, actionLoading);
+    }
+
+    function buildWorkspacePlanSummaries(plan) {
+      return window.HubKitWorkspace.buildWorkspacePlanSummaries(plan, formatWorkspaceStepResult);
+    }
+
+    function buildWorkspaceModuleNames(orderedIds) {
+      return window.HubKitWorkspace.buildWorkspaceModuleNames(orderedIds, getModuleName);
+    }
+
+    function getModuleName(moduleId) {
+      return modules.find((module) => module.id === moduleId)?.name || moduleId;
+    }
+
+    function formatWorkspaceStepResult(value) {
+      return window.HubKitFormatters.formatWorkspaceStepResult(value);
+    }
+
+    function createCheckinHubCard() {
+      const site = getSelectedCheckinSite();
+      if (!site) return '';
+      const config = getCheckinSiteConfig(site.id);
+      const record = getCheckinRunRecord(site.id);
+      const status = getCheckinSiteStatus(site.id);
+      const running = checkinRunLoadingBySite[site.id] === true;
+      const commandCount = Array.isArray(config.curlCommands) ? config.curlCommands.length : 1;
+      const selectedCommandIndex = normalizeCheckinCommandIndex(config.selectedCommandIndex, commandCount, 0);
+      const selectedCommand = getCheckinActiveCommand(config);
+      const runnableCommands = getCheckinRunnableCommands(config);
+      const autoCursor = normalizeCheckinCommandIndex(config.autoRunCursor, runnableCommands.length || 1, 0);
+      const nextAutoCommand = runnableCommands[autoCursor];
+      const runAllLoading = checkinRunLoadingBySite[`${site.id}#all`] === true;
+      const outputPreview = String(record.stdout || record.stderr || '').trim();
+      return `
+        <article class="module-card checkin-card glass-panel" data-checkin-site-id="${escapeAttr(site.id)}">
+          <div class="module-header">
+            <div class="module-title">
+              <h3>Curl 请求中心</h3>
+              <span class="module-id">curl-request-center</span>
+            </div>
+            <span class="checkin-site-status ${escapeAttr(status.className)}">${escapeHtml(status.label)}</span>
+          </div>
+
+          <p class="module-description">${escapeHtml(site.description || '由你维护站点名称、URL 与命令队列；支持执行当前命令、执行全部命令。')}</p>
+
+          <div class="checkin-card-head">
+            <div class="checkin-card-toolbar">
+              <div class="text-field">
+                <label for="checkinSiteSelect">请求站点</label>
+                <select id="checkinSiteSelect" class="select" onchange="selectCheckinSite(this.value)">
+                  ${checkinSites.map((item) => `
+                    <option value="${escapeAttr(item.id)}" ${item.id === site.id ? 'selected' : ''}>${escapeHtml(item.shortName || item.name)}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <button class="btn btn-tonal" type="button" onclick="addCheckinSite()">${icon('add')}<span>新增站点</span></button>
+              <button class="btn btn-outlined" type="button" ${checkinSites.length <= 1 ? 'disabled' : ''} onclick="removeCheckinSite('${jsString(site.id)}')">${icon('close')}<span>删除站点</span></button>
+              <span class="checkin-run-meta">上次：${escapeHtml(getCheckinLastRunAt(site.id))}</span>
+            </div>
+
+            <div class="checkin-site-editor">
+              <div class="text-field">
+                <label for="checkinSiteNameInput">站点名称</label>
+                <input class="input" id="checkinSiteNameInput" type="text" value="${escapeAttr(site.name || '')}" onchange="updateCheckinSiteName('${jsString(site.id)}', this.value)">
+              </div>
+              <div class="text-field">
+                <label for="checkinSiteUrlInput">目标 URL</label>
+                <input class="input mono" id="checkinSiteUrlInput" type="url" value="${escapeAttr(site.url || '')}" onchange="updateCheckinSiteUrl('${jsString(site.id)}', this.value)" placeholder="https://example.com/api">
+              </div>
+            </div>
+
+            <div class="checkin-command-panel">
+              <div class="checkin-command-row">
+                <div class="text-field">
+                  <label for="checkinCommandSelect">命令队列</label>
+                  <select id="checkinCommandSelect" class="select" onchange="selectCheckinCurlCommand('${jsString(site.id)}', this.value)">
+                    ${config.curlCommands.map((command, index) => {
+                      const preview = String(command || '').trim() || '（空命令）';
+                      const text = preview.length > 34 ? `${preview.slice(0, 34)}...` : preview;
+                      return `<option value="${index}" ${index === selectedCommandIndex ? 'selected' : ''}>命令 ${index + 1} · ${escapeHtml(text)}</option>`;
+                    }).join('')}
+                  </select>
+                </div>
+                <button class="btn btn-tonal" type="button" onclick="appendCheckinCurlCommand('${jsString(site.id)}')">
+                  ${icon('add')}
+                  <span>新增</span>
+                </button>
+                <button class="btn btn-outlined" type="button" ${commandCount <= 1 ? 'disabled' : ''} onclick="removeSelectedCheckinCurlCommand('${jsString(site.id)}')">
+                  ${icon('close')}
+                  <span>删除</span>
+                </button>
+              </div>
+
+              <div class="text-field">
+                <label for="checkinCurlCommand">Curl 命令</label>
+                <textarea class="input mono" id="checkinCurlCommand" oninput="updateCheckinCurlCommand('${jsString(site.id)}', this.value)">${escapeHtml(selectedCommand)}</textarea>
+              </div>
+
+              <div class="checkin-command-hint">
+                <strong>当前：</strong>第 ${selectedCommandIndex + 1} 条，共 ${commandCount} 条；
+                <strong>自动轮询下一条：</strong>${nextAutoCommand ? `命令 ${nextAutoCommand.index + 1}` : '无可执行命令'}
+              </div>
+            </div>
+          </div>
+
+          <div class="module-primary-row">
+            <div class="module-primary-meta">
+              <span class="module-kicker">自动执行</span>
+              <span class="module-emphasis">${config.autoRunEnabled ? '已开启' : '已关闭'}</span>
+            </div>
+            <div class="module-primary-meta" style="text-align: right;">
+              <span class="module-kicker">可执行命令</span>
+              <span class="module-emphasis">${escapeHtml(String(runnableCommands.length))} / ${escapeHtml(String(commandCount))}</span>
+            </div>
+          </div>
+
+          <div class="settings-controls checkin-auto-controls" style="justify-content: space-between; margin-top: 8px;">
+            <div class="checkin-auto-toggle">
+              <div>
+                <span class="settings-item-name">自动执行（轮询）</span>
+                <span class="settings-item-id">按执行时间自动触发，队列为空命令会跳过。</span>
+              </div>
+              <label class="switch" title="自动执行（轮询）">
+                <input type="checkbox" ${config.autoRunEnabled ? 'checked' : ''} onchange="toggleCheckinAutoRun('${jsString(site.id)}', this.checked)">
+                <span class="switch-track"></span>
+              </label>
+            </div>
+            <div class="text-field" style="min-width: 156px;">
+              <label for="checkinRunTimeInput">执行时间</label>
+              <input class="input mono" id="checkinRunTimeInput" type="time" value="${escapeAttr(config.runTime)}" onchange="updateCheckinAutoRunTime('${jsString(site.id)}', this.value)">
+            </div>
+            <span class="checkin-command-hint"><strong>自动执行说明：</strong>每天到点后自动执行 1 条命令，按队列轮流触发；下一次从 ${nextAutoCommand ? `命令 ${nextAutoCommand.index + 1}` : '命令 1'} 开始。</span>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">目标 URL</span>
+              <span class="metric-value">${escapeHtml(site.url)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">执行时间</span>
+              <span class="metric-value">${escapeHtml(config.runTime)}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">超时时间</span>
+              <span class="metric-value">${escapeHtml(String(Math.round(config.timeoutMs / 1000)))}s</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">执行状态</span>
+              <span class="metric-value">${escapeHtml(status.note)}</span>
+            </div>
+          </div>
+
+          <div class="checkin-queue-note">“执行当前”只跑你选中的命令；“执行全部”按顺序跑完整个队列。自动执行每次只跑 1 条，空命令会跳过。</div>
+
+          ${outputPreview ? `<pre class="audit-log-excerpt">${escapeHtml(outputPreview.slice(0, 600))}</pre>` : ''}
+
+          <div class="module-actions">
+            <button class="btn btn-filled" type="button" ${running ? 'disabled' : ''} onclick="runCheckinCurl('${jsString(site.id)}', 'manual')">
+              ${running && !runAllLoading ? `${icon('progress_activity')}<span>执行中...</span>` : `${icon('play_circle')}<span>执行当前</span>`}
+            </button>
+            <button class="btn btn-tonal" type="button" ${running ? 'disabled' : ''} onclick="runCheckinCurlAll('${jsString(site.id)}')">
+              ${runAllLoading ? `${icon('progress_activity')}<span>批量执行中...</span>` : `${icon('restart_alt')}<span>执行全部</span>`}
+            </button>
+            <button class="btn btn-outlined" type="button" ${running ? 'disabled' : ''} onclick="resetCheckinCurlCommand('${jsString(site.id)}')">
+              ${icon('undo')}
+              <span>重置默认</span>
+            </button>
+            <button class="btn btn-tonal" type="button" onclick="copyCheckinCurlCommand('${jsString(site.id)}')">
+              ${icon('article')}
+              <span>复制命令</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function selectCheckinSite(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      checkinPrefs.selectedSiteId = site.id;
+      saveCheckinPrefs();
+      renderDashboardGroups();
+    }
+
+    function updateCheckinSiteName(siteId, value) {
+      updateCheckinSiteMeta(siteId, {
+        name: value,
+      });
+    }
+
+    function updateCheckinSiteUrl(siteId, value) {
+      updateCheckinSiteMeta(siteId, {
+        url: value,
+      });
+    }
+
+    function selectCheckinCurlCommand(siteId, commandIndex) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const config = getCheckinSiteConfig(site.id);
+      updateCheckinSiteConfig(site.id, {
+        selectedCommandIndex: normalizeCheckinCommandIndex(commandIndex, config.curlCommands.length, 0),
+      });
+      renderDashboardGroups();
+    }
+
+    function appendCheckinCurlCommand(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const config = getCheckinSiteConfig(site.id);
+      const commands = [...config.curlCommands, ''];
+      updateCheckinSiteConfig(site.id, {
+        curlCommands: commands,
+        selectedCommandIndex: commands.length - 1,
+      });
+      renderDashboardGroups();
+    }
+
+    function removeSelectedCheckinCurlCommand(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const config = getCheckinSiteConfig(site.id);
+      if (config.curlCommands.length <= 1) {
+        showToast('至少保留一条命令');
+        return;
+      }
+      const selectedIndex = normalizeCheckinCommandIndex(config.selectedCommandIndex, config.curlCommands.length, 0);
+      const commands = [...config.curlCommands];
+      commands.splice(selectedIndex, 1);
+      updateCheckinSiteConfig(site.id, {
+        curlCommands: commands,
+        selectedCommandIndex: Math.min(selectedIndex, commands.length - 1),
+      });
+      renderDashboardGroups();
+    }
+
+    function updateCheckinCurlCommand(siteId, value) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const config = getCheckinSiteConfig(site.id);
+      const selectedIndex = normalizeCheckinCommandIndex(config.selectedCommandIndex, config.curlCommands.length, 0);
+      const commands = [...config.curlCommands];
+      commands[selectedIndex] = String(value || '').replace(/\r/g, '');
+      updateCheckinSiteConfig(siteId, {
+        curlCommands: commands,
+        selectedCommandIndex: selectedIndex,
+      });
+    }
+
+    function toggleCheckinAutoRun(siteId, enabled) {
+      updateCheckinSiteConfig(siteId, {
+        autoRunEnabled: enabled === true,
+      });
+      renderDashboardGroups();
+    }
+
+    function updateCheckinAutoRunTime(siteId, value) {
+      updateCheckinSiteConfig(siteId, {
+        runTime: normalizeDailyTime(value),
+      });
+      renderDashboardGroups();
+    }
+
+    function resetCheckinCurlCommand(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      updateCheckinSiteConfig(site.id, {
+        curlCommands: [getDefaultCurlCommand(site)],
+        selectedCommandIndex: 0,
+        autoRunCursor: 0,
+      });
+      renderDashboardGroups();
+      showToast(`${site.shortName || site.name} 命令已重置`);
+    }
+
+    async function copyCheckinCurlCommand(siteId) {
+      const site = getCheckinSite(siteId);
+      if (!site) {
+        showToast('未配置请求站点', 'error');
+        return;
+      }
+      const command = getCheckinActiveCommand(getCheckinSiteConfig(site.id));
+      if (!String(command).trim()) {
+        showToast('暂无可复制的命令', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(command);
+        showToast('curl 命令已复制');
+      } catch (error) {
+        showToast('复制失败', 'error');
+      }
+    }
+
+    function resolveCheckinRunCommand(config, trigger = 'manual') {
+      const runnableCommands = getCheckinRunnableCommands(config);
+      if (runnableCommands.length === 0) return null;
+
+      if (trigger === 'auto') {
+        const cursor = normalizeCheckinCommandIndex(config.autoRunCursor, runnableCommands.length, 0);
+        return {
+          ...runnableCommands[cursor],
+          queueCount: runnableCommands.length,
+          queueIndex: cursor,
+        };
+      }
+
+      const selectedIndex = normalizeCheckinCommandIndex(config.selectedCommandIndex, config.curlCommands.length, 0);
+      const selected = runnableCommands.find((entry) => entry.index === selectedIndex);
+      if (selected) {
+        return {
+          ...selected,
+          queueCount: runnableCommands.length,
+          queueIndex: runnableCommands.findIndex((entry) => entry.index === selected.index),
+        };
+      }
+      return {
+        ...runnableCommands[0],
+        queueCount: runnableCommands.length,
+        queueIndex: 0,
+      };
+    }
+
+    function getCheckinAutoRunKey(siteId, runTime, now = new Date()) {
+      const site = getCheckinSite(siteId);
+      if (!site) return;
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      return `${now.getFullYear()}-${mm}-${dd}:${runTime}`;
+    }
+
+    async function runCheckinCurl(siteId, trigger = 'manual', options = {}) {
+      const site = getCheckinSite(siteId || checkinPrefs.selectedSiteId);
+      if (!site) {
+        if (trigger === 'manual') showToast('未配置请求站点', 'error');
+        return;
+      }
+      const runOptions = options && typeof options === 'object' ? options : {};
+      const skipRunningGuard = runOptions.skipRunningGuard === true;
+      const keepLoadingState = runOptions.keepLoadingState === true;
+      const skipConfirm = runOptions.skipConfirm === true;
+      const showManualToast = runOptions.showToast !== false;
+
+      if (!skipRunningGuard && checkinRunLoadingBySite[site.id]) return false;
+
+      const config = getCheckinSiteConfig(site.id);
+      let commandTarget = null;
+      const overrideIndex = Number.isFinite(Number(runOptions.commandIndex))
+        ? normalizeCheckinCommandIndex(runOptions.commandIndex, config.curlCommands.length, 0)
+        : null;
+      if (overrideIndex !== null) {
+        const overrideCommand = String(config.curlCommands[overrideIndex] || '').replace(/\r/g, '');
+        if (overrideCommand.trim()) {
+          const runnableCommands = getCheckinRunnableCommands(config);
+          const queueIndex = Math.max(0, runnableCommands.findIndex((entry) => entry.index === overrideIndex));
+          commandTarget = {
+            index: overrideIndex,
+            command: overrideCommand,
+            queueCount: Math.max(1, runnableCommands.length),
+            queueIndex,
+          };
+        }
+      }
+      commandTarget = commandTarget || resolveCheckinRunCommand(config, trigger);
+      if (!commandTarget || !String(commandTarget.command || '').trim()) {
+        if (trigger === 'manual' && showManualToast) showToast('请先输入 curl 命令', 'error');
+        return false;
+      }
+      const command = String(commandTarget.command).trim();
+      const commandIndexLabel = `命令 ${commandTarget.index + 1}`;
+      if (trigger === 'manual' && !skipConfirm && !confirmHighRiskAction({
+        title: `执行 curl 请求：${site.name}（${commandIndexLabel}）`,
+        impact: [
+          '将直接在本机执行你输入的 curl 命令。',
+          '命令可能访问外部网络并返回敏感内容。',
+        ],
+        recovery: '建议先检查 URL、Header 和参数，再执行。',
+        confirmLabel: '继续执行',
+      })) {
+        return false;
+      }
+
+      if (!keepLoadingState) {
+        checkinRunLoadingBySite[site.id] = true;
+      }
+      updateCheckinRunRecord(site.id, {
+        phase: 'running',
+        message: trigger === 'auto' ? `自动执行中（${commandIndexLabel}）...` : `执行中（${commandIndexLabel}）...`,
+        startedAt: new Date().toISOString(),
+        finishedAt: '',
+        stdout: '',
+        stderr: '',
+      });
+      renderDashboardGroups();
+
+      try {
+        const payload = {
+          command,
+          timeoutMs: config.timeoutMs,
+        };
+        const json = window.HubKitApi?.runCurlRequest
+          ? await window.HubKitApi.runCurlRequest(site.id, payload)
+          : await (async () => {
+            const response = await fetch(`/api/curl-requests/${encodeURIComponent(site.id)}/run`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            return await response.json();
+          })();
+        const runData = json?.data || {};
+        const success = json?.success === true;
+        const message = String(json?.message || (success ? `执行完成（${commandIndexLabel}）` : `执行失败（${commandIndexLabel}）`));
+
+        updateCheckinRunRecord(site.id, {
+          phase: success ? 'success' : 'failed',
+          message,
+          stdout: String(runData.stdout || ''),
+          stderr: String(runData.stderr || ''),
+          startedAt: String(runData.startedAt || new Date().toISOString()),
+          finishedAt: String(runData.finishedAt || new Date().toISOString()),
+          exitCode: runData.exitCode,
+        });
+        if (trigger === 'auto') {
+          const nextCursor = (commandTarget.queueIndex + 1) % commandTarget.queueCount;
+          updateCheckinSiteConfig(site.id, {
+            autoRunCursor: nextCursor,
+          });
+        }
+        if (trigger === 'manual' && showManualToast) {
+          showToast(success ? `${site.shortName || site.name} 执行成功` : `${site.shortName || site.name} 执行失败`, success ? 'success' : 'error');
+        }
+        return success;
+      } catch (error) {
+        updateCheckinRunRecord(site.id, {
+          phase: 'failed',
+          message: error?.message || '请求执行失败',
+          stderr: String(error?.message || ''),
+          finishedAt: new Date().toISOString(),
+        });
+        if (trigger === 'manual' && showManualToast) {
+          showToast(error?.message || '请求执行失败', 'error');
+        }
+        return false;
+      } finally {
+        if (!keepLoadingState) {
+          checkinRunLoadingBySite[site.id] = false;
+        }
+        renderDashboardGroups();
+      }
+    }
+
+    async function runCheckinCurlAll(siteId, trigger = 'manual') {
+      const site = getCheckinSite(siteId || checkinPrefs.selectedSiteId);
+      if (!site) {
+        if (trigger === 'manual') showToast('未配置请求站点', 'error');
+        return;
+      }
+      if (checkinRunLoadingBySite[site.id]) return;
+
+      const config = getCheckinSiteConfig(site.id);
+      const runnableCommands = getCheckinRunnableCommands(config);
+      if (runnableCommands.length === 0) {
+        if (trigger === 'manual') showToast('暂无可执行命令', 'error');
+        return;
+      }
+      if (trigger === 'manual' && !confirmHighRiskAction({
+        title: `执行全部命令：${site.name}`,
+        impact: [
+          `将顺序执行 ${runnableCommands.length} 条 curl 命令。`,
+          '命令可能访问外部网络并返回敏感内容。',
+        ],
+        recovery: '建议先检查队列顺序与参数后再执行。',
+        confirmLabel: '继续执行全部',
+      })) {
+        return;
+      }
+
+      checkinRunLoadingBySite[site.id] = true;
+      checkinRunLoadingBySite[`${site.id}#all`] = true;
+      updateCheckinRunRecord(site.id, {
+        phase: 'running',
+        message: `${trigger === 'manual' ? '手动' : '自动'}批量执行中（共 ${runnableCommands.length} 条）...`,
+        startedAt: new Date().toISOString(),
+        finishedAt: '',
+        stdout: '',
+        stderr: '',
+      });
+      renderDashboardGroups();
+
+      let failedCount = 0;
+      for (const entry of runnableCommands) {
+        const success = await runCheckinCurl(site.id, trigger === 'auto' ? 'auto' : 'manual', {
+          skipConfirm: true,
+          skipRunningGuard: true,
+          keepLoadingState: true,
+          showToast: false,
+          commandIndex: entry.index,
+        });
+        if (!success) failedCount += 1;
+      }
+
+      checkinRunLoadingBySite[site.id] = false;
+      checkinRunLoadingBySite[`${site.id}#all`] = false;
+      if (trigger === 'manual') {
+        showToast(
+          failedCount === 0
+            ? `${site.shortName || site.name} 全部执行完成`
+            : `${site.shortName || site.name} 执行完成，失败 ${failedCount} 条`,
+          failedCount === 0 ? 'success' : 'error',
+        );
+      }
+      renderDashboardGroups();
+    }
+
+    function maybeRunCheckinAutoTasks() {
+      const now = new Date();
+      checkinPrefs.lastAutoRunKeyBySite = checkinPrefs.lastAutoRunKeyBySite || {};
+
+      checkinSites.forEach((site) => {
+        const config = getCheckinSiteConfig(site.id);
+        if (!config.autoRunEnabled) return;
+        if (checkinRunLoadingBySite[site.id]) return;
+        if (getCheckinRunnableCommands(config).length === 0) return;
+        const [hours, minutes] = normalizeDailyTime(config.runTime).split(':').map((value) => Number(value));
+        if (now.getHours() !== hours || now.getMinutes() !== minutes) return;
+
+        const runKey = getCheckinAutoRunKey(site.id, config.runTime, now);
+        if (checkinPrefs.lastAutoRunKeyBySite[site.id] === runKey) return;
+
+        checkinPrefs.lastAutoRunKeyBySite[site.id] = runKey;
+        saveCheckinPrefs();
+        runCheckinCurl(site.id, 'auto');
+      });
+    }
+
+    function setupCheckinAutoRunTimer() {
+      if (checkinAutoRunTimer) {
+        clearInterval(checkinAutoRunTimer);
+        checkinAutoRunTimer = null;
+      }
+      checkinAutoRunTimer = setInterval(() => {
+        maybeRunCheckinAutoTasks();
+      }, CHECKIN_AUTO_RUN_INTERVAL_MS);
+      maybeRunCheckinAutoTasks();
+    }
+
+    function refreshCheckinFrame() {
+      runCheckinCurl(checkinPrefs.selectedSiteId, 'manual');
+    }
+
+    function openCheckinInNewWindow(siteId) {
+      const site = getCheckinSite(siteId || checkinPrefs.selectedSiteId);
+      if (!site?.url) {
+        showToast('未配置可打开的 URL', 'error');
+        return;
+      }
+      window.open(site.url, '_blank', 'noopener,noreferrer');
+    }
+
+    function markCheckinVerificationComplete(siteId) {
+      const site = getCheckinSite(siteId || checkinPrefs.selectedSiteId);
+      if (!site) return;
+      updateCheckinRunRecord(site.id, {
+        phase: 'success',
+        message: '手动标记为已完成',
+        finishedAt: new Date().toISOString(),
+      });
+      renderDashboardGroups();
+      showToast(`${site.shortName || site.name} 已标记完成`);
+    }
+
+    function closeCheckinDialog() {
+      const dialog = document.getElementById('checkinDialog');
+      const frame = document.getElementById('checkinFrame');
+      if (!dialog || !frame) return;
+      dialog.classList.remove('active');
+      frame.src = 'about:blank';
     }
 
     function isSystemActionItem(item) {
@@ -4179,35 +6525,19 @@
     }
 
     function getRunChipClass(status) {
-      if (status === 'succeeded') return 'success';
-      if (status === 'failed') return 'error';
-      if (status === 'running' || status === 'launched') return 'running';
-      return '';
+      return window.HubKitFormatters.getRunChipClass(status);
     }
 
     function getRunStateLabel(run) {
-      if (!run) return '未执行';
-      if (run.status === 'succeeded') return '最近成功';
-      if (run.status === 'failed') return '最近失败';
-      if (run.status === 'running') return '后台运行中';
-      if (run.status === 'launched') return '已在终端打开';
-      return '未执行';
+      return window.HubKitFormatters.getRunStateLabel(run);
     }
 
     function formatBootPreferenceMode(mode) {
-      if (mode === 'default') return '当前允许自动启动';
-      if (mode === 'block_all') return '已阻止开盖与接电启动';
-      if (mode === 'block_lid') return '仅阻止开盖启动';
-      if (mode === 'block_power') return '仅阻止接电启动';
-      return '状态未知';
+      return window.HubKitFormatters.formatBootPreferenceMode(mode);
     }
 
     function describeBootPreferenceMode(mode) {
-      if (mode === 'default') return '现在是默认状态，开盖和接入电源都可能触发自动启动。';
-      if (mode === 'block_all') return '现在已同时阻止开盖启动和接电启动。';
-      if (mode === 'block_lid') return '现在只阻止开盖启动，接入电源仍可能自动启动。';
-      if (mode === 'block_power') return '现在只阻止接电启动，开盖仍可能自动启动。';
-      return '当前读取失败，暂时无法确认真实状态。';
+      return window.HubKitFormatters.describeBootPreferenceMode(mode);
     }
 
     function findScriptAction(bundleId, actionId) {
@@ -4234,19 +6564,27 @@
         return;
       }
 
+      if (!confirmScriptActionIfNeeded(target.action, '后台执行')) return;
+
       const key = `${bundleId}:${actionId}`;
       if (scriptRunLoading[key]) return;
       scriptRunLoading[key] = true;
       renderDashboardGroups();
 
       try {
-        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
-          method: 'POST',
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '执行失败');
-        }
+        const json = window.HubKitApi?.runScriptAction
+          ? await window.HubKitApi.runScriptAction(bundleId, actionId, await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:run`))
+          : await (async () => {
+            const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:run`),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || '执行失败');
+            }
+            return fallbackJson;
+          })();
         showToast(json.message || '脚本已启动');
         await fetchScriptBundles();
       } catch (error) {
@@ -4265,19 +6603,27 @@
         return;
       }
 
+      if (!confirmScriptActionIfNeeded(target.action, '系统终端执行')) return;
+
       const key = `${bundleId}:${actionId}`;
       if (scriptRunLoading[key]) return;
       scriptRunLoading[key] = true;
       renderDashboardGroups();
 
       try {
-        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
-          method: 'POST',
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '执行失败');
-        }
+        const json = window.HubKitApi?.runScriptAction
+          ? await window.HubKitApi.runScriptAction(bundleId, actionId, await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:run`))
+          : await (async () => {
+            const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/run`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:run`),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || '执行失败');
+            }
+            return fallbackJson;
+          })();
         showToast(json.message || '已在系统终端打开');
         await fetchScriptBundles();
       } catch (error) {
@@ -4290,6 +6636,9 @@
     }
 
     async function runScriptActionInWebTerminal(bundleId, actionId, actionName) {
+      const target = findScriptAction(bundleId, actionId);
+      if (target && !confirmScriptActionIfNeeded(target.action, 'Web 终端执行')) return;
+
       if (activeTerminalSessionId) {
         openTerminalPanel(activeTerminalAction?.actionName || 'Web 终端', `正在运行：${activeTerminalAction?.actionName || activeTerminalSessionId}`);
         terminalInstance?.focus();
@@ -4310,15 +6659,20 @@
         terminalHasContent = true;
         terminalInstance.writeln(`[HubKit] 启动 ${actionName || actionId}...`);
         const dimensions = getTerminalDimensions();
-        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/web-terminal`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dimensions),
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || 'Web 终端启动失败');
-        }
+        const json = window.HubKitApi?.startScriptActionWebTerminal
+          ? await window.HubKitApi.startScriptActionWebTerminal(bundleId, actionId, dimensions, await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:web-terminal`, { 'Content-Type': 'application/json' }))
+          : await (async () => {
+            const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/web-terminal`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`script-bundle:${bundleId}:${actionId}:web-terminal`, { 'Content-Type': 'application/json' }),
+              body: JSON.stringify(dimensions),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || 'Web 终端启动失败');
+            }
+            return fallbackJson;
+          })();
 
         const session = json.data?.session || {};
         activeTerminalSessionId = session.sessionId || null;
@@ -4354,6 +6708,20 @@
       }
     }
 
+    function confirmScriptActionIfNeeded(action, executionLabel) {
+      if (!action?.confirmRequired && action?.riskLevel !== 'high') return true;
+      const riskText = action.riskLevel === 'high' ? '高风险' : action.riskLevel === 'medium' ? '中风险' : '低风险';
+      return confirmHighRiskAction({
+        title: `运行脚本：${action.name || action.id}`,
+        impact: [
+          action.confirmMessage || action.description || '该脚本可能修改本机文件、进程或系统状态。',
+          `执行方式：${executionLabel}，风险等级：${riskText}。`,
+        ],
+        recovery: '执行前请确认脚本内容可信；执行后可查看日志和历史记录排查结果。',
+        confirmLabel: '继续运行脚本',
+      });
+    }
+
     async function showScriptLogs(bundleId, actionId, actionName) {
       currentLogTarget = { kind: 'script', bundleId, actionId };
       currentLogModuleId = null;
@@ -4370,13 +6738,17 @@
 
     async function showScriptHistory(bundleId, actionId, actionName) {
       try {
-        const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/history`);
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '无法加载历史');
+        let history;
+        if (window.HubKitApi?.getScriptActionHistory) {
+          history = await window.HubKitApi.getScriptActionHistory(bundleId, actionId);
+        } else {
+          const response = await fetch(`/api/script-bundles/${encodeURIComponent(bundleId)}/actions/${encodeURIComponent(actionId)}/history`);
+          const json = await response.json().catch(() => ({}));
+          if (!response.ok || json.success === false) {
+            throw new Error(json.error || '无法加载历史');
+          }
+          history = Array.isArray(json.data) ? json.data : [];
         }
-
-        const history = Array.isArray(json.data) ? json.data : [];
         if (history.length === 0) {
           showToast(`${actionName} 暂无历史记录`);
           return;
@@ -4397,19 +6769,34 @@
     async function applyBootPreferenceMode(mode) {
       const key = 'boot-preference';
       if (systemActionLoading[key]) return;
+      if (!confirmHighRiskAction({
+        title: '修改开盖 / 接电启动策略',
+        impact: [
+          `目标模式：${formatBootPreferenceMode(mode)}。`,
+          '会调用系统命令修改 Apple Silicon Mac 的启动偏好。',
+        ],
+        recovery: '可选择“恢复默认”回到系统默认启动行为。',
+        confirmLabel: '应用系统设置',
+      })) return;
+
       systemActionLoading[key] = true;
       renderDashboardGroups();
 
       try {
-        const response = await fetch('/api/system-actions/boot-preference/apply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode }),
-        });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '应用失败');
-        }
+        const json = window.HubKitApi?.applyBootPreferenceMode
+          ? await window.HubKitApi.applyBootPreferenceMode(mode, await highRiskHeaders(`system-action:boot-preference:${mode}:apply`, { 'Content-Type': 'application/json' }))
+          : await (async () => {
+            const response = await fetch('/api/system-actions/boot-preference/apply', {
+              method: 'POST',
+              headers: await highRiskHeaders(`system-action:boot-preference:${mode}:apply`, { 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ mode }),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok || fallbackJson.success === false) {
+              throw new Error(fallbackJson.error || '应用失败');
+            }
+            return fallbackJson;
+          })();
         showToast(json.message || '设置已应用');
         await fetchSystemActions();
       } catch (error) {
@@ -4441,6 +6828,9 @@
         if (actionId !== 'boot-preference') {
           return '暂不支持该系统调优日志';
         }
+        if (window.HubKitApi?.getSystemActionLogs) {
+          return await window.HubKitApi.getSystemActionLogs(actionId, { runId });
+        }
         const response = await fetch(`/api/system-actions/boot-preference/logs${search}`);
         const json = await response.json();
         if (json.success) return json.data || '';
@@ -4470,13 +6860,17 @@
         if (actionId !== 'boot-preference') {
           throw new Error('暂不支持该系统调优历史');
         }
-        const response = await fetch('/api/system-actions/boot-preference/history');
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok || json.success === false) {
-          throw new Error(json.error || '无法加载历史');
+        let history;
+        if (window.HubKitApi?.getBootPreferenceHistory) {
+          history = await window.HubKitApi.getBootPreferenceHistory();
+        } else {
+          const response = await fetch('/api/system-actions/boot-preference/history');
+          const json = await response.json().catch(() => ({}));
+          if (!response.ok || json.success === false) {
+            throw new Error(json.error || '无法加载历史');
+          }
+          history = Array.isArray(json.data) ? json.data : [];
         }
-
-        const history = Array.isArray(json.data) ? json.data : [];
         if (history.length === 0) {
           showToast(`${actionName} 暂无历史记录`);
           return;
@@ -4692,38 +7086,19 @@
     }
 
     function parsePort(urlValue) {
-      if (!urlValue) return null;
-      try {
-        const parsed = new URL(urlValue);
-        if (parsed.port) return Number(parsed.port);
-        if (parsed.protocol === 'http:') return 80;
-        if (parsed.protocol === 'https:') return 443;
-      } catch (error) {
-        return null;
-      }
-      return null;
+      return window.HubKitDiagnostics.parsePort(urlValue);
     }
 
     function trimCommand(command) {
-      if (!command) return 'unknown';
-      if (command.length <= 42) return command;
-      return `${command.slice(0, 39)}...`;
+      return window.HubKitFormatters.trimCommand(command);
     }
 
     function formatListenerSummary(listeners) {
-      if (!listeners || listeners.length === 0) return '无';
-      return listeners
-        .slice(0, 2)
-        .map((item) => `${item.pid}(${trimCommand(item.command)}${item.alive ? '' : ',dead'})`)
-        .join('；');
+      return window.HubKitFormatters.formatListenerSummary(listeners);
     }
 
     function formatPidCandidatesSummary(candidates) {
-      if (!candidates || candidates.length === 0) return '无';
-      return candidates
-        .slice(0, 3)
-        .map((item) => `${item.pid}${item.alive ? '' : '(dead)'}`)
-        .join('、');
+      return window.HubKitFormatters.formatPidCandidatesSummary(candidates);
     }
 
     function buildBasicDiagnostics(module) {
@@ -4745,6 +7120,19 @@
       diagnosticsLoadingByModule[moduleId] = true;
       renderDashboard();
       try {
+        if (window.HubKitApi?.getModuleDiagnostics) {
+          const result = await window.HubKitApi.getModuleDiagnostics(moduleId);
+          if (result.unsupported) {
+            const module = modules.find(item => item.id === moduleId);
+            diagnosticsByModule[moduleId] = buildBasicDiagnostics(module);
+            showToast('当前服务版本不支持进程诊断，已降级为基础检查。请重启 2281 服务更新后端。', 'error');
+            return;
+          }
+          diagnosticsByModule[moduleId] = result.diagnostics || null;
+          showToast('进程状态已更新');
+          return;
+        }
+
         const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/diagnostics`);
         const isJson = String(response.headers.get('content-type') || '').includes('application/json');
         const json = isJson ? await response.json().catch(() => ({})) : {};
@@ -4773,17 +7161,32 @@
     async function forceCloseModule(moduleId) {
       const module = modules.find(item => item.id === moduleId);
       const moduleName = module?.name || moduleId;
-      const confirmText = `确认强制关闭 ${moduleName}？会尝试清理端口占用进程。`;
-      if (!window.confirm(confirmText)) return;
+      if (!confirmHighRiskAction({
+        title: `强制关闭 ${moduleName}`,
+        impact: [
+          '会停止模块进程。',
+          '会尝试清理占用模块端口的残留进程。',
+        ],
+        recovery: '可在清理后重新启动模块；最近日志仍可用于排查。',
+        confirmLabel: '强制关闭',
+      })) return;
 
       forceCloseLoadingByModule[moduleId] = true;
       renderDashboard();
       try {
-        const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/force-close`, { method: 'POST' });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(json.error || '强制关闭失败');
-        }
+        const json = window.HubKitApi?.forceCloseModule
+          ? await window.HubKitApi.forceCloseModule(moduleId, await highRiskHeaders(`module:${moduleId}:force-close`))
+          : await (async () => {
+            const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/force-close`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`module:${moduleId}:force-close`),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              throw new Error(fallbackJson.error || '强制关闭失败');
+            }
+            return fallbackJson;
+          })();
         if (json.data?.after) {
           diagnosticsByModule[moduleId] = json.data.after;
         }
@@ -4805,19 +7208,34 @@
     async function forceCloseAllModules() {
       if (forceCloseAllLoading) return;
       const runningCount = modules.filter(item => item.status === 'running').length;
-      const confirmText = runningCount > 0
-        ? `确认关停全部模块？当前运行中 ${runningCount} 个，将执行强制清理残留。`
-        : '确认执行一次全量残留清理？当前无运行模块。';
-      if (!window.confirm(confirmText)) return;
+      if (!confirmHighRiskAction({
+        title: runningCount > 0 ? '强制关停全部模块' : '全量残留清理',
+        impact: runningCount > 0
+          ? [
+              `当前运行中 ${runningCount} 个模块会被停止。`,
+              '会逐个执行残留端口清理。',
+            ]
+          : ['当前无运行模块，会执行一次残留端口清理。'],
+        recovery: '可在清理完成后按需重新启动模块。',
+        confirmLabel: runningCount > 0 ? '关停全部模块' : '执行清理',
+      })) return;
 
       forceCloseAllLoading = true;
       renderDashboard();
       try {
-        const response = await fetch('/api/modules/force-close-all', { method: 'POST' });
-        const json = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(json.error || '全部关停失败');
-        }
+        const json = window.HubKitApi?.forceCloseAllModules
+          ? await window.HubKitApi.forceCloseAllModules(await highRiskHeaders('module:*:force-close-all'))
+          : await (async () => {
+            const response = await fetch('/api/modules/force-close-all', {
+              method: 'POST',
+              headers: await highRiskHeaders('module:*:force-close-all'),
+            });
+            const fallbackJson = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              throw new Error(fallbackJson.error || '全部关停失败');
+            }
+            return fallbackJson;
+          })();
 
         const failedCount = Number(json?.data?.failedCount || 0);
         const total = Number(json?.data?.total || 0);
@@ -4852,8 +7270,12 @@
       setButtonBusy(btn, '检查中...');
 
       try {
-        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update-check`);
-        const json = await res.json();
+        const json = window.HubKitApi?.checkModuleUpdate
+          ? await window.HubKitApi.checkModuleUpdate(moduleId)
+          : await (async () => {
+            const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update-check`);
+            return await res.json();
+          })();
         resetUpdateButton(btn, moduleId);
 
         if (!json.success) {
@@ -4877,11 +7299,31 @@
 
     async function performUpdate(moduleId) {
       const btn = document.getElementById(`update-btn-${moduleId}`);
+      const module = modules.find((item) => item.id === moduleId);
+      if (!confirmHighRiskAction({
+        title: `更新模块：${module?.name || moduleId}`,
+        impact: [
+          '会在模块目录执行 git pull。',
+          '如果模块包含 package.json，还会执行 npm install。',
+        ],
+        recovery: '可根据模块仓库历史回退；更新前请确认当前模块没有未保存的本地修改。',
+        confirmLabel: '继续更新',
+      })) {
+        resetUpdateButton(btn, moduleId);
+        return;
+      }
       setButtonBusy(btn, '更新中...');
 
       try {
-        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update`, { method: 'POST' });
-        const json = await res.json();
+        const json = window.HubKitApi?.updateModule
+          ? await window.HubKitApi.updateModule(moduleId, await highRiskHeaders(`module:${moduleId}:update`))
+          : await (async () => {
+            const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/update`, {
+              method: 'POST',
+              headers: await highRiskHeaders(`module:${moduleId}:update`),
+            });
+            return await res.json();
+          })();
         resetUpdateButton(btn, moduleId);
 
         if (json.success) {
@@ -4911,34 +7353,15 @@
     }
 
     function getStatusClass(status) {
-      if (status === 'running') return 'running';
-      if (status === 'error') return 'error';
-      if (status === 'starting') return 'starting';
-      if (status === 'stopping') return 'stopping';
-      return 'stopped';
+      return window.HubKitFormatters.getStatusClass(status);
     }
 
     function getStatusText(status) {
-      const statusMap = {
-        running: '运行中',
-        stopped: '已停止',
-        starting: '启动中',
-        stopping: '停止中',
-        error: '错误',
-        unknown: '未知',
-      };
-      return statusMap[status] || status || '未知';
+      return window.HubKitFormatters.getStatusText(status);
     }
 
     function getEffectiveStatus(module) {
-      const phase = module?.runtimeState?.phase;
-      if (phase === 'failed') return 'error';
-      if (phase === 'preparing' || phase === 'installing' || phase === 'starting' || phase === 'health_checking') {
-        return 'starting';
-      }
-      if (phase === 'running') return 'running';
-      if (phase === 'stopped') return 'stopped';
-      return module?.status || 'unknown';
+      return window.HubKitFormatters.getEffectiveStatus(module);
     }
 
     function isModuleBusy(module) {
@@ -4947,61 +7370,31 @@
     }
 
     function formatLastStartRecord(record) {
-      if (!record) return '暂无记录';
-      const duration = Number.isFinite(record.durationMs) ? `${Math.max(0, Math.round(record.durationMs))} ms` : '耗时未知';
-      return record.outcome === 'succeeded'
-        ? `${duration} · ${record.attemptCount} 次尝试`
-        : `失败 · ${record.attemptCount} 次尝试`;
+      return window.HubKitFormatters.formatLastStartRecord(record);
     }
 
     function getRuntimePhaseText(phase) {
-      const phaseMap = {
-        idle: '空闲',
-        preparing: '准备中',
-        installing: '安装依赖',
-        starting: '启动中',
-        health_checking: '健康检查',
-        running: '运行中',
-        stopped: '已停止',
-        failed: '失败',
-      };
-      return phaseMap[phase] || phase || '未知';
+      return window.HubKitFormatters.getRuntimePhaseText(phase);
     }
 
     function getAuditSeverityText(severity) {
-      if (severity === 'error') return '错误';
-      if (severity === 'warn') return '告警';
-      return '提示';
+      return window.HubKitFormatters.getAuditSeverityText(severity);
     }
 
     function getTypeText(type) {
-      const typeMap = {
-        nodejs: 'Node.js',
-        python: 'Python',
-        shell: 'Shell',
-      };
-      return typeMap[type] || type || 'N/A';
+      return window.HubKitFormatters.getTypeText(type);
     }
 
     function formatUptime(seconds) {
-      if (!seconds || seconds < 0) return 'N/A';
-      const days = Math.floor(seconds / 86400);
-      const hours = Math.floor((seconds % 86400) / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      if (days > 0) return `${days}天 ${hours}小时`;
-      if (hours > 0) return `${hours}小时 ${minutes}分钟`;
-      return `${minutes}分钟`;
+      return window.HubKitFormatters.formatUptime(seconds);
     }
 
     function formatStartedAt(value) {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '未知';
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      const hh = String(date.getHours()).padStart(2, '0');
-      const mm = String(date.getMinutes()).padStart(2, '0');
-      return `${y}-${m}-${d} ${hh}:${mm}`;
+      return window.HubKitFormatters.formatStartedAt(value);
+    }
+
+    function formatFileSize(bytes) {
+      return window.HubKitFormatters.formatFileSize(bytes);
     }
 
     function showView(view) {
@@ -5017,8 +7410,33 @@
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
-      if (view === 'settings') renderSettings();
+      if (view === 'settings') {
+        renderSettings();
+        fetchConfigBackups();
+        const hash = String(window.location.hash || '');
+        if (hash.startsWith('#settings-panel-')) {
+          const panelId = hash.slice('#settings-panel-'.length);
+          if (panelId) {
+            requestAnimationFrame(() => focusSettingsPanel(panelId));
+          }
+        }
+      }
       if (view === 'diagnostics') renderDiagnostics();
+    }
+
+    function isSettingsInteractionActive() {
+      if (currentView !== 'settings') return false;
+      const active = document.activeElement;
+      return settingsDirty || Boolean(active && active.closest && active.closest('#settingsView'));
+    }
+
+    function requestSettingsRender({ force = false } = {}) {
+      if (currentView !== 'settings') return;
+      if (!force && isSettingsInteractionActive()) {
+        updateSettingsSaveState();
+        return;
+      }
+      renderSettings();
     }
 
     function renderSettings() {
@@ -5028,100 +7446,187 @@
       const groups = Array.isArray(settings.groups) && settings.groups.length > 0
         ? settings.groups
         : [{ id: 'default', name: '默认分组' }];
+      const overview = getSettingsOverview(orderedModules, groups, webUrlModules);
 
       container.innerHTML = `
-        <div class="section-heading">
-          <div>
+        <section class="settings-hero glass-panel">
+          <div class="settings-hero-copy">
             <h2 class="settings-section-title" id="settingsTitle">设置</h2>
-            <p class="settings-section-desc">自动启动、启动策略、显示状态、Web 地址与定时任务。</p>
+            <p class="settings-section-desc">面向日常重度使用的控制台配置：先看运行态势，再调整启动、分组、入口、定时和本地显示。</p>
+            <div class="inline-actions">
+              <span class="settings-status-chip ${settingsDirty ? 'dirty' : ''}" id="settingsDirtyChip">${settingsDirty ? '有未保存运行配置' : '运行配置已同步'}</span>
+              <span class="settings-save-note">“需保存”的面板会写入 HubKit 配置；“即时生效”的单项会直接调用后端接口。</span>
+            </div>
           </div>
-        </div>
-
-        <div class="settings-actions">
-          <button class="btn btn-filled" type="button" onclick="saveSettings()">${icon('save')}<span>保存设置</span></button>
-          <button class="btn btn-tonal" type="button" onclick="resetSettings()">${icon('undo')}<span>重置</span></button>
-        </div>
-
-        <section class="settings-section">
-          ${renderSettingsPanel(
-            'display',
-            '界面显示',
-            '控制壁纸、玻璃材质与卡片信息密度。',
-            `<div class="settings-list">${createDisplayPrefsItem()}</div>`
-          )}
-
-          ${renderSettingsPanel(
-            'grouping',
-            '卡片分组',
-            '创建分组并为模块分配归属。',
-            `<div class="settings-list">${createGroupingSettings(groups, orderedModules)}</div>`
-          )}
-
-          ${renderSettingsPanel(
-            'autoStart',
-            '自动启动',
-            '拖拽调整启动顺序。',
-            `<div class="settings-list" id="autoStartList">${orderedModules.map((module, idx) => createAutoStartItem(module, idx)).join('') || emptySettings('暂无模块')}</div>`
-          )}
-
-          ${renderSettingsPanel(
-            'startPolicy',
-            '启动策略',
-            '控制预检、重试与健康检查。',
-            `<div class="settings-list">${orderedModules.map(createStartPolicyItem).join('') || emptySettings('暂无模块')}</div>`
-          )}
-
-          ${renderSettingsPanel(
-            'visibility',
-            '卡片显示',
-            '隐藏后仍可被后台管理。',
-            `<div class="settings-list">${orderedModules.map(createVisibilityItem).join('') || emptySettings('暂无模块')}</div>`
-          )}
-
-          ${webUrlModules.length > 0 ? renderSettingsPanel(
-            'webUrl',
-            'Web UI 地址',
-            '设置模块入口链接。',
-            `<div class="settings-list">${webUrlModules.map(createWebUrlItem).join('')}</div>`
-          ) : ''}
-
-          ${renderSettingsPanel(
-            'schedule',
-            '定时任务',
-            '按指定时间启动或停止模块。',
-            `<div class="settings-list">${orderedModules.map(createScheduleItem).join('') || emptySettings('暂无模块')}</div>`
-          )}
-
-          ${renderSettingsPanel(
-            'cleanup',
-            '数据清理',
-            '清理浏览器本地壁纸、界面缓存与临时显示状态。',
-            `<div class="settings-list">${createCleanupSettingsItem()}</div>`
-          )}
+          <div class="settings-hero-actions">
+            <button class="btn btn-filled" id="settingsSaveButton" type="button" ${settingsDirty ? '' : 'disabled'} onclick="saveSettings()">${icon('save')}<span>保存运行配置</span></button>
+            <button class="btn btn-tonal" type="button" onclick="resetSettings()">${icon('undo')}<span>放弃未保存</span></button>
+          </div>
         </section>
+
+        <section class="settings-overview-grid" aria-label="设置概览">
+          ${overview.map(createSettingsOverviewCard).join('')}
+        </section>
+
+        <div class="settings-layout">
+          <nav class="settings-nav" aria-label="设置分区">
+            ${createSettingsNavLink('operations', 'tune', '运行控制')}
+            ${createSettingsNavLink('grouping', 'dashboard', '模块分组与工作区')}
+            ${createSettingsNavLink('startPolicy', 'auto_mode', '启动策略')}
+            ${createSettingsNavLink('visibility', 'visibility', '卡片与入口')}
+            ${createSettingsNavLink('schedule', 'event_available', '定时任务')}
+            ${createSettingsNavLink('display', 'auto_mode', '界面体验')}
+            ${createSettingsNavLink('cleanup', 'stop_circle', '数据清理')}
+          </nav>
+
+          <section class="settings-section">
+            ${renderSettingsPanel(
+              'operations',
+              '运行控制',
+              '管理系统登录后的启动行为、启动顺序和每个模块的失败处理策略。',
+              createPanelMeta([
+                { tone: 'save', label: '需保存' },
+                { tone: 'danger', label: `${overview[3].value} 项风险` },
+              ]),
+              `<div class="settings-list" id="autoStartList">
+                ${createOperationsSummaryItem(overview)}
+                ${orderedModules.map((module, idx) => createAutoStartItem(module, idx)).join('') || emptySettings('暂无模块')}
+              </div>`
+            )}
+
+            ${renderSettingsPanel(
+              'grouping',
+              '模块分组与工作区',
+              '模块分组控制仪表盘归属；工作区编排控制场景级批量启动和停止。',
+              createPanelMeta([{ tone: 'save', label: '需保存' }]),
+              `<div class="settings-list">${createGroupingSettings(groups, orderedModules)}</div>`
+            )}
+
+            ${renderSettingsPanel(
+              'startPolicy',
+              '模块启动策略',
+              '覆盖分组模板，针对单个模块调整预检、重试和健康检查。',
+              createPanelMeta([{ tone: 'save', label: '需保存' }]),
+              `<div class="settings-list">${orderedModules.map(createStartPolicyItem).join('') || emptySettings('暂无模块')}</div>`
+            )}
+
+            ${renderSettingsPanel(
+              'visibility',
+              '卡片与入口',
+              '控制 Dashboard 是否展示卡片，并维护模块 Web UI 入口。',
+              createPanelMeta([{ tone: 'instant', label: '即时生效' }]),
+              `<div class="settings-list">
+                ${orderedModules.map(createVisibilityItem).join('') || emptySettings('暂无模块')}
+                ${webUrlModules.length > 0 ? webUrlModules.map(createWebUrlItem).join('') : ''}
+              </div>`
+            )}
+
+            ${renderSettingsPanel(
+              'schedule',
+              '定时任务',
+              '按指定时间启动或停止模块，适合有固定工作时段的本地服务。',
+              createPanelMeta([{ tone: 'instant', label: '即时生效' }]),
+              `<div class="settings-list">${orderedModules.map(createScheduleItem).join('') || emptySettings('暂无模块')}</div>`
+            )}
+
+            ${renderSettingsPanel(
+              'display',
+              '界面体验',
+              '控制信息密度、壁纸和玻璃材质；只影响当前浏览器。',
+              createPanelMeta([{ tone: 'local', label: '本地偏好' }]),
+              `<div class="settings-list">${createDisplayPrefsItem()}</div>`
+            )}
+
+            ${renderSettingsPanel(
+              'cleanup',
+              '数据清理与恢复',
+              '清理浏览器本地偏好，并从后端配置备份恢复误改前的运行配置。',
+              createPanelMeta([{ tone: 'danger', label: '高风险操作' }]),
+              `<div class="settings-list">${createCleanupSettingsItem()}</div>`
+            )}
+          </section>
+        </div>
       `;
 
       initSettingsPanels();
       initDragAndDrop();
     }
 
-    function renderSettingsPanel(panelId, title, description, content) {
+    function renderSettingsPanel(panelId, title, description, meta, content) {
       const openAttr = settingsPanels[panelId] === false ? '' : 'open';
       return `
-        <details class="settings-panel glass-panel" data-settings-panel="${panelId}" ${openAttr}>
+        <details class="settings-panel glass-panel" id="settings-panel-${escapeAttr(panelId)}" data-settings-panel="${panelId}" ${openAttr}>
           <summary class="settings-panel-summary">
             <div class="section-heading">
               <div>
                 <h3 class="settings-section-title">${escapeHtml(title)}</h3>
                 <p class="settings-section-desc">${escapeHtml(description)}</p>
               </div>
-              <span class="panel-chevron" aria-hidden="true">${icon('expand_more')}</span>
+              <div class="settings-panel-meta">
+                ${meta || ''}
+                <span class="panel-chevron" aria-hidden="true">${icon('expand_more')}</span>
+              </div>
             </div>
           </summary>
           <div class="settings-panel-content">
             ${content}
           </div>
         </details>
+      `;
+    }
+
+    function createPanelMeta(items) {
+      return items.map((item) => `
+        <span class="settings-panel-chip ${escapeAttr(item.tone || '')}">${escapeHtml(item.label)}</span>
+      `).join('');
+    }
+
+    function createSettingsNavLink(panelId, iconName, label) {
+      return `
+        <a class="settings-nav-link" href="#settings-panel-${escapeAttr(panelId)}" onclick="focusSettingsPanel('${jsString(panelId)}'); return false;">
+          ${icon(iconName)}
+          <span>${escapeHtml(label)}</span>
+        </a>
+      `;
+    }
+
+    function getSettingsOverview(orderedModules, groups, webUrlModules) {
+      return window.HubKitSettings.getSettingsOverview(
+        orderedModules,
+        groups,
+        webUrlModules,
+        settings,
+        defaultStartPolicy,
+      );
+    }
+
+    function getSettingsRiskCount(orderedModules) {
+      return window.HubKitSettings.getSettingsRiskCount(orderedModules, settings, defaultStartPolicy);
+    }
+
+    function createSettingsOverviewCard(item) {
+      return `
+        <div class="settings-overview-card">
+          <span class="settings-overview-label">${escapeHtml(item.label)}</span>
+          <span class="settings-overview-value">${escapeHtml(item.value)}</span>
+          <span class="settings-overview-note">${escapeHtml(item.note)}</span>
+        </div>
+      `;
+    }
+
+    function createOperationsSummaryItem(overview) {
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr);">
+          <div class="settings-item-info">
+            <span class="settings-item-name">启动队列</span>
+            <span class="settings-item-id">拖拽模块改变登录后启动顺序；打开开关只加入启动队列，不会立即启动模块。</span>
+            <div class="inline-actions" style="margin-top: 10px;">
+              <span class="order-badge">${escapeHtml(String(overview[0].value))} 个自启</span>
+              <span class="order-badge">${escapeHtml(String(overview[1].value))} 个分组</span>
+              <span class="order-badge">${escapeHtml(String(overview[3].value))} 项风险</span>
+            </div>
+          </div>
+        </div>
       `;
     }
 
@@ -5132,6 +7637,40 @@
         panel.addEventListener('toggle', () => {
           settingsPanels[panelId] = panel.open;
         });
+      });
+    }
+
+    function scrollToSettingsPanel(panelEl) {
+      const offset = window.innerWidth <= 760 ? 86 : 104;
+      const top = window.scrollY + panelEl.getBoundingClientRect().top - offset;
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: 'smooth',
+      });
+    }
+
+    function updateSettingsPanelHash(panelId) {
+      const hash = `#settings-panel-${panelId}`;
+      if (window.location.hash === hash) return;
+      if (window.history && typeof window.history.replaceState === 'function') {
+        window.history.replaceState(null, '', hash);
+        return;
+      }
+      window.location.hash = hash;
+    }
+
+    function focusSettingsPanel(panelId) {
+      if (currentView !== 'settings') return;
+      const panel = document.getElementById(`settings-panel-${panelId}`);
+      if (!panel) return;
+      if (!panel.open) {
+        panel.open = true;
+        settingsPanels[panelId] = true;
+      }
+      updateSettingsPanelHash(panelId);
+      const summary = panel.querySelector('.settings-panel-summary');
+      requestAnimationFrame(() => {
+        scrollToSettingsPanel(summary || panel);
       });
     }
 
@@ -5501,6 +8040,59 @@
             </div>
           </div>
         </div>
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div class="inline-actions" style="justify-content: space-between;">
+              <div class="settings-item-info">
+                <span class="settings-item-name">HubKit 配置备份</span>
+                <span class="settings-item-id">恢复模块目录、分组、自启顺序、启动策略和定时任务；恢复前会先备份当前配置</span>
+              </div>
+              <button class="btn btn-outlined btn-sm" type="button" onclick="fetchConfigBackups(true)">
+                ${icon('refresh')}
+                <span>刷新备份</span>
+              </button>
+            </div>
+            <div class="settings-list">
+              ${createConfigBackupSettingsList()}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createConfigBackupSettingsList() {
+      if (configBackupsLoading && configBackups.length === 0) {
+        return emptySettings('正在加载配置备份...');
+      }
+      if (configBackups.length === 0) {
+        return emptySettings('暂无可恢复的配置备份；保存设置或修改模块目录后会自动生成。');
+      }
+      return configBackups.map(createConfigBackupSettingsItem).join('');
+    }
+
+    function createConfigBackupSettingsItem(backup) {
+      const createdAt = formatStartedAt(backup.createdAt);
+      const summary = [
+        `${backup.moduleDirCount || 0} 个模块目录`,
+        `${backup.groupCount || 0} 个工作区`,
+        `${backup.autoStartCount || 0} 个自启`,
+        `${backup.scheduleCount || 0} 个定时`,
+        formatFileSize(backup.sizeBytes),
+      ].join(' · ');
+      return `
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(createdAt)}</span>
+            <span class="settings-item-id">${escapeHtml(summary)}</span>
+            <span class="settings-item-id mono">${escapeHtml(backup.id)}</span>
+          </div>
+          <div class="settings-controls">
+            <button class="btn btn-error btn-sm" type="button" onclick="restoreConfigBackup('${jsString(backup.id)}')">
+              ${icon('undo')}
+              <span>恢复</span>
+            </button>
+          </div>
+        </div>
       `;
     }
 
@@ -5510,9 +8102,10 @@
         <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
           <div class="settings-item-info" style="display: grid; gap: 12px;">
             <div class="inline-actions">
-              <span class="settings-item-name">分组列表</span>
+              <span class="settings-item-name">模块分组</span>
               <button class="btn btn-tonal btn-sm" type="button" onclick="addDashboardGroup()">${icon('save')}<span>新增分组</span></button>
             </div>
+            <span class="settings-item-id">控制 Dashboard 模块卡片归属和分组启动策略模板。</span>
             <div class="settings-list">
               ${groups.map((group) => createGroupEditorItem(group, orderedModules)).join('')}
             </div>
@@ -5525,6 +8118,98 @@
                 ${scriptGroupItems.map(createScriptGroupSettingsItem).join('')}
               </div>
             ` : ''}
+          </div>
+        </div>
+        ${createWorkspaceSettings(orderedModules)}
+      `;
+    }
+
+    function createWorkspaceSettings(orderedModules) {
+      const workspaceSettings = buildWorkspaceSettingsViewModel(getEditableWorkspaces());
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div class="inline-actions">
+              <span class="settings-item-name">工作区编排</span>
+              <button class="btn btn-tonal btn-sm" type="button" onclick="addWorkspace()">${icon('save')}<span>新增工作区</span></button>
+            </div>
+            <span class="settings-item-id">按场景选择模块，一键启动或停止；启动顺序暂按勾选顺序执行，停止时默认反向执行。</span>
+            <div class="settings-list">
+              ${workspaceSettings.hasWorkspaces
+                ? workspaceSettings.items.map((workspace) => createWorkspaceEditorItem(workspace, orderedModules)).join('')
+                : emptySettings(workspaceSettings.emptyText)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createWorkspaceEditorItem(workspace, orderedModules) {
+      const workspaceEditor = buildWorkspaceEditorViewModel(workspace);
+      const workspaceEditorModules = buildWorkspaceEditorModulesViewModel(orderedModules);
+      return `
+        <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
+          <div class="settings-item-info" style="display: grid; gap: 12px;">
+            <div style="display: flex; align-items: start; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: grid; gap: 4px; min-width: 0;">
+                <span class="settings-item-name">${escapeHtml(workspaceEditor.title)}</span>
+                <span class="settings-item-id">${escapeHtml(workspaceEditor.id)} · ${workspaceEditor.selectedCount} 个模块</span>
+              </div>
+              <div class="settings-controls" style="width: min(100%, 620px); justify-content: stretch;">
+                <div class="text-field" style="min-width: 0; flex: 1 1 160px;">
+                  <label for="${escapeAttr(workspaceEditor.nameInputId)}">名称</label>
+                  <input
+                    class="input"
+                    id="${escapeAttr(workspaceEditor.nameInputId)}"
+                    type="text"
+                    value="${escapeAttr(workspaceEditor.nameValue)}"
+                    oninput="updateWorkspaceField('${jsString(workspace.id)}', 'name', this.value)"
+                  >
+                </div>
+                <div class="text-field" style="min-width: 0; flex: 1 1 220px;">
+                  <label for="${escapeAttr(workspaceEditor.descriptionInputId)}">说明</label>
+                  <input
+                    class="input"
+                    id="${escapeAttr(workspaceEditor.descriptionInputId)}"
+                    type="text"
+                    value="${escapeAttr(workspaceEditor.descriptionValue)}"
+                    placeholder="例如：开发环境、本机维护"
+                    oninput="updateWorkspaceField('${jsString(workspace.id)}', 'description', this.value)"
+                  >
+                </div>
+                <div class="text-field select-field" style="min-width: 0; flex: 1 1 160px;">
+                  <label for="${escapeAttr(workspaceEditor.policySelectId)}">失败策略</label>
+                  <select class="select" id="${escapeAttr(workspaceEditor.policySelectId)}" onchange="updateWorkspaceFailurePolicy('${jsString(workspace.id)}', this.value)">
+                    <option value="stop" ${workspaceEditor.isStopSelected ? 'selected' : ''}>失败后中断</option>
+                    <option value="continue" ${workspaceEditor.isContinueSelected ? 'selected' : ''}>失败后继续</option>
+                  </select>
+                </div>
+                <button class="btn btn-text btn-sm" type="button" onclick="removeWorkspace('${jsString(workspace.id)}')">${icon('close')}<span>删除</span></button>
+              </div>
+            </div>
+            <div class="settings-list">
+              ${workspaceEditorModules.hasModules
+                ? workspaceEditorModules.items.map((module) => createWorkspaceModuleToggle(workspace, module)).join('')
+                : emptySettings(workspaceEditorModules.emptyText)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createWorkspaceModuleToggle(workspace, module) {
+      const moduleToggle = buildWorkspaceModuleToggleViewModel(workspace, module);
+      return `
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-name">${escapeHtml(moduleToggle.moduleName)}</span>
+            <span class="settings-item-id">${escapeHtml(moduleToggle.moduleId)}</span>
+          </div>
+          <div class="settings-controls">
+            <label class="switch" title="加入当前工作区">
+              <input type="checkbox" ${moduleToggle.checked ? 'checked' : ''} onchange="toggleWorkspaceModule('${jsString(moduleToggle.workspaceId)}', '${jsString(moduleToggle.moduleId)}', this.checked)">
+              <span class="switch-track"></span>
+            </label>
           </div>
         </div>
       `;
@@ -5550,7 +8235,7 @@
     function createGroupEditorItem(group, orderedModules) {
       const locked = group.id === 'default';
       const sectionId = `group-${group.id}`;
-      const assignedModules = orderedModules.filter((module) => (module.groupId || settings.moduleGroups[module.id] || 'default') === group.id);
+      const assignedModules = orderedModules.filter((module) => getModuleGroupId(module) === group.id);
       const selectedTemplate = settings.groupStartPolicyTemplates?.[group.id] || 'balanced';
       return `
         <div class="settings-item" style="grid-template-columns: minmax(0, 1fr); align-items: start;">
@@ -5596,7 +8281,7 @@
     }
 
     function createGroupModuleToggle(group, module) {
-      const selected = module.groupId || settings.moduleGroups[module.id] || 'default';
+      const selected = getModuleGroupId(module);
       const checked = selected === group.id;
       return `
         <div class="settings-item">
@@ -5653,6 +8338,7 @@
 
     function createScheduleItem(module) {
       const schedule = module.schedule || settings.schedules[module.id] || {};
+      const scheduleStatus = module.scheduleStatus || {};
       const enabled = schedule.enabled === true;
       const days = Array.isArray(schedule.daysOfWeek) ? schedule.daysOfWeek : [];
       return `
@@ -5664,6 +8350,7 @@
           <div class="settings-item-info">
             <span class="settings-item-name">${escapeHtml(module.name)}</span>
             <span class="settings-item-id">${escapeHtml(module.id)}</span>
+            <span class="settings-item-id">${escapeHtml(formatScheduleStatus(scheduleStatus, enabled))}</span>
             <div class="schedule-controls" style="margin-top: 10px;">
               <div class="text-field">
                 <label for="schedule-start-${escapeAttr(module.id)}">启动</label>
@@ -5688,14 +8375,12 @@
       `;
     }
 
+    function formatScheduleStatus(scheduleStatus, enabled) {
+      return window.HubKitFormatters.formatScheduleStatus(scheduleStatus, enabled);
+    }
+
     function getModuleStartPolicySettings(module) {
-      const stored = settings.startPolicies?.[module.id] || {};
-      const fromModule = module.startPolicy || {};
-      return {
-        ...defaultStartPolicy,
-        ...fromModule,
-        ...stored,
-      };
+      return window.HubKitSettings.getModuleStartPolicySettings(module, settings.startPolicies, defaultStartPolicy);
     }
 
     function getStartPolicyTemplateName(templateId) {
@@ -5712,6 +8397,7 @@
         ...current,
         [key]: value === true,
       };
+      markSettingsDirty();
     }
 
     function updateStartPolicyNumber(moduleId, key, value) {
@@ -5725,17 +8411,20 @@
         ...current,
         [key]: Math.round(normalized),
       };
+      markSettingsDirty(false);
     }
 
     function resetModuleStartPolicy(moduleId) {
       if (!settings.startPolicies) return;
       delete settings.startPolicies[moduleId];
+      markSettingsDirty(false);
       renderSettings();
     }
 
     function updateGroupStartPolicyTemplate(groupId, templateId) {
       settings.groupStartPolicyTemplates = settings.groupStartPolicyTemplates || {};
       settings.groupStartPolicyTemplates[groupId] = templateId || 'balanced';
+      markSettingsDirty(false);
       renderSettings();
     }
 
@@ -5749,12 +8438,16 @@
       }
 
       try {
-        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/web-url`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url }),
-        });
-        const json = await res.json();
+        const json = window.HubKitApi?.saveModuleWebUrl
+          ? await window.HubKitApi.saveModuleWebUrl(moduleId, url)
+          : await (async () => {
+            const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/web-url`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url }),
+            });
+            return await res.json();
+          })();
         if (json.success) {
           showToast('Web 地址已保存');
           const module = modules.find(m => m.id === moduleId);
@@ -5770,12 +8463,16 @@
 
     async function setModuleVisibility(moduleId, visible) {
       try {
-        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/visibility`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visible }),
-        });
-        const json = await res.json();
+        const json = window.HubKitApi?.setModuleVisibility
+          ? await window.HubKitApi.setModuleVisibility(moduleId, visible)
+          : await (async () => {
+            const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/visibility`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ visible }),
+            });
+            return await res.json();
+          })();
         if (!json.success) throw new Error(json.error || '保存失败');
         const module = modules.find(m => m.id === moduleId);
         if (module) module.visible = visible;
@@ -5796,36 +8493,38 @@
         .map(input => Number(input.value));
 
       try {
-        const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/schedule`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled, startTime, stopTime, daysOfWeek }),
-        });
-        const json = await res.json();
+        const payload = { enabled, startTime, stopTime, daysOfWeek };
+        const json = window.HubKitApi?.saveModuleSchedule
+          ? await window.HubKitApi.saveModuleSchedule(moduleId, payload)
+          : await (async () => {
+            const res = await fetch(`/api/modules/${encodeURIComponent(moduleId)}/schedule`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            return await res.json();
+          })();
         if (!json.success) throw new Error(json.error || '保存失败');
         settings.schedules[moduleId] = json.schedule;
         const module = modules.find(m => m.id === moduleId);
-        if (module) module.schedule = json.schedule;
+        if (module) {
+          module.schedule = json.schedule;
+          module.scheduleStatus = json.scheduleStatus;
+        }
         showToast('定时任务已保存');
+        if (currentView === 'settings') renderSettings();
       } catch (error) {
         showToast(error.message || '保存失败', 'error');
       }
     }
 
     function getOrderedModules() {
-      const order = settings.startOrder || [];
-      return [...modules].sort((a, b) => {
-        const ai = order.indexOf(a.id);
-        const bi = order.indexOf(b.id);
-        if (ai === -1 && bi === -1) return 0;
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
-      });
+      return window.HubKitSettings.getOrderedModules(modules, settings.startOrder);
     }
 
     function toggleAutoStart(moduleId, enabled) {
       settings.autoStart[moduleId] = enabled;
+      markSettingsDirty();
     }
 
     function ensureSettingsGroups() {
@@ -5842,6 +8541,7 @@
       ensureSettingsGroups();
       const id = `group-${Date.now().toString(36)}`;
       settings.groups.push({ id, name: '新分组' });
+      markSettingsDirty(false);
       renderSettings();
     }
 
@@ -5850,6 +8550,7 @@
       const target = settings.groups.find((group) => group.id === groupId);
       if (!target) return;
       target.name = String(name || '').trim() || '未命名分组';
+      markSettingsDirty(false);
     }
 
     function removeDashboardGroup(groupId) {
@@ -5861,6 +8562,7 @@
           settings.moduleGroups[moduleId] = 'default';
         }
       });
+      markSettingsDirty(false);
       renderSettings();
       renderDashboard();
     }
@@ -5870,6 +8572,7 @@
       settings.moduleGroups[moduleId] = groupId || 'default';
       const module = modules.find((item) => item.id === moduleId);
       if (module) module.groupId = settings.moduleGroups[moduleId];
+      markSettingsDirty();
       renderDashboard();
     }
 
@@ -5879,12 +8582,81 @@
       settings.moduleGroups[moduleId] = targetGroupId;
       const module = modules.find((item) => item.id === moduleId);
       if (module) module.groupId = targetGroupId;
+      markSettingsDirty(false);
+      renderSettings();
+      renderDashboard();
+    }
+
+    function ensureSettingsWorkspaces() {
+      if (!Array.isArray(settings.workspaces)) {
+        settings.workspaces = [];
+      }
+    }
+
+    function getEditableWorkspaces() {
+      ensureSettingsWorkspaces();
+      return settings.workspaces;
+    }
+
+    function syncWorkspaceDraftsToDashboard() {
+      workspaces = buildWorkspaceDashboardDrafts(getEditableWorkspaces());
+    }
+
+    function addWorkspace() {
+      const id = generateWorkspaceId();
+      getEditableWorkspaces().push(createWorkspaceDraft(id));
+      syncWorkspaceDraftsToDashboard();
+      markSettingsDirty(false);
+      renderSettings();
+      renderDashboard();
+    }
+
+    function updateWorkspaceField(workspaceId, field, value) {
+      const workspace = getEditableWorkspaces().find((item) => item.id === workspaceId);
+      const updated = updateWorkspaceMetadataField(workspace, field, value);
+      if (!updated) return;
+      Object.assign(workspace, updated);
+      syncWorkspaceDraftsToDashboard();
+      markSettingsDirty(false);
+      renderDashboardGroups();
+      updateSettingsSaveState();
+    }
+
+    function updateWorkspaceFailurePolicy(workspaceId, value) {
+      const workspace = getEditableWorkspaces().find((item) => item.id === workspaceId);
+      const updated = normalizeWorkspaceFailurePolicy(workspace, value);
+      if (!updated) return;
+      Object.assign(workspace, updated);
+      syncWorkspaceDraftsToDashboard();
+      markSettingsDirty(false);
+      renderDashboardGroups();
+    }
+
+    function toggleWorkspaceModule(workspaceId, moduleId, enabled) {
+      const workspace = getEditableWorkspaces().find((item) => item.id === workspaceId);
+      if (!workspace) return;
+      Object.assign(workspace, updateWorkspaceModuleSelection(workspace, moduleId, enabled));
+      delete workspacePlansById[workspaceId];
+      syncWorkspaceDraftsToDashboard();
+      markSettingsDirty(false);
+      renderSettings();
+      renderDashboard();
+    }
+
+    function removeWorkspace(workspaceId) {
+      ensureSettingsWorkspaces();
+      settings.workspaces = removeWorkspaceDraft(settings.workspaces, workspaceId);
+      delete workspacePlansById[workspaceId];
+      delete workspaceActionLoading[workspaceId];
+      delete workspacePlanLoading[workspaceId];
+      syncWorkspaceDraftsToDashboard();
+      markSettingsDirty(false);
       renderSettings();
       renderDashboard();
     }
 
     function resetSettings() {
-      fetchSettings().then(() => renderSettings());
+      fetchSettings({ forceRender: true });
     }
 
     function initDragAndDrop() {
@@ -5922,9 +8694,31 @@
           const [moved] = ordered.splice(dragSrcIndex, 1);
           ordered.splice(dropIndex, 0, moved);
           settings.startOrder = ordered.map(module => module.id);
+          markSettingsDirty(false);
           renderSettings();
         });
       });
+    }
+
+    function markSettingsDirty(shouldRender = true) {
+      settingsDirty = true;
+      if (shouldRender && currentView === 'settings') {
+        requestSettingsRender();
+      } else {
+        updateSettingsSaveState();
+      }
+    }
+
+    function updateSettingsSaveState() {
+      const chip = document.getElementById('settingsDirtyChip');
+      if (chip) {
+        chip.classList.toggle('dirty', settingsDirty);
+        chip.textContent = settingsDirty ? '有未保存运行配置' : '运行配置已同步';
+      }
+      const button = document.getElementById('settingsSaveButton');
+      if (button) {
+        button.disabled = !settingsDirty;
+      }
     }
 
     async function showLogs(moduleId, moduleName) {
@@ -5935,6 +8729,21 @@
       document.getElementById('logFilter').value = '';
       document.getElementById('logLevelFilter').value = 'all';
       document.getElementById('logContent').textContent = '加载中...';
+      document.getElementById('logDialog').classList.add('active');
+      await refreshLogs();
+      toggleLogTail();
+    }
+
+    async function showGlobalLogs() {
+      currentLogModuleId = null;
+      currentLogModuleName = '';
+      currentLogTarget = { kind: 'global' };
+      document.getElementById('logDialogTitle').textContent = '全局日志搜索';
+      document.getElementById('logDialogSubtitle').textContent = '跨模块搜索最近日志';
+      document.getElementById('logFilter').value = '';
+      document.getElementById('logLevelFilter').value = 'all';
+      document.getElementById('logTailToggle').checked = false;
+      document.getElementById('logContent').textContent = '输入关键字或选择级别后刷新。';
       document.getElementById('logDialog').classList.add('active');
       await refreshLogs();
       toggleLogTail();
@@ -5955,8 +8764,12 @@
         ? await fetchScriptLogs(currentLogTarget.bundleId, currentLogTarget.actionId)
         : currentLogTarget?.kind === 'system-action'
           ? await fetchSystemActionLogs(currentLogTarget.actionId)
+        : currentLogTarget?.kind === 'global'
+          ? await fetchGlobalLogs()
         : await fetchLogs(currentLogModuleId);
-      content.innerHTML = renderLogLines(rawLogs || '暂无日志');
+      content.innerHTML = currentLogTarget?.kind === 'global'
+        ? renderGlobalLogSearchResults(rawLogs)
+        : renderLogLines(rawLogs || '暂无日志');
       applyLogFilter();
       if (document.getElementById('logTailToggle').checked) {
         scrollLogsBottom();
@@ -5964,22 +8777,11 @@
     }
 
     function renderLogLines(rawLogs) {
-      return String(rawLogs).split('\n').map(line => {
-        const lower = line.toLowerCase();
-        let level = 'info';
-        let cls = 'log-line log-line-info';
-        if (lower.includes('error') || lower.includes('failed') || lower.includes('exception')) {
-          level = 'error';
-          cls = 'log-line log-line-error';
-        } else if (lower.includes('warn')) {
-          level = 'warn';
-          cls = 'log-line log-line-warn';
-        } else if (/^\s+at\s/.test(line)) {
-          level = 'stack';
-          cls = 'log-line log-line-stack';
-        }
-        return `<span class="${cls}" data-level="${level}">${escapeHtml(line || ' ')}</span>`;
-      }).join('');
+      return window.HubKitLogRenderer.renderLogLines(rawLogs);
+    }
+
+    function renderGlobalLogSearchResults(payload) {
+      return window.HubKitLogRenderer.renderGlobalLogSearchResults(payload);
     }
 
     function applyLogFilter() {
@@ -5987,10 +8789,13 @@
       const level = document.getElementById('logLevelFilter').value;
       const lines = document.querySelectorAll('#logContent .log-line');
       lines.forEach(line => {
-        const textMatch = !term || line.textContent.toLowerCase().includes(term);
-        const lineLevel = line.dataset.level;
-        const levelMatch = level === 'all' || lineLevel === level || (level === 'info' && lineLevel === 'stack');
-        line.classList.toggle('log-line-hidden', !(textMatch && levelMatch));
+        const visible = window.HubKitLogRenderer.shouldShowLogLine({
+          text: line.textContent,
+          lineLevel: line.dataset.level,
+          term,
+          selectedLevel: level,
+        });
+        line.classList.toggle('log-line-hidden', !visible);
       });
     }
 
@@ -6067,6 +8872,9 @@
     document.getElementById('logDialog').addEventListener('click', (event) => {
       if (event.target.id === 'logDialog') closeLogDialog();
     });
+    document.getElementById('checkinDialog').addEventListener('click', (event) => {
+      if (event.target.id === 'checkinDialog') closeCheckinDialog();
+    });
 
     document.getElementById('snackbar').addEventListener('mouseenter', pauseToastTimer);
     document.getElementById('snackbar').addEventListener('mouseleave', resumeToastTimer);
@@ -6074,7 +8882,10 @@
     window.addEventListener('resize', fitWebTerminal, { passive: true });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeLogDialog();
+      if (event.key === 'Escape') {
+        closeLogDialog();
+        closeCheckinDialog();
+      }
     });
 
     if (typeof systemThemeQuery.addEventListener === 'function') {
@@ -6090,20 +8901,15 @@
     applyTheme(themeMode, false);
     applyGlassPrefs();
     applyWallpaper();
+    applyDashboardRefreshIntervalDisplay();
     setupTerminalResizeHandle();
     connectWebSocket();
-    fetchModules();
+    refreshDashboardNow(false);
     fetchModuleAudit();
     fetchStartPolicyTemplates();
-    fetchScriptBundles();
-    fetchSystemActions();
     fetchSettings();
-    setInterval(fetchModules, 5000);
-    setInterval(() => {
-      if (currentView === 'diagnostics') fetchModuleAudit();
-    }, 10000);
-    setInterval(fetchScriptBundles, 10000);
-    setInterval(fetchSystemActions, 10000);
+    setupDashboardRefreshTimer();
+    setupCheckinAutoRunTimer();
   </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
     "hub": "dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsc && cp src/web/public/index.html dist/web/public/index.html",
+    "build": "tsc && mkdir -p dist/web/public && cp -R src/web/public/. dist/web/public/",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",
     "web": "node dist/cli/index.js web",
