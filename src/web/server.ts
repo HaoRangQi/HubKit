@@ -1,20 +1,34 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { createServer } from 'http';
+import { createServer, IncomingMessage } from 'http';
 import path from 'path';
 import { ModuleRegistry } from '../registry/module-registry';
 import { ModuleScanner } from '../registry/module-scanner';
 import { config } from '../config/config';
 import { createApiRouter } from './api/routes';
-import { NodeJSAdapter } from '../adapters/nodejs-adapter';
-import { PythonAdapter } from '../adapters/python-adapter';
-import { ShellAdapter } from '../adapters/shell-adapter';
 import { ScriptBundleManager } from '../script-bundle/script-bundle-manager';
 import { BootPreferenceService } from '../system-actions/boot-preference-service';
-import { ModuleProtocol } from '../types/module';
 import { ModuleScheduler } from '../scheduler/module-scheduler';
 import { moduleRuntimeStateStore } from '../runtime/module-runtime-state';
+import { ModuleLifecycle } from '../runtime/module-lifecycle';
+
+export const DEFAULT_WEB_HOST = '127.0.0.1';
+
+export function isAllowedWebOrigin(origin: string | undefined, requestHost: string | undefined, boundHost: string): boolean {
+  if (!origin || isLocalHost(boundHost)) return true;
+
+  const normalizedRequestHost = normalizeHostHeader(requestHost);
+  if (!normalizedRequestHost) return false;
+
+  try {
+    const parsedOrigin = new URL(origin);
+    const originHost = normalizeHostHeader(parsedOrigin.host);
+    return originHost === normalizedRequestHost;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * HubKit Web 服务器
@@ -27,17 +41,24 @@ export class WebServer {
   private scriptBundleManager: ScriptBundleManager;
   private bootPreferenceService: BootPreferenceService;
   private scheduler: ModuleScheduler;
+  private lifecycle: ModuleLifecycle;
   private port: number;
+  private host: string;
 
-  constructor(port: number = 2281) {
+  constructor(port: number = 2281, host: string = DEFAULT_WEB_HOST) {
     this.port = port;
+    this.host = host;
     this.app = express();
     this.server = createServer(this.app);
-    this.wss = new WebSocketServer({ server: this.server });
+    this.wss = new WebSocketServer({
+      server: this.server,
+      verifyClient: (info: { origin?: string; req: IncomingMessage }) => this.isAllowedOrigin(info.origin, info.req),
+    });
     this.registry = new ModuleRegistry();
     this.scriptBundleManager = new ScriptBundleManager(config.getDataDir(), (message) => this.broadcast(message));
     this.bootPreferenceService = new BootPreferenceService(config.getDataDir(), (message) => this.broadcast(message));
-    this.scheduler = new ModuleScheduler(this.registry);
+    this.lifecycle = new ModuleLifecycle();
+    this.scheduler = new ModuleScheduler(this.registry, this.lifecycle);
     this.scheduler.setEventListener((event) => this.broadcast(event));
     moduleRuntimeStateStore.on('change', (moduleId, runtimeState) => {
       this.broadcast({ type: 'module_runtime_updated', moduleId, runtimeState });
@@ -52,8 +73,11 @@ export class WebServer {
    * 设置中间件
    */
   private setupMiddleware(): void {
-    this.app.use(cors());
     this.app.use(express.json());
+    this.app.use('/api', this.originGuard.bind(this));
+    this.app.use(cors((req: IncomingMessage, callback: (err: Error | null, options?: cors.CorsOptions) => void) => {
+      callback(null, { origin: this.isAllowedOrigin(req.headers.origin, req as Request) });
+    }));
     this.app.use('/vendor/xterm', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'xterm', 'lib')));
     this.app.use('/vendor/xterm-css', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'xterm', 'css')));
     this.app.use('/vendor/xterm-fit', express.static(path.join(process.cwd(), 'node_modules', '@xterm', 'addon-fit', 'lib')));
@@ -66,12 +90,26 @@ export class WebServer {
    */
   private setupRoutes(): void {
     // API 路由
-    this.app.use('/api', createApiRouter(this.registry, this.wss, this.scriptBundleManager, this.bootPreferenceService));
+    this.app.use('/api', createApiRouter(this.registry, this.wss, this.scriptBundleManager, this.bootPreferenceService, this.scheduler, this.lifecycle));
 
     // 首页
     this.app.get('/', (req: Request, res: Response) => {
       res.sendFile(path.join(__dirname, 'public', 'index.html'));
     });
+  }
+
+  private originGuard(req: Request, res: Response, next: express.NextFunction): void {
+    if (this.isAllowedOrigin(req.get('origin'), req)) {
+      next();
+      return;
+    }
+
+    res.status(403).json({ success: false, error: 'Origin 不被允许' });
+  }
+
+  private isAllowedOrigin(origin: string | undefined, req?: Request | IncomingMessage): boolean {
+    const requestHost = req?.headers.host;
+    return isAllowedWebOrigin(origin, Array.isArray(requestHost) ? requestHost[0] : requestHost, this.host);
   }
 
   /**
@@ -139,10 +177,14 @@ export class WebServer {
     await this.autoStartModules();
     this.scheduler.start();
 
-    this.server.listen(this.port, () => {
+    this.server.listen(this.port, this.host, () => {
+      const dashboardHost = formatDashboardHost(this.host);
       console.log(`\n🚀 HubKit Web 服务器已启动`);
-      console.log(`📊 Dashboard: http://localhost:${this.port}`);
-      console.log(`🔌 WebSocket: ws://localhost:${this.port}`);
+      console.log(`📊 Dashboard: http://${dashboardHost}:${this.port}`);
+      console.log(`🔌 WebSocket: ws://${dashboardHost}:${this.port}`);
+      if (!isLocalHost(this.host)) {
+        console.log(`⚠️  已显式绑定到 ${this.host}，请只在可信网络中访问。`);
+      }
       console.log(`\n按 Ctrl+C 停止服务器\n`);
     });
   }
@@ -168,28 +210,11 @@ export class WebServer {
 
     for (const module of toStart) {
       try {
-        const adapter = this.createModuleAdapter(module);
-        await adapter.start();
+        await this.lifecycle.start(module);
         console.log(`✅ 自动启动: ${module.name}`);
       } catch (error) {
         console.error(`❌ 自动启动失败: ${module.name}`, error);
       }
-    }
-  }
-
-  /**
-   * 创建模块适配器
-   */
-  private createModuleAdapter(module: any): ModuleProtocol {
-    switch (module.type) {
-      case 'nodejs':
-        return new NodeJSAdapter(module);
-      case 'python':
-        return new PythonAdapter(module);
-      case 'shell':
-        return new ShellAdapter(module);
-      default:
-        throw new Error(`不支持的模块类型: ${module.type}`);
     }
   }
 
@@ -212,5 +237,27 @@ export class WebServer {
         client.send(data);
       }
     });
+  }
+}
+
+function formatDashboardHost(host: string): string {
+  if (host === '0.0.0.0') return 'localhost';
+  if (host.includes(':') && !host.startsWith('[')) return `[${host}]`;
+  return host;
+}
+
+function isLocalHost(host: string): boolean {
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+}
+
+function normalizeHostHeader(host: string | undefined): string | null {
+  if (!host) return null;
+  const trimmed = host.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  try {
+    return new URL(`http://${trimmed}`).host;
+  } catch {
+    return null;
   }
 }
