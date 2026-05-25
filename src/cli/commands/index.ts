@@ -8,6 +8,10 @@ import { registerEnableCommand, registerDisableCommand } from './enable-disable'
 import { registerStartCommand, registerStopCommand, registerRestartCommand } from './start-stop';
 import { registerLogsCommand } from './logs';
 import { registerWebCommand } from './web';
+import { registerInitModuleCommand } from './init-module';
+import { registerWorkspaceCommand } from './workspace';
+import { registerAuditCommand } from './audit';
+import { registerLogSearchCommand } from './log-search';
 
 /**
  * 全局模块注册表
@@ -43,6 +47,18 @@ export function registerCommands(program: Command): void {
 
   // 注册 web 命令
   registerWebCommand(program);
+
+  // 注册 workspace 命令
+  registerWorkspaceCommand(program, registry);
+
+  // 注册 audit 命令
+  registerAuditCommand(program, registry);
+
+  // 注册 log-search 命令
+  registerLogSearchCommand(program, registry);
+
+  // 注册模块接入向导命令
+  registerInitModuleCommand(program);
 
   // version 命令
   program

@@ -56,8 +56,18 @@ export async function inspectModuleEnvironment(module: ModuleMetadata): Promise<
     requiredCommands: [...requiredCommands],
     missingCommands,
     requiredEnvVars,
+    requiredEnvVarCount: requiredEnvVars.length,
     missingEnvVars,
     commandChecks,
+  };
+}
+
+export function sanitizeEnvironmentReportForDisplay(report: ModuleEnvironmentReport): ModuleEnvironmentReport {
+  return {
+    ...report,
+    requiredEnvVarCount: report.requiredEnvVarCount ?? report.requiredEnvVars.length,
+    requiredEnvVars: [],
+    missingEnvVars: report.missingEnvVars.map(sanitizeEnvVarName).filter(Boolean),
   };
 }
 
@@ -83,6 +93,11 @@ export function parseEnvTemplate(content: string): string[] {
     }
   }
   return [...result];
+}
+
+function sanitizeEnvVarName(key: string): string {
+  const normalized = String(key || '').trim();
+  return /^[A-Z][A-Z0-9_]*$/.test(normalized) ? normalized : '';
 }
 
 function inspectCommand(command: string, requirement?: string): ModuleEnvironmentCommandCheck {

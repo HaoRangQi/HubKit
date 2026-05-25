@@ -15,6 +15,7 @@ import {
   ScriptRunStatus,
   ScriptTerminalSessionSummary,
 } from '../types/script-bundle';
+import { readLastLinesText } from '../runtime/log-tail';
 
 type BroadcastFn = (message: any) => void;
 
@@ -327,7 +328,7 @@ export class ScriptBundleManager {
     }
   }
 
-  async getActionLog(bundleId: string, actionId: string, runId?: string): Promise<string> {
+  async getActionLog(bundleId: string, actionId: string, runId?: string, lines: number = 200): Promise<string> {
     const history = await this.getActionHistory(bundleId, actionId);
     const target = runId
       ? history.find((item) => item.runId === runId)
@@ -338,7 +339,7 @@ export class ScriptBundleManager {
     }
 
     try {
-      return await fsp.readFile(target.logFile, 'utf-8');
+      return await readLastLinesText(target.logFile, lines);
     } catch {
       return '暂无日志';
     }

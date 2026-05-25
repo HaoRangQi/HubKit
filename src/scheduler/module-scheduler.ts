@@ -1,9 +1,31 @@
 import { config, ModuleSchedule } from '../config/config';
 import { ModuleRegistry } from '../registry/module-registry';
-import { NodeJSAdapter } from '../adapters/nodejs-adapter';
-import { PythonAdapter } from '../adapters/python-adapter';
-import { ShellAdapter } from '../adapters/shell-adapter';
-import { ModuleProtocol, ModuleStatus } from '../types/module';
+import { ModuleStatus } from '../types/module';
+import { ModuleLifecycle } from '../runtime/module-lifecycle';
+
+export type ScheduleAction = 'start' | 'stop';
+
+export interface ScheduleTriggerResult {
+  moduleId: string;
+  action: ScheduleAction;
+  success: boolean;
+  skipped?: boolean;
+  message: string;
+  error?: string;
+  triggeredAt: string;
+}
+
+export interface NextScheduleAction {
+  action: ScheduleAction;
+  at: string;
+  time: string;
+}
+
+export interface ModuleScheduleStatus {
+  enabled: boolean;
+  nextAction: NextScheduleAction | null;
+  lastResult: ScheduleTriggerResult | null;
+}
 
 /**
  * 模块定时调度器
@@ -13,18 +35,29 @@ import { ModuleProtocol, ModuleStatus } from '../types/module';
 export class ModuleScheduler {
   private timer?: NodeJS.Timeout;
   private registry: ModuleRegistry;
-  private onEvent?: (event: { type: string; moduleId: string; action: 'start' | 'stop'; success: boolean; error?: string }) => void;
+  private onEvent?: (event: ScheduleTriggerResult & { type: string }) => void;
   /** 防止同一分钟内重复触发：moduleId:HH:MM:action */
   private firedKeys: Set<string> = new Set();
   /** 上次清理 firedKeys 的小时 */
   private lastCleanupHour: number = -1;
+  private lastResults: Map<string, ScheduleTriggerResult> = new Map();
+  private lifecycle: ModuleLifecycle;
 
-  constructor(registry: ModuleRegistry) {
+  constructor(registry: ModuleRegistry, lifecycle: ModuleLifecycle = new ModuleLifecycle()) {
     this.registry = registry;
+    this.lifecycle = lifecycle;
   }
 
   setEventListener(fn: (event: any) => void): void {
     this.onEvent = fn;
+  }
+
+  getScheduleStatus(moduleId: string, schedule?: ModuleSchedule, from: Date = new Date()): ModuleScheduleStatus {
+    return {
+      enabled: schedule?.enabled === true,
+      nextAction: getNextScheduleAction(schedule, from),
+      lastResult: this.lastResults.get(moduleId) || null,
+    };
   }
 
   start(): void {
@@ -91,44 +124,95 @@ export class ModuleScheduler {
     }
   }
 
-  private async triggerAction(moduleId: string, action: 'start' | 'stop'): Promise<void> {
+  private async triggerAction(moduleId: string, action: ScheduleAction): Promise<void> {
     const module = this.registry.get(moduleId);
     if (!module) return;
 
-    const adapter = this.createAdapter(module);
     try {
-      const status = await adapter.status();
+      const status = await this.lifecycle.status(module);
 
       if (action === 'start') {
         if (status.status === ModuleStatus.RUNNING) {
           console.log(`[scheduler] ${moduleId} 已在运行，跳过定时启动`);
+          this.recordResult(moduleId, action, true, `${module.name} 已在运行，跳过定时启动`, { skipped: true });
           return;
         }
-        await adapter.start();
+        await this.lifecycle.start(module);
         console.log(`[scheduler] 定时启动: ${module.name}`);
+        this.recordResult(moduleId, action, true, `${module.name} 已按计划启动`);
       } else {
         if (status.status !== ModuleStatus.RUNNING) {
           console.log(`[scheduler] ${moduleId} 未在运行，跳过定时停止`);
+          this.recordResult(moduleId, action, true, `${module.name} 未在运行，跳过定时停止`, { skipped: true });
           return;
         }
-        await adapter.stop();
+        await this.lifecycle.stop(module);
         console.log(`[scheduler] 定时停止: ${module.name}`);
+        this.recordResult(moduleId, action, true, `${module.name} 已按计划停止`);
       }
-
-      this.onEvent?.({ type: 'schedule_triggered', moduleId, action, success: true });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       console.error(`[scheduler] ${action} 失败 ${moduleId}: ${errMsg}`);
-      this.onEvent?.({ type: 'schedule_triggered', moduleId, action, success: false, error: errMsg });
+      this.recordResult(moduleId, action, false, `${action === 'start' ? '定时启动' : '定时停止'}失败`, { error: errMsg });
     }
   }
 
-  private createAdapter(module: any): ModuleProtocol {
-    switch (module.type) {
-      case 'nodejs': return new NodeJSAdapter(module);
-      case 'python': return new PythonAdapter(module);
-      case 'shell': return new ShellAdapter(module);
-      default: throw new Error(`不支持的模块类型: ${module.type}`);
+  private recordResult(
+    moduleId: string,
+    action: ScheduleAction,
+    success: boolean,
+    message: string,
+    options: { skipped?: boolean; error?: string } = {}
+  ): void {
+    const result: ScheduleTriggerResult = {
+      moduleId,
+      action,
+      success,
+      skipped: options.skipped,
+      message,
+      error: options.error,
+      triggeredAt: new Date().toISOString(),
+    };
+    this.lastResults.set(moduleId, result);
+    this.onEvent?.({ type: 'schedule_triggered', ...result });
+  }
+
+}
+
+export function getNextScheduleAction(schedule: ModuleSchedule | undefined, from: Date = new Date()): NextScheduleAction | null {
+  if (!schedule?.enabled) return null;
+
+  const actions: Array<{ action: ScheduleAction; time: string }> = [];
+  if (isValidTime(schedule.startTime)) actions.push({ action: 'start', time: schedule.startTime! });
+  if (isValidTime(schedule.stopTime)) actions.push({ action: 'stop', time: schedule.stopTime! });
+  if (actions.length === 0) return null;
+
+  const allowedDays = Array.isArray(schedule.daysOfWeek)
+    ? schedule.daysOfWeek.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+    : [];
+  const candidates: NextScheduleAction[] = [];
+
+  for (let dayOffset = 0; dayOffset <= 7; dayOffset += 1) {
+    for (const action of actions) {
+      const candidate = new Date(from);
+      candidate.setDate(from.getDate() + dayOffset);
+      candidate.setSeconds(0, 0);
+      const [hour, minute] = action.time.split(':').map(Number);
+      candidate.setHours(hour, minute, 0, 0);
+
+      if (candidate <= from) continue;
+      if (allowedDays.length > 0 && !allowedDays.includes(candidate.getDay())) continue;
+      candidates.push({
+        action: action.action,
+        at: candidate.toISOString(),
+        time: action.time,
+      });
     }
   }
+
+  return candidates.sort((a, b) => Date.parse(a.at) - Date.parse(b.at))[0] || null;
+}
+
+function isValidTime(value: unknown): value is string {
+  return typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 }

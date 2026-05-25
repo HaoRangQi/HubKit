@@ -1,24 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ModuleMetadata } from '../types/module';
-
-/**
- * 模块配置文件接口
- */
-interface ModuleConfig {
-  id: string;
-  name: string;
-  description?: string;
-  type: 'nodejs' | 'python' | 'shell';
-  scriptPath: string;
-  startScript?: string;
-  webUrl?: string;
-  webPort?: number;
-  updateable?: boolean;
-  repoUrl?: string;
-  autoStart?: boolean;
-  enabled?: boolean;
-}
+import { ModuleConfig, normalizeModuleConfig, validateModuleConfig } from './module-config';
 
 /**
  * 模块扫描器
@@ -69,38 +52,30 @@ export class ModuleScanner {
     try {
       const content = fs.readFileSync(configPath, 'utf-8');
       const config: ModuleConfig = JSON.parse(content);
+      const validation = validateModuleConfig(config);
 
-      // 验证必需字段
-      if (!config.id || !config.name || !config.type || !config.scriptPath) {
+      if (!validation.valid) {
         console.warn(`Invalid module config: ${configPath}`);
+        validation.errors.forEach((issue) => {
+          console.warn(`  - ${issue.field}: ${issue.message}`);
+        });
         return null;
       }
 
-      // 解析脚本路径（相对于模块目录）
-      const scriptPath = path.isAbsolute(config.scriptPath)
-        ? config.scriptPath
-        : path.join(moduleDir, config.scriptPath);
+      validation.warnings.forEach((issue) => {
+        console.warn(`Module config warning: ${configPath}`);
+        console.warn(`  - ${issue.field}: ${issue.message}`);
+      });
+
+      const module = normalizeModuleConfig(config, moduleDir);
 
       // 检查脚本路径（目录也视为有效）
-      if (!fs.existsSync(scriptPath)) {
-        console.warn(`Script not found: ${scriptPath}`);
+      if (!fs.existsSync(module.scriptPath)) {
+        console.warn(`Script not found: ${module.scriptPath}`);
         return null;
       }
 
-      return {
-        id: config.id,
-        name: config.name,
-        description: config.description,
-        type: config.type,
-        scriptPath,
-        startScript: config.startScript,
-        webUrl: config.webUrl,
-        webPort: config.webPort,
-        updateable: config.updateable,
-        repoUrl: config.repoUrl,
-        autoStart: config.autoStart ?? false,
-        enabled: config.enabled ?? true,
-      };
+      return module;
     } catch (error) {
       console.error(`Failed to load module config: ${configPath}`, error);
       return null;
@@ -111,10 +86,6 @@ export class ModuleScanner {
    * 验证模块配置
    */
   validateConfig(config: ModuleConfig): boolean {
-    if (!config.id || typeof config.id !== 'string') return false;
-    if (!config.name || typeof config.name !== 'string') return false;
-    if (!['nodejs', 'python', 'shell'].includes(config.type)) return false;
-    if (!config.scriptPath || typeof config.scriptPath !== 'string') return false;
-    return true;
+    return validateModuleConfig(config).valid;
   }
 }

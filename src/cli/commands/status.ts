@@ -1,35 +1,39 @@
 import { Command } from 'commander';
 import { ModuleRegistry } from '../../registry/module-registry';
-import { ModuleScanner } from '../../registry/module-scanner';
-import { config } from '../../config/config';
-import { NodeJSAdapter } from '../../adapters/nodejs-adapter';
-import { PythonAdapter } from '../../adapters/python-adapter';
-import { ShellAdapter } from '../../adapters/shell-adapter';
-import { ModuleProtocol } from '../../types/module';
+import { ModuleLifecycle } from '../../runtime/module-lifecycle';
+import { scanAndRegisterModules } from './module-loader';
+
+const defaultLifecycle = new ModuleLifecycle();
+
+export interface StatusCommandDependencies {
+  scanAndRegister?: (registry: ModuleRegistry) => Promise<void>;
+  lifecycle?: Pick<ModuleLifecycle, 'status'>;
+}
 
 /**
  * status 命令 - 查看模块状态
  */
-export function registerStatusCommand(program: Command, registry: ModuleRegistry): void {
+export function registerStatusCommand(
+  program: Command,
+  registry: ModuleRegistry,
+  dependencies: StatusCommandDependencies = {},
+): void {
+  const scanAndRegister = dependencies.scanAndRegister || scanAndRegisterModules;
+  const lifecycle = dependencies.lifecycle || defaultLifecycle;
+
   program
     .command('status [moduleId]')
     .description('查看模块状态')
     .action(async (moduleId?: string) => {
       try {
-        // 先扫描模块
-        const scanner = new ModuleScanner();
-        const moduleDirs = config.getModuleDirs();
-        for (const dir of moduleDirs) {
-          const modules = await scanner.scan(dir);
-          modules.forEach(m => registry.register(m));
-        }
+        await scanAndRegister(registry);
 
         if (moduleId) {
           // 查看单个模块状态
-          await showModuleStatus(registry, moduleId);
+          await showModuleStatus(registry, moduleId, lifecycle);
         } else {
           // 查看所有模块状态
-          await showAllModulesStatus(registry);
+          await showAllModulesStatus(registry, lifecycle);
         }
       } catch (error) {
         console.error('查询状态失败:', error);
@@ -41,15 +45,18 @@ export function registerStatusCommand(program: Command, registry: ModuleRegistry
 /**
  * 显示单个模块状态
  */
-async function showModuleStatus(registry: ModuleRegistry, moduleId: string): Promise<void> {
+async function showModuleStatus(
+  registry: ModuleRegistry,
+  moduleId: string,
+  lifecycle: Pick<ModuleLifecycle, 'status'>,
+): Promise<void> {
   const module = registry.get(moduleId);
   if (!module) {
     console.error(`模块不存在: ${moduleId}`);
     process.exit(1);
   }
 
-  const adapter = createAdapter(module);
-  const status = await adapter.status();
+  const status = await lifecycle.status(module);
 
   console.log(`\n模块: ${module.name} (${module.id})`);
   console.log(`类型: ${module.type}`);
@@ -76,7 +83,10 @@ async function showModuleStatus(registry: ModuleRegistry, moduleId: string): Pro
 /**
  * 显示所有模块状态
  */
-async function showAllModulesStatus(registry: ModuleRegistry): Promise<void> {
+async function showAllModulesStatus(
+  registry: ModuleRegistry,
+  lifecycle: Pick<ModuleLifecycle, 'status'>,
+): Promise<void> {
   const modules = registry.list();
 
   if (modules.length === 0) {
@@ -88,8 +98,7 @@ async function showAllModulesStatus(registry: ModuleRegistry): Promise<void> {
 
   for (const module of modules) {
     try {
-      const adapter = createAdapter(module);
-      const status = await adapter.status();
+      const status = await lifecycle.status(module);
 
       const statusIcon = status.status === 'running' ? '●' : '○';
       console.log(`  ${statusIcon} ${module.name} (${module.id}) - ${status.status}`);
@@ -98,29 +107,4 @@ async function showAllModulesStatus(registry: ModuleRegistry): Promise<void> {
     }
   }
   console.log();
-}
-
-/**
- * 创建适配器
- */
-function createAdapter(module: any): ModuleProtocol {
-  const metadata = {
-    id: module.id,
-    name: module.name,
-    type: module.type as 'nodejs' | 'python' | 'shell',
-    scriptPath: module.scriptPath,
-    autoStart: module.autoStart || false,
-    enabled: module.enabled !== false,
-  };
-
-  switch (module.type) {
-    case 'nodejs':
-      return new NodeJSAdapter(metadata);
-    case 'python':
-      return new PythonAdapter(metadata);
-    case 'shell':
-      return new ShellAdapter(metadata);
-    default:
-      throw new Error(`不支持的模块类型: ${module.type}`);
-  }
 }

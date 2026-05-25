@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { execFile } from 'child_process';
 import { BootPreferenceMode, SystemActionRunRecord, SystemActionSummary } from '../types/system-actions';
+import { readLastLinesText } from '../runtime/log-tail';
 
 type BroadcastFn = (message: any) => void;
 
@@ -154,12 +155,12 @@ export class BootPreferenceService {
     }
   }
 
-  async getLog(runId?: string): Promise<string> {
+  async getLog(runId?: string, lines: number = 200): Promise<string> {
     const history = await this.getHistory();
     const target = runId ? history.find((item) => item.runId === runId) : history[0];
     if (!target?.logFile) return '暂无日志';
     try {
-      return await fsp.readFile(target.logFile, 'utf-8');
+      return await readLastLinesText(target.logFile, lines);
     } catch {
       return '暂无日志';
     }

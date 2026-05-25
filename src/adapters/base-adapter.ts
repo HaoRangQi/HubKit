@@ -20,6 +20,8 @@ import { config } from '../config/config';
 import { buildHealthCheckUrl, listPortListeners, parseModulePort, requestHealthCheck } from '../runtime/module-network';
 import { getModuleStartPolicy } from '../runtime/module-start-policy';
 import { moduleRuntimeStateStore } from '../runtime/module-runtime-state';
+import { readLastLines, readLastLinesText } from '../runtime/log-tail';
+import { rotateLogIfNeeded } from '../runtime/log-rotation';
 
 /**
  * 基础适配器抽象类
@@ -281,35 +283,15 @@ export abstract class BaseAdapter implements ModuleProtocol {
    * 获取日志
    */
   async logs(lines: number = 100): Promise<LogEntry[]> {
-    try {
-      const content = await fs.readFile(this.logFile, 'utf-8');
-      const allLines = content.split('\n').filter(line => line.trim());
-      const recentLines = allLines.slice(-lines);
-
-      return recentLines.map(line => this.parseLogLine(line));
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return []; // 日志文件不存在
-      }
-      throw error;
-    }
+    const recentLines = await readLastLines(this.logFile, lines);
+    return recentLines.map(line => this.parseLogLine(line));
   }
 
   /**
    * 获取原始日志文本（用于 Web 显示）
    */
   async rawLogs(lines: number = 200): Promise<string> {
-    try {
-      const content = await fs.readFile(this.logFile, 'utf-8');
-      const allLines = content.split('\n');
-      // 保留空行以保持格式，只截取最后 N 行
-      return allLines.slice(-lines).join('\n');
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return '';
-      }
-      throw error;
-    }
+    return readLastLinesText(this.logFile, lines);
   }
 
   /**
@@ -476,6 +458,9 @@ export abstract class BaseAdapter implements ModuleProtocol {
   }
 
   protected async appendLogLine(line: string): Promise<void> {
+    if (!this.logFileHandle) {
+      await rotateLogIfNeeded(this.logFile);
+    }
     await fs.appendFile(this.logFile, `${line}\n`, 'utf-8');
   }
 
@@ -547,6 +532,7 @@ export abstract class BaseAdapter implements ModuleProtocol {
 
   private async ensureLogHandle(): Promise<void> {
     if (!this.logFileHandle) {
+      await rotateLogIfNeeded(this.logFile);
       this.logFileHandle = await fs.open(this.logFile, 'a');
     }
   }

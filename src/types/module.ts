@@ -142,13 +142,30 @@ export interface StartPolicyTemplate {
 }
 
 export type ModuleAuditSeverity = 'info' | 'warn' | 'error';
+export type ModuleAuditActionKind =
+  | 'manual'
+  | 'check_status'
+  | 'open_logs'
+  | 'force_close'
+  | 'open_settings'
+  | 'open_url';
+
+export interface ModuleAuditAction {
+  kind: ModuleAuditActionKind;
+  label: string;
+  description: string;
+}
 
 export interface ModuleAuditFinding {
   severity: ModuleAuditSeverity;
   code: string;
   summary: string;
+  impact: string;
   details?: string;
+  logExcerpt?: string;
   recommendation?: string;
+  fix: ModuleAuditAction;
+  verify: ModuleAuditAction;
 }
 
 export interface ModuleAuditReport {
@@ -180,7 +197,10 @@ export interface ModuleEnvironmentReport {
   detectedEnvFiles: string[];
   requiredCommands: string[];
   missingCommands: string[];
+  /** 内部检查使用；对 Web/API 输出时应清空，避免暴露完整环境变量清单。 */
   requiredEnvVars: string[];
+  /** 环境模板中声明的变量总数，安全输出可保留计数。 */
+  requiredEnvVarCount?: number;
   missingEnvVars: string[];
   commandChecks: ModuleEnvironmentCommandCheck[];
 }

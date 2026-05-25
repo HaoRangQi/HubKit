@@ -1,12 +1,21 @@
 import { Command } from 'commander';
 import { ModuleRegistry } from '../../registry/module-registry';
-import { ModuleScanner } from '../../registry/module-scanner';
-import { config } from '../../config/config';
+import { scanAndRegisterModules } from './module-loader';
+
+export interface ListCommandDependencies {
+  scanAndRegister?: (registry: ModuleRegistry) => Promise<void>;
+}
 
 /**
  * list 命令 - 列出所有模块
  */
-export function registerListCommand(program: Command, registry: ModuleRegistry): void {
+export function registerListCommand(
+  program: Command,
+  registry: ModuleRegistry,
+  dependencies: ListCommandDependencies = {},
+): void {
+  const scanAndRegister = dependencies.scanAndRegister || scanAndRegisterModules;
+
   program
     .command('list')
     .description('列出所有模块')
@@ -14,14 +23,7 @@ export function registerListCommand(program: Command, registry: ModuleRegistry):
     .option('-t, --type <type>', '按类型过滤 (nodejs|python|shell)')
     .action(async (options) => {
       try {
-        // 扫描所有模块目录
-        const scanner = new ModuleScanner();
-        const moduleDirs = config.getModuleDirs();
-
-        for (const dir of moduleDirs) {
-          const modules = await scanner.scan(dir);
-          modules.forEach(m => registry.register(m));
-        }
+        await scanAndRegister(registry);
 
         // 获取模块列表
         let modules = registry.list();

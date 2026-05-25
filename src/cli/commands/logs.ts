@@ -1,80 +1,93 @@
 import { Command } from 'commander';
 import { ModuleRegistry } from '../../registry/module-registry';
-import { ModuleScanner } from '../../registry/module-scanner';
-import { LogManager } from '../../log/log-manager';
 import { config } from '../../config/config';
+import { readLastLinesText } from '../../runtime/log-tail';
 import * as fs from 'fs';
 import * as path from 'path';
+import { scanAndRegisterModules } from './module-loader';
+
+export interface LogsCommandOptions {
+  lines: string;
+  follow?: boolean;
+}
+
+export interface LogsCommandDependencies {
+  scanAndRegister?: (registry: ModuleRegistry) => Promise<void>;
+  getLogDir?: () => string;
+  readRecentText?: typeof readLastLinesText;
+  statSync?: typeof fs.statSync;
+  watch?: typeof fs.watch;
+  createReadStream?: typeof fs.createReadStream;
+}
 
 /**
  * logs 命令 - 查看模块日志
  */
-export function registerLogsCommand(program: Command, registry: ModuleRegistry): void {
-  const logManager = new LogManager(config.getLogDir());
+export function registerLogsCommand(
+  program: Command,
+  registry: ModuleRegistry,
+  dependencies: LogsCommandDependencies = {},
+): void {
+  const scanAndRegister = dependencies.scanAndRegister || scanAndRegisterModules;
+  const getLogDir = dependencies.getLogDir || (() => config.getLogDir());
+  const readRecentText = dependencies.readRecentText || readLastLinesText;
+  const statSync = dependencies.statSync || fs.statSync;
+  const watch = dependencies.watch || fs.watch;
+  const createReadStream = dependencies.createReadStream || fs.createReadStream;
 
   program
     .command('logs <moduleId>')
     .description('查看模块日志')
     .option('-n, --lines <number>', '显示行数', '50')
     .option('-f, --follow', '持续跟踪日志')
-    .action(async (moduleId: string, options: { lines: string; follow?: boolean }) => {
+    .action(async (moduleId: string, options: LogsCommandOptions) => {
       try {
-        // 先扫描模块
-        const scanner = new ModuleScanner();
-        const moduleDirs = config.getModuleDirs();
-        for (const dir of moduleDirs) {
-          const modules = await scanner.scan(dir);
-          modules.forEach(m => registry.register(m));
-        }
+        const lines = parseLogLinesOption(options.lines);
 
+        await scanAndRegister(registry);
         const module = registry.get(moduleId);
         if (!module) {
           console.error(`模块不存在: ${moduleId}`);
           process.exit(1);
         }
 
-        const lines = parseInt(options.lines, 10);
+        const logFile = getModuleLogFile(getLogDir(), moduleId);
+        const content = await readRecentText(logFile, lines);
 
-        // 直接读取日志文件
-        const logFile = path.join('.hub', 'logs', `${moduleId}.log`);
-
-        if (!fs.existsSync(logFile)) {
+        if (!content) {
           console.log('暂无日志');
-          if (!options.follow) return;
         } else {
-          const content = fs.readFileSync(logFile, 'utf-8');
-          const allLines = content.trim().split('\n').filter(line => line);
-          const recentLines = allLines.slice(-lines);
-
-          console.log(`\n${module.name} 日志 (最近 ${recentLines.length} 行):\n`);
-          recentLines.forEach(line => console.log(line));
+          const recentLineCount = countRenderedLines(content);
+          console.log(`\n${module.name} 日志 (最近 ${recentLineCount} 行):\n`);
+          console.log(content);
           console.log();
         }
 
         if (options.follow) {
-          console.log('持续监控中... (Ctrl+C 退出)\n');
-
           let lastSize = 0;
 
           try {
-            const stats = fs.statSync(logFile);
+            const stats = statSync(logFile);
             lastSize = stats.size;
           } catch {
-            // 文件不存在，从 0 开始
+            console.log(`日志文件尚未创建，无法持续监控: ${logFile}`);
+            return;
           }
 
+          console.log('持续监控中... (Ctrl+C 退出)\n');
+
           // 使用 fs.watch 监听文件变化
-          const watcher = fs.watch(logFile, (eventType) => {
+          const watcher = watch(logFile, (eventType) => {
             if (eventType === 'change') {
               try {
-                const stats = fs.statSync(logFile);
+                const stats = statSync(logFile);
                 const currentSize = stats.size;
 
                 if (currentSize > lastSize) {
                   // 读取新增内容
-                  const stream = fs.createReadStream(logFile, {
+                  const stream = createReadStream(logFile, {
                     start: lastSize,
-                    end: currentSize,
+                    end: currentSize - 1,
                     encoding: 'utf-8',
                   });
 
@@ -102,4 +115,26 @@ export function registerLogsCommand(program: Command, registry: ModuleRegistry):
         process.exit(1);
       }
     });
+}
+
+export function getModuleLogFile(logDir: string, moduleId: string): string {
+  return path.join(logDir, `${moduleId}.log`);
+}
+
+export function parseLogLinesOption(value: string | undefined): number {
+  if (value === undefined) return 50;
+  const trimmed = String(value).trim();
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) {
+    throw new Error('--lines 必须是整数');
+  }
+  if (parsed < 1 || parsed > 2000) {
+    throw new Error('--lines 必须在 1-2000 之间');
+  }
+  return parsed;
+}
+
+function countRenderedLines(content: string): number {
+  if (!content) return 0;
+  return content.replace(/\r?\n$/, '').split(/\r?\n/).length;
 }
