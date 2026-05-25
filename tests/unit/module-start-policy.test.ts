@@ -4,6 +4,25 @@ import {
   getModuleStartPolicy,
   normalizeStartPolicy,
 } from '../../src/runtime/module-start-policy';
+import { ModuleSettings } from '../../src/config/config';
+
+function createSettings(overrides: Partial<ModuleSettings> = {}): ModuleSettings {
+  return {
+    autoStart: {},
+    startOrder: [],
+    moduleWebUrls: {},
+    visibility: {},
+    schedules: {},
+    groups: [{ id: 'default', name: '默认分组' }],
+    moduleGroups: {},
+    startPolicies: {},
+    groupStartPolicyTemplates: {},
+    workspaces: [],
+    workspaceHistory: [],
+    workspaceHistoryLimit: 20,
+    ...overrides,
+  };
+}
 
 describe('module-start-policy', () => {
   it('fills defaults for missing values', () => {
@@ -29,14 +48,7 @@ describe('module-start-policy', () => {
   });
 
   it('resolves policy from settings by module id', () => {
-    const policy = getModuleStartPolicy({
-      autoStart: {},
-      startOrder: [],
-      moduleWebUrls: {},
-      visibility: {},
-      schedules: {},
-      groups: [{ id: 'default', name: '默认分组' }],
-      moduleGroups: {},
+    const policy = getModuleStartPolicy(createSettings({
       startPolicies: {
         foo: {
           retryCount: 2,
@@ -47,8 +59,7 @@ describe('module-start-policy', () => {
           blockOnPortConflict: false,
         },
       },
-      groupStartPolicyTemplates: {},
-    }, 'foo');
+    }), 'foo');
 
     expect(policy.retryCount).toBe(2);
     expect(policy.retryDelayMs).toBe(1800);
@@ -56,30 +67,17 @@ describe('module-start-policy', () => {
   });
 
   it('inherits policy template from group when module has no custom policy', () => {
-    const policy = getModuleStartPolicy({
-      autoStart: {},
-      startOrder: [],
-      moduleWebUrls: {},
-      visibility: {},
-      schedules: {},
+    const policy = getModuleStartPolicy(createSettings({
       groups: [{ id: 'ops', name: '运维组' }],
       moduleGroups: { bar: 'ops' },
-      startPolicies: {},
       groupStartPolicyTemplates: { ops: 'script' },
-    }, 'bar', 'ops');
+    }), 'bar', 'ops');
 
     expect(policy.retryCount).toBe(0);
     expect(policy.healthCheckEnabled).toBe(false);
-    expect(getModuleInheritedTemplateId({
-      autoStart: {},
-      startOrder: [],
-      moduleWebUrls: {},
-      visibility: {},
-      schedules: {},
+    expect(getModuleInheritedTemplateId(createSettings({
       groups: [{ id: 'ops', name: '运维组' }],
-      moduleGroups: {},
-      startPolicies: {},
       groupStartPolicyTemplates: { ops: 'script' },
-    }, 'ops')).toBe('script');
+    }), 'ops')).toBe('script');
   });
 });

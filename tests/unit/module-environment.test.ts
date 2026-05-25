@@ -16,7 +16,8 @@ jest.mock('fs', () => {
 });
 
 import { promises as fs } from 'fs';
-import { detectPackageManager, parseEnvTemplate } from '../../src/runtime/module-environment';
+import { detectPackageManager, parseEnvTemplate, sanitizeEnvironmentReportForDisplay } from '../../src/runtime/module-environment';
+import { ModuleEnvironmentReport } from '../../src/types/module';
 
 describe('module-environment', () => {
   beforeEach(() => {
@@ -32,6 +33,41 @@ export BAR=baz
 INVALID LINE
 APP_TOKEN=
 `)).toEqual(['FOO', 'BAR', 'APP_TOKEN']);
+  });
+
+  it('only extracts env names and never template values', () => {
+    const parsed = parseEnvTemplate(`
+API_KEY=sk-live-secret
+PASSWORD="super-secret"
+export TOKEN='hidden'
+not_exported=value
+BROKEN TOKEN=value
+`);
+
+    expect(parsed).toEqual(['API_KEY', 'PASSWORD', 'TOKEN']);
+    expect(parsed.join(' ')).not.toContain('sk-live-secret');
+    expect(parsed.join(' ')).not.toContain('super-secret');
+    expect(parsed.join(' ')).not.toContain('hidden');
+  });
+
+  it('sanitizes environment reports for display by hiding required env names', () => {
+    const report: ModuleEnvironmentReport = {
+      runtime: 'node',
+      packageManager: 'npm',
+      detectedEnvFiles: ['.env.example'],
+      requiredCommands: ['node', 'npm'],
+      missingCommands: [],
+      requiredEnvVars: ['API_KEY', 'PASSWORD', 'TOKEN'],
+      missingEnvVars: ['API_KEY', 'bad=value'],
+      commandChecks: [],
+    };
+
+    const sanitized = sanitizeEnvironmentReportForDisplay(report);
+
+    expect(sanitized.requiredEnvVars).toEqual([]);
+    expect(sanitized.requiredEnvVarCount).toBe(3);
+    expect(sanitized.missingEnvVars).toEqual(['API_KEY']);
+    expect(sanitized.detectedEnvFiles).toEqual(['.env.example']);
   });
 
   it('detects package manager from lockfile precedence', async () => {
