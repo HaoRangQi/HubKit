@@ -185,6 +185,40 @@ describe('module update routes', () => {
     expect(broadcast).toHaveBeenCalledWith({ type: 'module_updated', moduleId: 'demo', hasUpdates: true });
   });
 
+  it('returns failure and skips broadcast when dependency install fails after pulling updates', async () => {
+    const registry = new ModuleRegistry();
+    const moduleDir = createGitModuleDir();
+    const broadcast = jest.fn();
+
+    registry.register(createModule({ scriptPath: path.join(moduleDir, 'run.sh') }));
+    execSyncMock.mockReturnValueOnce('abc1234\n' as any);
+    execMock
+      .mockImplementationOnce((_command: string, _options: any, callback: any) => {
+        callback(null, 'Updating abc1234..def5678\n', '');
+        return {} as any;
+      })
+      .mockImplementationOnce((_command: string, _options: any, callback: any) => {
+        callback({ code: 1 }, 'partial install output\n', 'npm install failed\n');
+        return {} as any;
+      });
+
+    const response = await requestRouter(
+      registry,
+      'POST',
+      '/api/modules/demo/update',
+      broadcast,
+      highRiskHeaders('module:demo:update')
+    );
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      success: false,
+      error: 'npm install 失败: npm install failed\n',
+    });
+    expect(execSyncMock).toHaveBeenCalledTimes(1);
+    expect(broadcast).not.toHaveBeenCalled();
+  });
+
   it('skips dependency install when the module is already up to date', async () => {
     const registry = new ModuleRegistry();
     const moduleDir = createGitModuleDir();

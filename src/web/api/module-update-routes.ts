@@ -82,6 +82,12 @@ export function createModuleUpdateRouter(options: ModuleUpdateRouterOptions): Ro
               resolve({ stdout, stderr, code: err?.code ?? 0 });
             });
           });
+          if (installResult.code !== 0) {
+            return res.status(500).json({
+              success: false,
+              error: `npm install 失败: ${installResult.stderr}`,
+            });
+          }
           installOutput = installResult.stdout;
         }
 

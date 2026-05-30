@@ -165,6 +165,24 @@ describe('module admin routes', () => {
     expect(createAdapterMock).not.toHaveBeenCalled();
   });
 
+  it('requires high-risk confirmation before force closing a module', async () => {
+    const registry = new ModuleRegistry();
+    registry.register(createModule());
+
+    const response = await requestRouter(registry, 'POST', '/api/modules/demo/force-close');
+
+    expect(response.status).toBe(428);
+    expect(response.body).toEqual({
+      success: false,
+      error: '需要高风险操作确认',
+      confirmationRequired: true,
+      confirmationAction: 'module:demo:force-close',
+    });
+    expect(createAdapterMock).not.toHaveBeenCalled();
+    expect(collectDiagnosticsMock).not.toHaveBeenCalled();
+    expect(forceKillProcessesMock).not.toHaveBeenCalled();
+  });
+
   it('force closes a module and broadcasts the existing event payload', async () => {
     const registry = new ModuleRegistry();
     const module = createModule();
@@ -211,6 +229,55 @@ describe('module admin routes', () => {
     });
     expect(adapter.stop).toHaveBeenCalledWith(true);
     expect(forceKillProcessesMock).toHaveBeenCalledWith([222, 333]);
+    expect(broadcast).toHaveBeenCalledWith({ type: 'module_stopped', moduleId: 'demo', forceClosed: true });
+  });
+
+  it('reports adapter stop errors and residual processes when force close cannot fully clean up a module', async () => {
+    const registry = new ModuleRegistry();
+    const module = createModule();
+    const before = createDiagnostics({
+      pidCandidates: [{ pid: 222, command: 'old-demo', alive: true }],
+      port: 3000,
+      portOccupied: true,
+    });
+    const after = createDiagnostics({
+      pidCandidates: [{ pid: 222, command: 'old-demo', alive: true }],
+      port: 3000,
+      portOccupied: true,
+    });
+    const killed = [{ pid: 222, killed: false, signal: 'SIGKILL', error: 'operation not permitted' }];
+    const adapter = {
+      stop: jest.fn().mockRejectedValue(new Error('stop failed')),
+    };
+    const broadcast = jest.fn();
+
+    registry.register(module);
+    createAdapterMock.mockReturnValue(adapter as any);
+    collectDiagnosticsMock.mockResolvedValueOnce(before).mockResolvedValueOnce(after);
+    forceKillProcessesMock.mockResolvedValue(killed);
+
+    const response = await requestRouter(
+      registry,
+      'POST',
+      '/api/modules/demo/force-close',
+      broadcast,
+      highRiskHeaders('module:demo:force-close')
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: false,
+      message: '强制关闭执行完成，但仍检测到残留进程',
+      data: {
+        moduleId: 'demo',
+        adapterStopError: 'stop failed',
+        killed,
+        before,
+        after,
+      },
+    });
+    expect(adapter.stop).toHaveBeenCalledWith(true);
+    expect(forceKillProcessesMock).toHaveBeenCalledWith([222]);
     expect(broadcast).toHaveBeenCalledWith({ type: 'module_stopped', moduleId: 'demo', forceClosed: true });
   });
 
@@ -265,5 +332,23 @@ describe('module admin routes', () => {
     expect(adapter.stop).toHaveBeenCalledWith(true);
     expect(forceKillProcessesMock).toHaveBeenCalledWith([444]);
     expect(broadcast).toHaveBeenCalledWith({ type: 'module_stopped', moduleId: 'demo', forceClosed: true, byBatch: true });
+  });
+
+  it('requires high-risk confirmation before force closing all modules', async () => {
+    const registry = new ModuleRegistry();
+    registry.register(createModule());
+
+    const response = await requestRouter(registry, 'POST', '/api/modules/force-close-all');
+
+    expect(response.status).toBe(428);
+    expect(response.body).toEqual({
+      success: false,
+      error: '需要高风险操作确认',
+      confirmationRequired: true,
+      confirmationAction: 'module:*:force-close-all',
+    });
+    expect(createAdapterMock).not.toHaveBeenCalled();
+    expect(collectDiagnosticsMock).not.toHaveBeenCalled();
+    expect(forceKillProcessesMock).not.toHaveBeenCalled();
   });
 });

@@ -53,6 +53,7 @@ function writeJson(filePath: string, data: unknown): void {
 
 describe('ConfigManager', () => {
   let consoleErrorSpy: jest.SpyInstance;
+  let consoleWarnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     copyFileSyncMock.mockImplementation(actualFs.copyFileSync);
@@ -60,10 +61,12 @@ describe('ConfigManager', () => {
     unlinkSyncMock.mockImplementation(actualFs.unlinkSync);
     writeFileSyncMock.mockImplementation(actualFs.writeFileSync);
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
     jest.clearAllMocks();
   });
 
@@ -88,6 +91,38 @@ describe('ConfigManager', () => {
     expect(loaded.settings.groups).toEqual([{ id: 'default', name: '默认分组' }]);
   });
 
+  it('falls back to defaults when the config file cannot be parsed', () => {
+    const configPath = createTempConfigPath();
+    fs.writeFileSync(configPath, '{bad-json', 'utf-8');
+
+    const manager = new ConfigManager(configPath);
+    const loaded = manager.get();
+
+    expect(loaded.configVersion).toBe(CURRENT_CONFIG_VERSION);
+    expect(loaded.moduleDirs[0]).toContain('.hubkit');
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to load config, using defaults:', expect.any(Error));
+  });
+
+  it('normalizes malformed root values and missing settings to safe defaults', () => {
+    const configPath = createTempConfigPath();
+    fs.writeFileSync(configPath, JSON.stringify({
+      configVersion: 'old',
+      moduleDirs: 'bad',
+      dataDir: 123,
+      logDir: false,
+      settings: null,
+    }), 'utf-8');
+
+    const manager = new ConfigManager(configPath);
+    const loaded = manager.get();
+
+    expect(loaded.configVersion).toBe(CURRENT_CONFIG_VERSION);
+    expect(Array.isArray(loaded.moduleDirs)).toBe(true);
+    expect(typeof loaded.dataDir).toBe('string');
+    expect(typeof loaded.logDir).toBe('string');
+    expect(loaded.settings.groups).toEqual([{ id: 'default', name: '默认分组' }]);
+  });
+
   it('writes config atomically and backs up the previous config', () => {
     const configPath = createTempConfigPath();
     writeJson(configPath, createConfig(['/before']));
@@ -104,6 +139,19 @@ describe('ConfigManager', () => {
     expect(backups).toHaveLength(1);
     const backup = JSON.parse(fs.readFileSync(path.join(backupDir, backups[0]), 'utf-8'));
     expect(backup.moduleDirs).toEqual(['/before']);
+  });
+
+  it('saves a new config without creating a backup when no config file exists yet', () => {
+    const configPath = createTempConfigPath();
+    fs.rmSync(configPath, { force: true });
+
+    const manager = new ConfigManager(configPath);
+    manager.addModuleDir('/first');
+
+    const saved = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    expect(saved.moduleDirs).toContain('/first');
+    expect(copyFileSyncMock).not.toHaveBeenCalled();
+    expect(fs.existsSync(path.join(path.dirname(configPath), 'backups'))).toBe(false);
   });
 
   it('throws when backing up the existing config fails', () => {
@@ -184,6 +232,40 @@ describe('ConfigManager', () => {
     expect(manager.getModuleDirs()).not.toContain('/mutated');
     expect(manager.getSettings().groups).toEqual([{ id: 'default', name: '默认分组' }]);
     expect(manager.getSettings().autoStart).toEqual({});
+  });
+
+  it('removes module directories, updates web urls/settings, and creates missing directories', () => {
+    const configPath = createTempConfigPath();
+    const root = path.dirname(configPath);
+    const moduleDir = path.join(root, 'modules');
+    const keepDir = path.join(root, 'keep');
+    const dataDir = path.join(root, 'data');
+    const logDir = path.join(root, 'logs');
+    writeJson(configPath, {
+      ...createConfig([moduleDir, keepDir], {
+      moduleWebUrls: { alpha: 'http://old.local' },
+      visibility: { alpha: false },
+      workspaceHistoryLimit: 5,
+      }),
+      dataDir,
+      logDir,
+    });
+
+    const manager = new ConfigManager(configPath);
+    manager.removeModuleDir(moduleDir);
+    manager.removeModuleDir(path.join(root, 'not-present'));
+    manager.setModuleWebUrl('alpha', 'http://new.local');
+    manager.updateSettings({ visibility: { alpha: true }, workspaceHistoryLimit: 0 });
+    manager.ensureDirs();
+
+    expect(manager.getModuleDirs()).toEqual([keepDir]);
+    expect(manager.getModuleWebUrl('alpha')).toBe('http://new.local');
+    expect(manager.getModuleWebUrl('missing', 'http://fallback.local')).toBe('http://fallback.local');
+    expect(manager.getSettings().visibility).toEqual({ alpha: true });
+    expect(manager.getSettings().workspaceHistoryLimit).toBe(0);
+    expect(fs.existsSync(keepDir)).toBe(true);
+    expect(fs.existsSync(dataDir)).toBe(true);
+    expect(fs.existsSync(logDir)).toBe(true);
   });
 
   it('normalizes workspace orchestration settings', () => {
@@ -337,6 +419,41 @@ describe('ConfigManager', () => {
     }));
   });
 
+  it('skips invalid workspace history entries and respects a zero history limit', () => {
+    const configPath = createTempConfigPath();
+    writeJson(configPath, createConfig(['/modules'], {
+      workspaceHistoryLimit: 0,
+      workspaceHistory: [
+        {
+          workspaceId: 'existing',
+          action: 'start',
+          success: true,
+          startedAt: '2026-05-24T08:00:00.000Z',
+          finishedAt: '2026-05-24T08:00:01.000Z',
+        },
+      ],
+    }));
+
+    const manager = new ConfigManager(configPath);
+    manager.recordWorkspaceHistory({
+      workspaceId: 'new',
+      action: 'start',
+      success: true,
+      startedAt: '2026-05-24T09:00:00.000Z',
+      finishedAt: '2026-05-24T09:00:01.000Z',
+    });
+    manager.recordWorkspaceHistory({
+      workspaceId: '',
+      action: 'start',
+      success: true,
+      startedAt: '2026-05-24T10:00:00.000Z',
+      finishedAt: '2026-05-24T10:00:01.000Z',
+    });
+
+    expect(manager.getSettings().workspaceHistory).toEqual([]);
+    expect(manager.getSettings().workspaceHistoryLimit).toBe(0);
+  });
+
   it('lists backup summaries with config counts', () => {
     const configPath = createTempConfigPath();
     writeJson(configPath, createConfig(['/current']));
@@ -377,6 +494,31 @@ describe('ConfigManager', () => {
       autoStartCount: 1,
       scheduleCount: 1,
     }));
+
+    expect(manager.listBackups(-10)).toEqual([]);
+    expect(manager.listBackups(1).map((item) => item.id)).toEqual(['config-2026-05-24T11-00-00-000Z.json']);
+  });
+
+  it('summarizes invalid backup files safely and ignores invalid backup names', () => {
+    const configPath = createTempConfigPath();
+    writeJson(configPath, createConfig(['/current']));
+    const backupDir = path.join(path.dirname(configPath), 'backups');
+    fs.mkdirSync(backupDir, { recursive: true });
+    const badBackup = path.join(backupDir, 'config-2026-05-24T14-00-00-000Z.json');
+    fs.writeFileSync(badBackup, '{bad-json', 'utf-8');
+    fs.writeFileSync(path.join(backupDir, 'not-a-backup.json'), '{}', 'utf-8');
+
+    const manager = new ConfigManager(configPath);
+    const backups = manager.listBackups(20);
+
+    expect(backups).toHaveLength(1);
+    expect(backups[0]).toEqual(expect.objectContaining({
+      id: 'config-2026-05-24T14-00-00-000Z.json',
+      moduleDirCount: 0,
+      groupCount: 0,
+      autoStartCount: 0,
+      scheduleCount: 0,
+    }));
   });
 
   it('restores a selected backup and backs up the current config first', () => {
@@ -405,6 +547,45 @@ describe('ConfigManager', () => {
       .find((item) => Array.isArray(item.moduleDirs) && item.moduleDirs.includes('/current'));
 
     expect(currentBackup).toBeDefined();
+  });
+
+  it('creates suffixed backups when the timestamp base name already exists', () => {
+    const configPath = createTempConfigPath();
+    writeJson(configPath, createConfig(['/current']));
+    const backupDir = path.join(path.dirname(configPath), 'backups');
+    fs.mkdirSync(backupDir, { recursive: true });
+    const dateSpy = jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2026-05-24T15:00:00.000Z');
+    const baseBackup = path.join(backupDir, 'config-2026-05-24T15-00-00-000Z.json');
+    fs.writeFileSync(baseBackup, '{}', 'utf-8');
+
+    try {
+      const manager = new ConfigManager(configPath);
+      manager.addModuleDir('/after');
+
+      expect(fs.existsSync(path.join(backupDir, 'config-2026-05-24T15-00-00-000Z-1.json'))).toBe(true);
+    } finally {
+      dateSpy.mockRestore();
+    }
+  });
+
+  it('throws when every suffixed backup path is already occupied', () => {
+    const configPath = createTempConfigPath();
+    writeJson(configPath, createConfig(['/current']));
+    const backupDir = path.join(path.dirname(configPath), 'backups');
+    fs.mkdirSync(backupDir, { recursive: true });
+    const dateSpy = jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2026-05-24T16:00:00.000Z');
+    fs.writeFileSync(path.join(backupDir, 'config-2026-05-24T16-00-00-000Z.json'), '{}', 'utf-8');
+    for (let index = 1; index <= 1000; index += 1) {
+      fs.writeFileSync(path.join(backupDir, `config-2026-05-24T16-00-00-000Z-${index}.json`), '{}', 'utf-8');
+    }
+
+    try {
+      const manager = new ConfigManager(configPath);
+
+      expect(() => manager.addModuleDir('/after')).toThrow('无法创建配置备份文件');
+    } finally {
+      dateSpy.mockRestore();
+    }
   });
 
   it('previews restore impact before applying a backup', () => {
@@ -476,6 +657,38 @@ describe('ConfigManager', () => {
       '卡片显示',
     ]);
     expect(preview.totals).toEqual({ added: 4, removed: 5, changed: 11 });
+  });
+
+  it('previews an unchanged restore without changed areas or totals', () => {
+    const configPath = createTempConfigPath();
+    const unchangedConfig = createConfig(['/same'], {
+      autoStart: { alpha: true },
+      startOrder: ['alpha'],
+      schedules: { alpha: { enabled: true, startTime: '09:00' } },
+      moduleGroups: { alpha: 'default' },
+      startPolicies: { alpha: { retryCount: 1 } },
+      moduleWebUrls: { alpha: 'http://localhost:3000' },
+      visibility: { alpha: true },
+      workspaces: [
+        {
+          id: 'dev',
+          name: 'Dev',
+          moduleIds: ['alpha'],
+        },
+      ],
+    });
+    writeJson(configPath, unchangedConfig);
+    const backupDir = path.join(path.dirname(configPath), 'backups');
+    const backupId = 'config-2026-05-24T17-00-00-000Z.json';
+    writeJson(path.join(backupDir, backupId), unchangedConfig);
+
+    const manager = new ConfigManager(configPath);
+    const preview = manager.previewRestoreBackup(backupId);
+
+    expect(preview.changedAreas).toEqual([]);
+    expect(preview.totals).toEqual({ added: 0, removed: 0, changed: 0 });
+    expect(preview.startOrderChanged).toBe(false);
+    expect(preview.workspaceChanges).toEqual([]);
   });
 
   it('rejects invalid or missing backup ids', () => {
