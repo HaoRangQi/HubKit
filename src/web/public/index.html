@@ -516,6 +516,186 @@
       text-shadow: 0 1px 0 color-mix(in srgb, var(--md-warning-container) 60%, transparent);
     }
 
+    .dashboard-focus {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+      gap: 18px;
+      align-items: stretch;
+      margin: 14px 0 18px;
+      padding: 18px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) calc(var(--glass-border-opacity) * 100%), transparent);
+      border-radius: var(--shape-lg);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--focus-accent, var(--md-primary)) 14%, transparent), transparent 54%),
+        color-mix(in srgb, var(--md-surface-container-low) calc(var(--glass-surface-opacity) * 100%), transparent);
+    }
+
+    .dashboard-focus[data-focus-tone="error"] {
+      --focus-accent: var(--md-error);
+    }
+
+    .dashboard-focus[data-focus-tone="warn"] {
+      --focus-accent: var(--md-warning);
+    }
+
+    .dashboard-focus[data-focus-tone="info"] {
+      --focus-accent: var(--md-tertiary);
+    }
+
+    .dashboard-focus[data-focus-tone="calm"] {
+      --focus-accent: var(--md-success);
+    }
+
+    .dashboard-focus-main {
+      display: grid;
+      gap: 14px;
+      align-content: space-between;
+      min-width: 0;
+    }
+
+    .dashboard-focus-kicker {
+      display: inline-flex;
+      width: fit-content;
+      min-height: 28px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      border-radius: var(--shape-pill);
+      background: color-mix(in srgb, var(--focus-accent) 16%, transparent);
+      color: color-mix(in srgb, var(--focus-accent) 78%, var(--md-on-surface));
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dashboard-focus-title {
+      margin: 0;
+      color: var(--md-on-surface);
+      font-size: 22px;
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .dashboard-focus-desc {
+      margin: 6px 0 0;
+      max-width: 760px;
+      color: var(--md-on-surface-variant);
+      font-size: 14px;
+    }
+
+    .dashboard-focus-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .focus-metric {
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 45%, transparent);
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 58%, transparent);
+    }
+
+    .focus-metric-value {
+      display: block;
+      color: var(--metric-accent, var(--md-on-surface));
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .focus-metric-label {
+      display: block;
+      margin-top: 5px;
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .focus-metric[data-tone="error"] {
+      --metric-accent: var(--md-error);
+    }
+
+    .focus-metric[data-tone="warn"] {
+      --metric-accent: var(--md-warning);
+    }
+
+    .focus-metric[data-tone="success"] {
+      --metric-accent: var(--md-success);
+    }
+
+    .dashboard-focus-list {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      align-content: start;
+    }
+
+    .dashboard-focus-item {
+      display: grid;
+      grid-template-columns: 10px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 58px;
+      padding: 10px;
+      border: 1px solid color-mix(in srgb, var(--md-outline-variant) 45%, transparent);
+      border-radius: var(--shape-sm);
+      background: color-mix(in srgb, var(--md-surface-container-lowest) 52%, transparent);
+    }
+
+    .dashboard-focus-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--item-accent, var(--md-outline));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--item-accent, var(--md-outline)) 12%, transparent);
+    }
+
+    .dashboard-focus-item[data-tone="error"] {
+      --item-accent: var(--md-error);
+    }
+
+    .dashboard-focus-item[data-tone="warn"] {
+      --item-accent: var(--md-warning);
+    }
+
+    .dashboard-focus-item[data-tone="info"] {
+      --item-accent: var(--md-tertiary);
+    }
+
+    .dashboard-focus-item-title {
+      display: block;
+      overflow: hidden;
+      color: var(--md-on-surface);
+      font-size: 13px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dashboard-focus-item-detail {
+      display: block;
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--md-on-surface-variant);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dashboard-focus-empty {
+      display: grid;
+      min-height: 100%;
+      place-items: center;
+      padding: 18px;
+      border: 1px dashed color-mix(in srgb, var(--md-outline-variant) 70%, transparent);
+      border-radius: var(--shape-sm);
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      text-align: center;
+    }
+
     .dashboard-actions {
       display: flex;
       align-items: center;
@@ -2716,6 +2896,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .dashboard-focus {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
       .settings-hero,
       .settings-layout {
         grid-template-columns: minmax(0, 1fr);
@@ -2838,6 +3022,23 @@
 
       .summary-strip {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .dashboard-focus {
+        padding: 14px;
+      }
+
+      .dashboard-focus-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dashboard-focus-item {
+        grid-template-columns: 10px minmax(0, 1fr);
+      }
+
+      .dashboard-focus-item .btn {
+        grid-column: 2;
+        width: fit-content;
       }
 
       .settings-hero {
@@ -3150,6 +3351,10 @@
             <span class="summary-note">建议优先关注</span>
           </div>
         </div>
+
+        <section class="dashboard-focus glass-panel" id="dashboardFocus" data-focus-tone="calm" aria-label="今日关注">
+          <div class="dashboard-focus-empty">正在汇总当前模块状态...</div>
+        </section>
 
         <div class="dashboard-layout">
           <aside class="group-rail" id="dashboardGroupRail" aria-label="分组导航"></aside>
@@ -4290,6 +4495,7 @@
 
       if (currentView === 'dashboard') {
         updateSummary();
+        renderDashboardFocus();
         patchModuleDashboardSections();
       }
     }
@@ -4338,6 +4544,7 @@
           modules = Array.isArray(json) ? json : (json.data || []);
         }
         updateSummary();
+        renderDashboardFocus();
         patchModuleDashboardSections();
         requestSettingsRender();
         if (showNotice) showToast('模块状态已刷新');
@@ -5133,6 +5340,7 @@
 
     function renderDashboard() {
       updateSummary();
+      renderDashboardFocus();
       renderDashboardGroups();
     }
 
@@ -5470,6 +5678,79 @@
           ? `${icon('progress_activity')}<span>清理中...</span>`
           : `${icon('stop_circle')}<span>全部关停</span>`;
       }
+    }
+
+    function renderDashboardFocus() {
+      const container = document.getElementById('dashboardFocus');
+      if (!container) return;
+      const focus = window.HubKitDashboard.buildDashboardFocusSummary(modules);
+      container.dataset.focusTone = focus.tone;
+      container.innerHTML = `
+        <div class="dashboard-focus-main">
+          <div>
+            <span class="dashboard-focus-kicker">${icon(getDashboardFocusIcon(focus.tone))}<span>今日关注</span></span>
+            <h3 class="dashboard-focus-title">${escapeHtml(focus.title)}</h3>
+            <p class="dashboard-focus-desc">${escapeHtml(focus.description)}</p>
+          </div>
+          <div class="dashboard-focus-metrics">
+            ${focus.metrics.map((metric) => `
+              <div class="focus-metric" data-tone="${escapeAttr(metric.tone)}">
+                <span class="focus-metric-value">${escapeHtml(String(metric.value))}</span>
+                <span class="focus-metric-label">${escapeHtml(metric.label)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="inline-actions">
+            ${createDashboardFocusActionButton(focus.primaryAction)}
+            <button class="btn btn-text btn-sm" type="button" onclick="showGlobalLogs()">${icon('article')}<span>全局日志</span></button>
+          </div>
+        </div>
+        <div class="dashboard-focus-list">
+          ${focus.items.length > 0
+            ? focus.items.map(createDashboardFocusItem).join('') + (focus.hiddenItemCount > 0 ? `<span class="settings-chip">还有 ${focus.hiddenItemCount} 项可在体检页查看</span>` : '')
+            : '<div class="dashboard-focus-empty">暂无异常或待处理事项。继续从下方分组启动、停止或查看模块。</div>'}
+        </div>
+      `;
+    }
+
+    function getDashboardFocusIcon(tone) {
+      if (tone === 'error') return 'error';
+      if (tone === 'warn') return 'error';
+      if (tone === 'info') return 'system_update_alt';
+      return 'event_available';
+    }
+
+    function createDashboardFocusActionButton(action) {
+      const kind = action?.kind || 'refresh';
+      const label = action?.label || '刷新状态';
+      const handlers = {
+        diagnostics: 'showView(\'diagnostics\')',
+        refresh: 'refreshDashboardNow(true)',
+      };
+      const icons = {
+        diagnostics: 'tune',
+        refresh: 'refresh',
+      };
+      return `<button class="btn btn-filled btn-sm" type="button" onclick="${handlers[kind] || handlers.refresh}">${icon(icons[kind] || icons.refresh)}<span>${escapeHtml(label)}</span></button>`;
+    }
+
+    function createDashboardFocusItem(item) {
+      const action = item?.actionKind === 'logs'
+        ? `showLogs('${jsString(item.moduleId)}', '${jsString(item.moduleName)}')`
+        : item?.actionKind === 'update'
+          ? `checkAndUpdate('${jsString(item.moduleId)}')`
+          : 'showView(\'diagnostics\')';
+      const actionIcon = item?.actionKind === 'logs' ? 'article' : item?.actionKind === 'update' ? 'system_update_alt' : 'tune';
+      return `
+        <div class="dashboard-focus-item" data-tone="${escapeAttr(item.tone || 'info')}">
+          <span class="dashboard-focus-dot"></span>
+          <span>
+            <span class="dashboard-focus-item-title">${escapeHtml(item.title || item.moduleName || '待处理模块')}</span>
+            <span class="dashboard-focus-item-detail">${escapeHtml(item.detail || '查看体检获取下一步')}</span>
+          </span>
+          <button class="btn btn-text btn-sm" type="button" onclick="${action}">${icon(actionIcon)}<span>${escapeHtml(item.actionLabel || '处理')}</span></button>
+        </div>
+      `;
     }
 
     function renderDashboardGroups() {

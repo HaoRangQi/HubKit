@@ -1246,6 +1246,108 @@ describe('workspace dashboard UI wiring', () => {
     expect(dashboard.buildScriptDashboardSections(undefined)).toEqual([]);
   });
 
+  it('builds dashboard focus summaries from visible module state', () => {
+    const dashboard = loadDashboardHelper();
+    const modules = [
+      {
+        id: 'api',
+        name: 'API 服务',
+        status: 'running',
+        runtimeState: {
+          phase: 'failed',
+          failure: { summary: '端口被占用' },
+        },
+      },
+      {
+        id: 'worker',
+        name: 'Worker',
+        status: 'stopped',
+        startReadiness: { ready: false, summary: '缺少 pnpm' },
+      },
+      {
+        id: 'web',
+        name: 'Web',
+        status: 'running',
+        updateable: true,
+      },
+      {
+        id: 'hidden',
+        name: 'Hidden',
+        status: 'error',
+        visible: false,
+      },
+    ];
+
+    expect(dashboard.buildDashboardFocusSummary(modules)).toEqual({
+      tone: 'error',
+      title: '1 个模块需要优先处理',
+      description: '端口被占用',
+      primaryAction: { kind: 'diagnostics', label: '查看体检' },
+      metrics: [
+        { id: 'failed', label: '异常', value: 1, tone: 'error' },
+        { id: 'blocked', label: '待准备', value: 1, tone: 'warn' },
+        { id: 'running', label: '运行中', value: 1, tone: 'success' },
+        { id: 'stopped', label: '待机', value: 2, tone: 'neutral' },
+      ],
+      items: [
+        {
+          tone: 'error',
+          kind: 'failed',
+          moduleId: 'api',
+          moduleName: 'API 服务',
+          title: 'API 服务：启动失败',
+          detail: '端口被占用',
+          actionKind: 'logs',
+          actionLabel: '查看日志',
+        },
+        {
+          tone: 'warn',
+          kind: 'not-ready',
+          moduleId: 'worker',
+          moduleName: 'Worker',
+          title: 'Worker：启动前需处理',
+          detail: '缺少 pnpm',
+          actionKind: 'diagnostics',
+          actionLabel: '查看体检',
+        },
+        {
+          tone: 'info',
+          kind: 'updateable',
+          moduleId: 'web',
+          moduleName: 'Web',
+          title: 'Web：可检查更新',
+          detail: '建议在空闲时检查版本差异',
+          actionKind: 'update',
+          actionLabel: '检查更新',
+        },
+      ],
+      hiddenItemCount: 0,
+    });
+  });
+
+  it('keeps dashboard focus calm when no visible module needs attention', () => {
+    const dashboard = loadDashboardHelper();
+
+    expect(dashboard.buildDashboardFocusSummary([
+      { id: 'api', name: 'API', status: 'running', runtimeState: { phase: 'running' } },
+      { id: 'worker', status: 'stopped' },
+    ])).toEqual({
+      tone: 'calm',
+      title: '当前没有需要立即处理的模块',
+      description: '1 个模块正在运行，可从下方分组继续操作。',
+      primaryAction: { kind: 'refresh', label: '刷新状态' },
+      metrics: [
+        { id: 'failed', label: '异常', value: 0, tone: 'neutral' },
+        { id: 'blocked', label: '待准备', value: 0, tone: 'neutral' },
+        { id: 'running', label: '运行中', value: 1, tone: 'success' },
+        { id: 'stopped', label: '待机', value: 1, tone: 'neutral' },
+      ],
+      items: [],
+      hiddenItemCount: 0,
+    });
+    expect(dashboard.buildDashboardFocusSummary(undefined).title).toBe('当前没有需要立即处理的模块');
+  });
+
   it('ignores malformed dashboard section sources', () => {
     const dashboard = loadDashboardHelper();
 
@@ -1338,6 +1440,10 @@ describe('workspace dashboard UI wiring', () => {
     expect(html).toContain('function buildWorkspaceDashboardSection() {\n      return window.HubKitWorkspace.buildWorkspaceDashboardSection(workspaces, settings.workspaces);\n    }');
     expect(html).toContain('function syncWorkspaceDraftsToDashboard() {\n      workspaces = buildWorkspaceDashboardDrafts(getEditableWorkspaces());\n    }');
     expect(html).toContain('return window.HubKitDashboard.buildDashboardSections({');
+    expect(html).toContain('function renderDashboardFocus()');
+    expect(html).toContain('window.HubKitDashboard.buildDashboardFocusSummary(modules)');
+    expect(html).toContain('renderDashboardFocus();');
+    expect(html).toContain('id="dashboardFocus"');
     expect(html).toContain('workspaceSection: buildWorkspaceDashboardSection(),');
     expect(html).toContain('moduleGroups: buildVisibleModuleGroups(modules.filter(m => m.visible !== false)),');
     expect(html).toContain('systemActions,');
