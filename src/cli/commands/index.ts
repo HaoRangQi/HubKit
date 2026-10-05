@@ -12,6 +12,7 @@ import { registerInitModuleCommand } from './init-module';
 import { registerWorkspaceCommand } from './workspace';
 import { registerAuditCommand } from './audit';
 import { registerLogSearchCommand } from './log-search';
+import { registerServiceCommand } from './service';
 
 /**
  * 全局模块注册表
@@ -47,6 +48,7 @@ export function registerCommands(program: Command): void {
 
   // 注册 web 命令
   registerWebCommand(program);
+  registerServiceCommand(program);
 
   // 注册 workspace 命令
   registerWorkspaceCommand(program, registry);

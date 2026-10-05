@@ -78,6 +78,12 @@ Web Dashboard 功能：
 - ⛔ 卡片内执行强制关闭（含端口占用清理）
 - 🔗 快速访问模块 Web 界面（如 zsh-config）
 
+### 使用 Docker / OrbStack 启停入口
+
+Mac 用户可以先打开 OrbStack 或 Docker Desktop，再双击根目录的 **[安装 Docker 启动.command](./安装%20Docker%20启动.command)**。首次安装后，在容器应用中启停 `hubkit` 即可，访问地址仍为 `http://127.0.0.1:2281`。
+
+容器提供控制台入口，本机后台服务负责实际执行。停止容器只关闭入口，已启动任务继续在 Mac 上运行。安装、恢复与卸载见 [Docker 使用说明](./docs/docker.md)。
+
 ## 已集成模块
 
 当前仓库已集成多个示例与本地服务模块（含 `zsh-config` 等），可通过 HubKit 统一管理。

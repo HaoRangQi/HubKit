@@ -1,0 +1,14 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+}
+
+:2281 {
+	reverse_proxy {$HUBKIT_UPSTREAM:host.docker.internal:2282}
+
+	handle_errors {
+		header Content-Type "text/html; charset=utf-8"
+		respond "<!doctype html><html lang='zh-CN'><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>HubKit — 本机服务未连接</title><body style='font:16px system-ui;max-width:600px;margin:12vh auto;padding:24px;line-height:1.7'><h1>本机执行服务未连接</h1><p>Docker 控制入口已运行，但暂时无法连接 Mac 上的 HubKit。</p><p>首次使用请双击项目中的「安装 Docker 启动.command」。如果移动过项目目录或更换过 Node.js，请重新运行一次安装入口。</p><p>本机服务恢复后，刷新此页即可。已有任务不会因为入口断开而被停止。</p><button onclick='location.reload()'>重新连接</button></body></html>" 503
+	}
+}
