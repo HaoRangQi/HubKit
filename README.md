@@ -16,7 +16,7 @@ HubKit 是一个本地优先、开源公益、非商业化的个人自动化中�
 
 ## 项目定位
 
-- **本地优先**：配置、日志和运行状态默认保存在本机 `~/.hubkit` 下。
+- **本地优先**：配置管理器默认使用本机 `~/.hubkit`；当前模块 PID 和日志由内置适配器写入 HubKit 工作目录下 `.hub`。
 - **开源公益**：项目优先服务个人开发者、脚本作者和本地自动化用户。
 - **非商业化**：不做付费分层，不把本地工具包装成商业 SaaS。
 - **默认安全边界清晰**：Web Dashboard 默认绑定本机地址，远程访问必须显式配置。
@@ -73,7 +73,8 @@ Web Dashboard 功能：
 - 📊 查看所有模块状态
 - 🚀 一键启动/停止/重启模块
 - 📝 查看实时日志
-- 🔍 卡片内执行进程检查（端口、PID、监听进程）
+- 🔍 展开“详情与维护”查看指标、进程检查、重启和更新；默认卡片聚焦状态与常用操作
+- 📦 “发现更新”只统计检查确认的结果，同时显示已检查数量和失败数量
 - ⛔ 卡片内执行强制关闭（含端口占用清理）
 - 🔗 快速访问模块 Web 界面（如 zsh-config）
 
@@ -168,7 +169,7 @@ HubKit/
 }
 ```
 
-> 旧版文档中出现的 `module.json`、`~/.hub`、`install-launcher`、`install-service` 属于过期口径或未实现能力。当前主流程以 `.hubkit.json`、`~/.hubkit` 和 `init-module` 为准。
+> 旧版 `module.json` 和 stdin JSON 请求示例不属于当前内置适配器接入流程。请用 `.hubkit.json` 和 `init-module`；配置在 `~/.hubkit`，当前模块 PID / 日志在 HubKit 工作目录的 `.hub`。完整约定见 [模块接入与运行契约](./docs/module-protocol.md)。
 
 ## 端口分配
 
@@ -206,9 +207,9 @@ HubKit/
 
 ### 扩展 Web Dashboard
 
-1. 修改 `src/web/public/index.html`
-2. 更新 API 路由 `src/web/api/routes.ts`
-3. 重新构建并复制到 dist
+1. 页面样式修改 `src/web/public/app.css`；模块卡片渲染修改 `app-module-cards.js`；汇总逻辑修改 `app-dashboard.js`
+2. `index.html` 保留页面结构与交互编排，API 按职责修改 `src/web/api/` 下对应路由
+3. 运行测试与 `npm run build`，构建会复制全部静态资源到 dist
 
 ## 故障排查
 

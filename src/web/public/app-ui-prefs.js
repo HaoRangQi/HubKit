@@ -28,7 +28,7 @@
 
   function getDefaultUiPrefs(resolvedTheme) {
     return {
-      collapseProcessMini: false,
+      collapseProcessMini: true,
       collapseDashboardGroups: false,
       groupCollapseState: {},
       dashboardRefreshIntervalSeconds: 30,
@@ -57,7 +57,7 @@
       : defaults.wallpaperBlur;
 
     return {
-      collapseProcessMini: parsed.collapseProcessMini === true,
+      collapseProcessMini: typeof parsed.collapseProcessMini === 'boolean' ? parsed.collapseProcessMini : defaults.collapseProcessMini,
       collapseDashboardGroups: parsed.collapseDashboardGroups === true,
       groupCollapseState: isObject(parsed.groupCollapseState) ? parsed.groupCollapseState : {},
       dashboardRefreshIntervalSeconds: Math.round(clampNumber(parsed.dashboardRefreshIntervalSeconds, 0, 600, defaults.dashboardRefreshIntervalSeconds)),

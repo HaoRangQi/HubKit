@@ -298,7 +298,7 @@ export abstract class BaseAdapter implements ModuleProtocol {
    * 获取配置
    */
   async getSettings(): Promise<ModuleSetting[]> {
-    // 默认实现：从 module.json 读取
+    // 内置适配器不提供通用业务配置读取；子类可自行扩展。
     return [];
   }
 
@@ -306,7 +306,7 @@ export abstract class BaseAdapter implements ModuleProtocol {
    * 更新配置
    */
   async setSetting(key: string, value: string | number | boolean): Promise<boolean> {
-    // 默认实现：写入 module.json
+    // 内置适配器不提供通用业务配置写入；不修改模块配置文件。
     return false;
   }
 

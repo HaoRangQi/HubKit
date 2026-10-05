@@ -111,7 +111,7 @@
     return nextSections;
   }
 
-  function getModuleIssue(module) {
+  function getModuleIssue(module, updateCheck) {
     if (!isObject(module)) return null;
     const runtimeState = isObject(module.runtimeState) ? module.runtimeState : {};
     const health = isObject(runtimeState.health) ? runtimeState.health : {};
@@ -159,16 +159,16 @@
       };
     }
 
-    if (module.updateable === true) {
+    if (module.updateable === true && updateCheck?.status === 'checked' && updateCheck.hasUpdates === true) {
       return {
         tone: 'info',
-        kind: 'updateable',
+        kind: 'update-available',
         moduleId: id,
         moduleName: name,
-        title: `${name}：可检查更新`,
-        detail: '建议在空闲时检查版本差异',
+        title: `${name}：发现更新`,
+        detail: `上次检查发现 ${updateCheck.commitsBehind} 个上游新提交`,
         actionKind: 'update',
-        actionLabel: '检查更新',
+        actionLabel: '查看更新',
       };
     }
 
@@ -179,12 +179,23 @@
     return asArray(modules).filter((module) => isObject(module) && predicate(module)).length;
   }
 
-  function buildDashboardFocusSummary(modules) {
+  function buildModuleUpdateSummary(modules, checks = {}) {
+    const supported = asArray(modules).filter((module) => isObject(module) && module.visible !== false && module.updateable === true);
+    const checked = supported.filter((module) => checks[module.id]?.status === 'checked');
+    return {
+      supportedCount: supported.length,
+      checkedCount: checked.length,
+      availableCount: checked.filter((module) => checks[module.id].hasUpdates === true).length,
+      failedCount: supported.filter((module) => checks[module.id]?.status === 'error').length,
+    };
+  }
+
+  function buildDashboardFocusSummary(modules, updateChecks = {}) {
     const visibleModules = asArray(modules).filter((module) => isObject(module) && module.visible !== false);
-    const issues = visibleModules.map(getModuleIssue).filter(Boolean);
+    const issues = visibleModules.map((module) => getModuleIssue(module, updateChecks[module.id])).filter(Boolean);
     const failedCount = issues.filter((item) => item.kind === 'failed' || item.kind === 'unhealthy').length;
     const blockedCount = issues.filter((item) => item.kind === 'not-ready').length;
-    const updateableCount = issues.filter((item) => item.kind === 'updateable').length;
+    const updateAvailableCount = issues.filter((item) => item.kind === 'update-available').length;
     const runningCount = countModulesBy(visibleModules, (module) => {
       const phase = isObject(module.runtimeState) ? module.runtimeState.phase : '';
       if (phase === 'failed' || phase === 'stopped') return false;
@@ -210,10 +221,10 @@
       title = `${blockedCount} 个模块启动前需要准备`;
       description = leadIssue?.detail || '建议先处理依赖、端口或环境变量，再启动模块。';
       primaryAction = { kind: 'diagnostics', label: '查看体检' };
-    } else if (updateableCount > 0) {
+    } else if (updateAvailableCount > 0) {
       tone = 'info';
-      title = `${updateableCount} 个模块可检查更新`;
-      description = '当前运行风险较低，可以按需查看可更新模块。';
+      title = `${updateAvailableCount} 个模块发现更新`;
+      description = '根据本页最近检查结果，可在模块详情中查看并选择是否更新。';
       primaryAction = { kind: 'refresh', label: '刷新状态' };
     }
 
@@ -258,6 +269,7 @@
     buildModuleDashboardSections,
     buildScriptDashboardSections,
     appendSystemActionDashboardSections,
+    buildModuleUpdateSummary,
     buildDashboardFocusSummary,
     buildDashboardSections,
   };

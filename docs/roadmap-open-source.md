@@ -45,7 +45,7 @@ HubKit 的目标是成为本地优先的个人自动化中控台。项目开源�
 ### 高级全栈工程师视角
 
 架构问题：
-- `src/web/public/index.html` 仍承担样式、状态、渲染、API fallback、终端状态机和交互编排，理解成本高。
+- `src/web/public/index.html` 仍承担状态、部分渲染、API fallback、终端状态机和交互编排；页面样式和模块卡片已单独抽离，后续继续按职责收敛。
 - `app-api.js` 已经形成 Web API client 的 seam，下一步应继续把请求/错误处理/响应归一化集中到这个 module。
 - 高风险确认、WebSocket、Web 终端生命周期是脆弱路径，短期只加测试护栏，不做大迁移。
 - 后端路由已经拆分出多个 route module，后续要继续保证 CLI、Web、scheduler 共享 lifecycle implementation，避免行为分叉。
@@ -182,6 +182,9 @@ HubKit 的目标是成为本地优先的个人自动化中控台。项目开源�
 目标：继续降低 `src/web/public/index.html` 的维护成本，但不把高风险运行链路拆散。
 
 已形成的分层：
+- `app.css`：页面样式与响应式规则的唯一维护位置。
+- `app-module-cards.js`：模块卡片纯渲染，常用操作外显、详情按需展开；不发请求、不持有运行状态。
+- `app-dashboard.js`：分组、关注项与基于实际检查结果的更新统计。
 - `app-api.js`：只放 Web API client、请求参数组装、响应解析和 fallback 对齐。
 - `app-log-renderer.js`：只放日志行渲染、日志搜索结果渲染、日志过滤判断。
 - `app-formatters.js`：只放展示文案、状态 class、摘要格式化、图标和颜色映射等纯展示 helper。
@@ -242,3 +245,11 @@ HubKit 的目标是成为本地优先的个人自动化中控台。项目开源�
 - 不把实验模块直接塞进核心协议。
 - 不用复杂分布式架构解决单机本地工具的问题。
 - 不把 `install-launcher`、`install-service` 等未实现命令写成当前可用主流程。
+
+
+### 2026-10-05 设计收敛
+
+- 模块卡片默认收起指标和维护操作，保留显式用户偏好；刷新时保留单卡展开状态。
+- 更新能力不进入待处理事项，版本检查成功后才显示发现更新；网络失败与本地领先不再显示为有更新。
+- 接入文档统一为 .hubkit.json + 内置进程适配器，旧 stdio 示例标为历史参考。
+- 运行路径以当前实现为准：配置管理器使用 ~/.hubkit，内置模块 PID / 日志仍在 HubKit 工作目录下 .hub；路径迁移另行设计。

@@ -129,13 +129,14 @@ export function createModuleUpdateRouter(options: ModuleUpdateRouterOptions): Ro
         return res.status(400).json({ success: false, error: '该模块不支持更新检查' });
       }
 
-      const moduleDir = dirname(module.scriptPath) === '.'
-        ? module.scriptPath
-        : dirname(module.scriptPath);
+      const moduleDir = getModuleDir(module.scriptPath);
 
       // fetch 远程信息
-      await new Promise<void>((resolve) => {
-        exec('git fetch origin', { cwd: moduleDir }, () => resolve());
+      await new Promise<void>((resolve, reject) => {
+        exec('git fetch origin', { cwd: moduleDir }, (error) => {
+          if (error) reject(new Error('无法获取远程版本，请检查网络和仓库访问权限后重试'));
+          else resolve();
+        });
       });
 
       let localHash = '';
@@ -143,18 +144,15 @@ export function createModuleUpdateRouter(options: ModuleUpdateRouterOptions): Ro
       try {
         localHash = execSync('git rev-parse HEAD', { cwd: moduleDir }).toString().trim();
         remoteHash = execSync('git rev-parse @{u}', { cwd: moduleDir }).toString().trim();
-      } catch { /* ignore */ }
-
-      const hasUpdates = localHash !== remoteHash && remoteHash !== '';
-
-      let commitsBehind = 0;
-      if (hasUpdates) {
-        try {
-          commitsBehind = parseInt(
-            execSync('git rev-list HEAD..@{u} --count', { cwd: moduleDir }).toString().trim()
-          );
-        } catch { /* ignore */ }
+      } catch {
+        throw new Error('无法读取当前分支或上游版本，请先配置跟踪分支');
       }
+
+      const commitsBehind = Number(execSync('git rev-list HEAD..@{u} --count', { cwd: moduleDir }).toString().trim());
+      if (!localHash || !remoteHash || !Number.isSafeInteger(commitsBehind) || commitsBehind < 0) {
+        throw new Error('无法确定上游新增提交，请稍后重新检查');
+      }
+      const hasUpdates = commitsBehind > 0;
 
       res.json({
         success: true,
@@ -162,7 +160,7 @@ export function createModuleUpdateRouter(options: ModuleUpdateRouterOptions): Ro
         localHash: localHash.slice(0, 7),
         remoteHash: remoteHash.slice(0, 7),
         commitsBehind,
-        message: hasUpdates ? `有 ${commitsBehind} 个新提交可用` : '已是最新版本',
+        message: hasUpdates ? `有 ${commitsBehind} 个新提交可用` : '上游暂无新提交',
       });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

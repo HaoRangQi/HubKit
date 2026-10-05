@@ -94,7 +94,7 @@ function createGitModuleDir(): string {
 
 describe('module update routes', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('mounts module update routes from the main API router', () => {
@@ -279,4 +279,52 @@ describe('module update routes', () => {
     expect(execSyncMock).toHaveBeenNthCalledWith(2, 'git rev-parse @{u}', { cwd: moduleDir });
     expect(execSyncMock).toHaveBeenNthCalledWith(3, 'git rev-list HEAD..@{u} --count', { cwd: moduleDir });
   });
+  it('checks directory-based modules inside the module rather than its parent', async () => {
+    const registry = new ModuleRegistry();
+    const moduleDir = createGitModuleDir();
+    registry.register(createModule({ scriptPath: moduleDir, type: 'nodejs' }));
+    execMock.mockImplementationOnce((_command: string, _options: any, callback: any) => {
+      callback(null, '', '');
+    });
+    execSyncMock.mockReturnValueOnce('same\n' as any).mockReturnValueOnce('same\n' as any).mockReturnValueOnce('0\n' as any);
+    const response = await requestRouter(registry, 'GET', '/api/modules/demo/update-check');
+    expect(response.status).toBe(200);
+    expect(execMock).toHaveBeenCalledWith('git fetch origin', { cwd: moduleDir }, expect.any(Function));
+  });
+
+  it('does not claim latest when fetching remote refs fails', async () => {
+    const registry = new ModuleRegistry();
+    registry.register(createModule());
+    execMock.mockImplementationOnce((_command: string, _options: any, callback: any) => {
+      callback(new Error('network unavailable'), '', 'network unavailable');
+    });
+    const response = await requestRouter(registry, 'GET', '/api/modules/demo/update-check');
+    expect(response.status).toBe(500);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error).toContain('远程');
+    expect(execSyncMock).not.toHaveBeenCalled();
+  });
+
+  it('does not treat local-only commits as available remote updates', async () => {
+    const registry = new ModuleRegistry();
+    registry.register(createModule());
+    execMock.mockImplementationOnce((_command: string, _options: any, callback: any) => callback(null, '', ''));
+    execSyncMock.mockReturnValueOnce('local-ahead\n' as any)
+      .mockReturnValueOnce('upstream\n' as any).mockReturnValueOnce('0\n' as any);
+    const response = await requestRouter(registry, 'GET', '/api/modules/demo/update-check');
+    expect(response.body).toMatchObject({ success: true, hasUpdates: false, commitsBehind: 0 });
+    expect(response.body.message).not.toContain('新提交可用');
+  });
+
+  it('reports a missing upstream instead of pretending the module is current', async () => {
+    const registry = new ModuleRegistry();
+    registry.register(createModule());
+    execMock.mockImplementationOnce((_command: string, _options: any, callback: any) => callback(null, '', ''));
+    execSyncMock.mockReturnValueOnce('local\n' as any).mockImplementationOnce(() => { throw new Error('no upstream'); });
+    const response = await requestRouter(registry, 'GET', '/api/modules/demo/update-check');
+    expect(response.status).toBe(500);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error).toContain('上游');
+  });
+
 });

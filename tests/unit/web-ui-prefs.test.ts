@@ -49,7 +49,7 @@ describe('web UI preferences helper', () => {
     const uiPrefs = loadUiPrefs();
 
     expect(uiPrefs.normalizeUiPrefs('', 'light')).toEqual({
-      collapseProcessMini: false,
+      collapseProcessMini: true,
       collapseDashboardGroups: false,
       groupCollapseState: {},
       dashboardRefreshIntervalSeconds: 30,
@@ -69,6 +69,10 @@ describe('web UI preferences helper', () => {
     });
     expect(uiPrefs.normalizeUiPrefs('{bad json', 'dark').wallpaperScrimOpacity).toBe(0.55);
     expect(uiPrefs.normalizeUiPrefs(['invalid'], 'light')).toEqual(uiPrefs.getDefaultUiPrefs('light'));
+  });
+
+  it('preserves an explicit preference to expand details', () => {
+    expect(loadUiPrefs().normalizeUiPrefs({ collapseProcessMini: false }, 'light').collapseProcessMini).toBe(false);
   });
 
   it('keeps valid preferences and clamps numeric ranges', () => {
@@ -130,7 +134,7 @@ describe('web UI preferences helper', () => {
       wallpaperOpacity: undefined,
       wallpaperScrimOpacity: null,
     }, 'light')).toMatchObject({
-      collapseProcessMini: false,
+      collapseProcessMini: true,
       collapseDashboardGroups: false,
       groupCollapseState: {},
       dashboardRefreshIntervalSeconds: 30,

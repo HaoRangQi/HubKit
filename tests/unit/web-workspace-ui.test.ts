@@ -1310,16 +1310,7 @@ describe('workspace dashboard UI wiring', () => {
           actionKind: 'diagnostics',
           actionLabel: '查看体检',
         },
-        {
-          tone: 'info',
-          kind: 'updateable',
-          moduleId: 'web',
-          moduleName: 'Web',
-          title: 'Web：可检查更新',
-          detail: '建议在空闲时检查版本差异',
-          actionKind: 'update',
-          actionLabel: '检查更新',
-        },
+
       ],
       hiddenItemCount: 0,
     });
@@ -1441,7 +1432,7 @@ describe('workspace dashboard UI wiring', () => {
     expect(html).toContain('function syncWorkspaceDraftsToDashboard() {\n      workspaces = buildWorkspaceDashboardDrafts(getEditableWorkspaces());\n    }');
     expect(html).toContain('return window.HubKitDashboard.buildDashboardSections({');
     expect(html).toContain('function renderDashboardFocus()');
-    expect(html).toContain('window.HubKitDashboard.buildDashboardFocusSummary(modules)');
+    expect(html).toContain('window.HubKitDashboard.buildDashboardFocusSummary(modules, moduleUpdateChecks)');
     expect(html).toContain('renderDashboardFocus();');
     expect(html).toContain('id="dashboardFocus"');
     expect(html).toContain('workspaceSection: buildWorkspaceDashboardSection(),');

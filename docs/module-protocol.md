@@ -1,717 +1,97 @@
-# HubKit 模块协议规范
+# HubKit 模块接入与运行契约
 
-## 概述
+本文描述当前内置 Node.js、Python、Shell 适配器实际支持的行为。首次接入按 [模块接入指南](./module-integration-guide.md) 操作。
 
-HubKit 模块协议定义了统一的模块管理接口，支持 Node.js、Python 和 Shell 三种脚本类型。所有模块通过标准输入输出（stdin/stdout/stderr）进行 JSON 格式通信，实现跨语言的统一管理。
+## 接入模型
 
-## 设计原则
+模块是可以独立启动的本机程序，由项目内的 `.hubkit.json` 描述。HubKit 扫描配置、选择语言适配器，再启动和观察进程。
 
-1. **统一接口** - 不同脚本类型使用相同的协议
-2. **简单可扩展** - 基于 JSON 的请求/响应模式
-3. **进程隔离** - 每个模块运行在独立进程中
-4. **标准通信** - 使用 stdin/stdout/stderr 进行通信
-5. **错误透明** - 明确的错误处理和状态反馈
+内置适配器启动时忽略 stdin，将 stdout / stderr 写入日志。模块只需正常运行、输出日志和处理退出信号，无须实现 JSON 请求分发器，也无须自己响应 `status` / `start` / `stop` RPC。
 
-## 核心接口
+代码中的 `ModuleProtocol` 是 HubKit 内部适配器的 TypeScript 接口，不是发给模块脚本的通信协议。旧版文档和 `examples/` 中的 stdio 请求/响应示例不属于当前内置接入流程。
 
-模块协议定义了 5 个标准接口：
-
-### 1. status - 查询模块状态
-
-获取模块的当前运行状态和资源使用情况。
-
-**请求格式（stdin JSON）**
+## 配置文件
 
 ```json
 {
-  "method": "status"
+  "id": "my-service",
+  "name": "My Service",
+  "description": "本地开发服务",
+  "type": "nodejs",
+  "scriptPath": ".",
+  "startScript": "dev",
+  "webPort": 3000,
+  "autoStart": false,
+  "enabled": true,
+  "updateable": false
 }
 ```
 
-**响应格式（stdout JSON）**
+| 字段 | 含义 |
+| --- | --- |
+| `id` | 必填、非空且应保持唯一；建议小写字母、数字、点、下划线和短横线 |
+| `name` | 必填、非空，显示名称 |
+| `type` | 必填：`nodejs`、`python` 或 `shell` |
+| `scriptPath` | 必填：相对 `.hubkit.json` 所在目录解析，也支持绝对路径；入口必须存在 |
+| `description` | 可选，模块用途 |
+| `startScript` | 可选，Node.js 的 npm script 名称，优先于 `package.json` 的 `start` |
+| `webUrl` / `webPort` | 可选，Web 入口和端口；端口范围为 1–65535 |
+| `autoStart` | 可选，默认 `false`；Web 启动时采用 HubKit 运行设置中的自启配置 |
+| `enabled` | 可选，默认 `true` |
+| `updateable` | 可选，表示允许更新检查和更新操作；不代表已经发现新版本 |
+| `repoUrl` | 可选，源码仓库地址信息；不会自动克隆或设置 git remote |
 
-```json
-{
-  "status": "running",
-  "pid": 12345,
-  "startedAt": "2026-05-22T10:30:00.000Z",
-  "uptime": 3600,
-  "memory": 45.2,
-  "cpu": 2.5
-}
-```
+扫描器从 `~/.hubkit/config.json` 的 `moduleDirs` 下发现含 `.hubkit.json` 的项目子目录。`moduleDirs` 应包含项目的父目录。字段校验和规范化的实现位于 `src/registry/module-config.ts`。
 
-**字段说明**
+## 启动与运行
 
-- `status` (string, 必需) - 模块状态：`stopped`、`running`、`starting`、`stopping`、`error`、`unknown`
-- `pid` (number, 可选) - 进程 ID，仅在运行中时返回
-- `startedAt` (string, 可选) - ISO 8601 格式的启动时间
-- `uptime` (number, 可选) - 运行时长（秒）
-- `memory` (number, 可选) - 内存占用（MB）
-- `cpu` (number, 可选) - CPU 占用百分比
-- `error` (string, 可选) - 错误信息，仅在错误状态时返回
+| 类型 | 当前启动规则 |
+| --- | --- |
+| Node.js | `startScript` → `npm run <名称>`；否则优先 `npm start`；没有 start 脚本时运行 `node <scriptPath>`。工作目录为模块项目目录 |
+| Python | 运行脚本，优先查找脚本同目录的 `venv` / `.venv` 解释器，否则使用系统 Python；启用无缓冲输出 |
+| Shell | 根据 shebang 选择解释器，默认 bash；入口需具备执行权限 |
 
-**错误处理**
+Python / Shell 当前继承 HubKit 的工作目录。脚本内需要访问自身文件时，应按脚本位置定位，不要假定 cwd 等于模块目录。Node.js 可用 `scriptPath: "."` 表示项目目录；Python / Shell 应指定脚本文件。
 
-- 成功：exit code 0，stdout 输出 JSON
-- 失败：exit code 非 0，stderr 输出错误信息
+HubKit 负责启动预检、依赖准备、重试、健康检查、PID 记录和日志。stdout / stderr 保持普通文本即可。模块默认继承 HubKit 进程环境；模块自身负责加载 `.env`，模板检查不等于自动注入变量。
 
-**超时机制**
+模块应以前台进程运行，避免自行 daemonize。长期服务通过 SIGTERM 收尾；一次性脚本执行结束后进入停止状态，HubKit 当前没有承诺持久化的任务成功状态模型。
 
-- 默认超时：5 秒
+## 管理入口
 
-**示例**
+CLI、Web 和模块定时器通过 `ModuleLifecycle` 使用同一套适配器行为：
 
 ```bash
-# 请求
-echo '{"method":"status"}' | node module.js
-
-# 成功响应
-{"status":"running","pid":12345,"uptime":3600}
-
-# 错误响应（stderr）
-Error: Module not initialized
+node dist/cli/index.js list
+node dist/cli/index.js audit my-service
+node dist/cli/index.js start my-service
+node dist/cli/index.js status my-service
+node dist/cli/index.js logs my-service --lines 100
+node dist/cli/index.js stop my-service
 ```
 
----
+状态来自进程探测，启动阶段、健康信息和失败摘要由运行时补充。重复启动已运行模块是幂等操作。普通停止尝试优雅退出，必要时升级终止；Web 的强制关闭、更新等危险操作仍需确认。
 
-### 2. start - 启动模块
+`ModuleProtocol.getSettings()` / `setSetting()` 是内部扩展接口；BaseAdapter 默认分别返回空列表和 `false`，不提供通用业务配置读写或 JSON RPC。Dashboard 的运行设置由 ConfigManager 维护，模块自身配置继续由模块负责。
 
-启动模块进程，使其进入运行状态。
+## 存储位置
 
-**请求格式（stdin JSON）**
+- HubKit 配置：`~/.hubkit/config.json`；配置管理器的数据/日志目录默认位于 `~/.hubkit`，部分服务使用这些配置目录。
+- 当前内置适配器的 PID 和模块日志：**启动 HubKit 的工作目录**下 `.hub/pids/<id>.pid`、`.hub/logs/<id>.log`。
+- 所以 CLI 和 Web 应从同一个 HubKit 目录运行，确保它们观察同一组模块进程。
 
-```json
-{
-  "method": "start"
-}
-```
+`.hub` 与 `~/.hubkit` 目前承担不同用途；不要把前者误写成已废弃的模块运行路径。本次文档校准不迁移已有进程文件。
 
-**响应格式（stdout JSON）**
+## 更新检查与更新
 
-```json
-{
-  "success": true,
-  "pid": 12345,
-  "message": "Module started successfully"
-}
-```
+`updateable: true` 只声明能力。`GET /api/modules/:id/update-check` 在模块目录 fetch 远程，再统计 `HEAD..@{u}` 的提交数量；必须已有可访问的 origin 和跟踪分支。检查不会修改工作树。
 
-**字段说明**
+- 上游新增提交数大于零才表示发现更新。
+- 本地领先但上游没有新提交时，不提示可更新。
+- 网络失败、没有跟踪分支或无法读取版本时，返回失败，不显示为已是最新。
+- Dashboard 按本页最近一次成功检查显示结果，模块状态刷新不会抹掉结果；重新加载页面后需再次检查。
+- `POST /api/modules/:id/update` 是执行更新的独立操作，仍要求高风险确认。当前实现执行 `git pull origin HEAD`，并在拉取结果指示有变化时执行 `npm install`；此流程主要适用于 npm 项目，不能视为所有语言通用的更新器。
 
-- `success` (boolean, 必需) - 是否启动成功
-- `pid` (number, 可选) - 启动后的进程 ID
-- `message` (string, 可选) - 启动消息或错误描述
+## 扩展边界
 
-**错误处理**
-
-- 成功：exit code 0，`success: true`
-- 失败：exit code 非 0，stderr 输出详细错误
-- 重复启动：返回错误，提示模块已在运行
-
-**超时机制**
-
-- 默认超时：30 秒
-
-**示例**
-
-```bash
-# 请求
-echo '{"method":"start"}' | node module.js
-
-# 成功响应
-{"success":true,"pid":12345,"message":"Module started successfully"}
-
-# 错误响应（stderr）
-Error: Module already running (PID: 12345)
-```
-
----
-
-### 3. stop - 停止模块
-
-停止模块进程，使其退出运行状态。
-
-**请求格式（stdin JSON）**
-
-```json
-{
-  "method": "stop",
-  "force": false
-}
-```
-
-**字段说明**
-
-- `force` (boolean, 可选) - 是否强制停止（SIGKILL），默认 false（使用 SIGTERM）
-
-**响应格式（stdout JSON）**
-
-```json
-{
-  "success": true,
-  "message": "Module stopped successfully"
-}
-```
-
-**字段说明**
-
-- `success` (boolean, 必需) - 是否停止成功
-- `message` (string, 可选) - 停止消息或错误描述
-
-**错误处理**
-
-- 成功：exit code 0，`success: true`
-- 失败：exit code 非 0，stderr 输出详细错误
-- 模块未运行：返回成功，提示模块已停止
-
-**超时机制**
-
-- 默认超时：10 秒（graceful stop）
-- 强制停止：立即发送 SIGKILL
-
-**示例**
-
-```bash
-# 优雅停止
-echo '{"method":"stop"}' | node module.js
-
-# 强制停止
-echo '{"method":"stop","force":true}' | node module.js
-
-# 成功响应
-{"success":true,"message":"Module stopped successfully"}
-```
-
----
-
-### 4. logs - 获取日志
-
-获取模块的运行日志，支持指定行数。
-
-**请求格式（stdin JSON）**
-
-```json
-{
-  "method": "logs",
-  "lines": 100
-}
-```
-
-**字段说明**
-
-- `lines` (number, 可选) - 获取最近 N 行日志，默认 100
-
-**响应格式（stdout JSON）**
-
-```json
-{
-  "logs": [
-    {
-      "timestamp": "2026-05-22T10:30:00.000Z",
-      "level": "info",
-      "message": "Module started"
-    },
-    {
-      "timestamp": "2026-05-22T10:30:05.000Z",
-      "level": "error",
-      "message": "Connection failed"
-    }
-  ]
-}
-```
-
-**字段说明**
-
-- `logs` (array, 必需) - 日志条目数组
-  - `timestamp` (string, 必需) - ISO 8601 格式的时间戳
-  - `level` (string, 必需) - 日志级别：`debug`、`info`、`warn`、`error`
-  - `message` (string, 必需) - 日志内容
-
-**错误处理**
-
-- 成功：exit code 0，返回日志数组（可能为空）
-- 失败：exit code 非 0，stderr 输出错误信息
-
-**超时机制**
-
-- 默认超时：10 秒
-
-**示例**
-
-```bash
-# 请求最近 50 行日志
-echo '{"method":"logs","lines":50}' | node module.js
-
-# 成功响应
-{"logs":[{"timestamp":"2026-05-22T10:30:00.000Z","level":"info","message":"Module started"}]}
-
-# 无日志
-{"logs":[]}
-```
-
----
-
-### 5. settings - 配置管理
-
-获取或更新模块配置项。
-
-#### 5.1 获取配置
-
-**请求格式（stdin JSON）**
-
-```json
-{
-  "method": "settings",
-  "action": "get"
-}
-```
-
-**响应格式（stdout JSON）**
-
-```json
-{
-  "settings": [
-    {
-      "key": "port",
-      "value": 3000,
-      "description": "Server port",
-      "required": true
-    },
-    {
-      "key": "debug",
-      "value": false,
-      "description": "Enable debug mode",
-      "required": false
-    }
-  ]
-}
-```
-
-**字段说明**
-
-- `settings` (array, 必需) - 配置项数组
-  - `key` (string, 必需) - 配置键
-  - `value` (string|number|boolean, 必需) - 配置值
-  - `description` (string, 可选) - 配置描述
-  - `required` (boolean, 可选) - 是否必需
-
-#### 5.2 更新配置
-
-**请求格式（stdin JSON）**
-
-```json
-{
-  "method": "settings",
-  "action": "set",
-  "key": "port",
-  "value": 8080
-}
-```
-
-**字段说明**
-
-- `action` (string, 必需) - 操作类型：`get` 或 `set`
-- `key` (string, 必需) - 配置键（仅 set 时需要）
-- `value` (string|number|boolean, 必需) - 配置值（仅 set 时需要）
-
-**响应格式（stdout JSON）**
-
-```json
-{
-  "success": true,
-  "message": "Setting updated successfully"
-}
-```
-
-**字段说明**
-
-- `success` (boolean, 必需) - 是否更新成功
-- `message` (string, 可选) - 更新消息或错误描述
-
-**错误处理**
-
-- 成功：exit code 0，`success: true`
-- 失败：exit code 非 0，stderr 输出详细错误
-- 无效配置键：返回错误，提示配置不存在
-- 无效配置值：返回错误，提示值类型或范围错误
-
-**超时机制**
-
-- 默认超时：5 秒
-
-**示例**
-
-```bash
-# 获取配置
-echo '{"method":"settings","action":"get"}' | node module.js
-
-# 更新配置
-echo '{"method":"settings","action":"set","key":"port","value":8080}' | node module.js
-
-# 成功响应（get）
-{"settings":[{"key":"port","value":3000,"description":"Server port"}]}
-
-# 成功响应（set）
-{"success":true,"message":"Setting updated successfully"}
-```
-
----
-
-## 通信协议
-
-### 请求流程
-
-1. 调用方通过 stdin 发送 JSON 格式的请求
-2. 模块解析请求，执行对应操作
-3. 模块通过 stdout 返回 JSON 格式的响应
-4. 如果发生错误，通过 stderr 输出错误信息，并返回非 0 exit code
-
-### 响应规范
-
-**成功响应**
-
-- Exit code: 0
-- Stdout: JSON 格式的响应数据
-- Stderr: 空
-
-**失败响应**
-
-- Exit code: 非 0（建议使用标准错误码）
-- Stdout: 空或部分数据
-- Stderr: 错误信息（纯文本）
-
-### 错误码规范
-
-| Exit Code | 含义 |
-|-----------|------|
-| 0 | 成功 |
-| 1 | 通用错误 |
-| 2 | 参数错误 |
-| 3 | 模块未初始化 |
-| 4 | 模块已运行 |
-| 5 | 模块未运行 |
-| 6 | 操作超时 |
-| 7 | 权限不足 |
-| 8 | 资源不足 |
-| 9 | 配置错误 |
-
----
-
-## 超时机制
-
-所有接口调用都有超时限制，防止模块无响应导致系统阻塞。
-
-| 接口 | 默认超时 | 说明 |
-|------|---------|------|
-| status | 5 秒 | 快速查询，不应耗时 |
-| start | 30 秒 | 启动可能需要初始化 |
-| stop | 10 秒 | 优雅停止需要清理资源 |
-| logs | 10 秒 | 日志读取可能较慢 |
-| settings | 5 秒 | 配置操作应快速完成 |
-
-超时后，调用方应：
-1. 终止模块进程（SIGTERM）
-2. 等待 3 秒
-3. 如果仍未退出，发送 SIGKILL
-4. 返回超时错误
-
----
-
-## 脚本类型适配
-
-### Node.js 模块
-
-- 入口文件：`module.js` 或 `index.js`
-- 运行方式：`node module.js`
-- 通信方式：`process.stdin`、`process.stdout`、`process.stderr`
-- 退出方式：`process.exit(code)`
-
-### Python 模块
-
-- 入口文件：`module.py` 或 `__main__.py`
-- 运行方式：`python3 module.py`
-- 通信方式：`sys.stdin`、`sys.stdout`、`sys.stderr`
-- 退出方式：`sys.exit(code)`
-
-### Shell 模块
-
-- 入口文件：`module.sh`
-- 运行方式：`bash module.sh`
-- 通信方式：标准输入输出
-- 退出方式：`exit code`
-
----
-
-## 实现建议
-
-### 1. 状态管理
-
-- 使用 PID 文件记录进程 ID
-- 使用状态文件记录模块状态
-- 定期检查进程是否存活
-
-### 2. 日志管理
-
-- 使用滚动日志文件（避免无限增长）
-- 日志格式统一（时间戳 + 级别 + 消息）
-- 支持日志级别过滤
-
-### 3. 配置管理
-
-- 使用配置文件（JSON 或 YAML）
-- 支持配置验证
-- 配置变更后自动重载
-
-### 4. 错误处理
-
-- 捕获所有异常，避免进程崩溃
-- 错误信息清晰，包含上下文
-- 区分可恢复错误和致命错误
-
-### 5. 资源清理
-
-- 停止时清理临时文件
-- 关闭所有打开的连接
-- 释放占用的端口
-
----
-
-## 示例实现
-
-### Node.js 示例
-
-```javascript
-const readline = require('readline');
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false
-});
-
-rl.on('line', async (line) => {
-  try {
-    const request = JSON.parse(line);
-    
-    switch (request.method) {
-      case 'status':
-        const status = await getStatus();
-        console.log(JSON.stringify(status));
-        process.exit(0);
-        break;
-        
-      case 'start':
-        const started = await startModule();
-        console.log(JSON.stringify({ success: started }));
-        process.exit(started ? 0 : 1);
-        break;
-        
-      case 'stop':
-        const stopped = await stopModule(request.force);
-        console.log(JSON.stringify({ success: stopped }));
-        process.exit(stopped ? 0 : 1);
-        break;
-        
-      case 'logs':
-        const logs = await getLogs(request.lines || 100);
-        console.log(JSON.stringify({ logs }));
-        process.exit(0);
-        break;
-        
-      case 'settings':
-        if (request.action === 'get') {
-          const settings = await getSettings();
-          console.log(JSON.stringify({ settings }));
-          process.exit(0);
-        } else if (request.action === 'set') {
-          const success = await setSetting(request.key, request.value);
-          console.log(JSON.stringify({ success }));
-          process.exit(success ? 0 : 1);
-        }
-        break;
-        
-      default:
-        throw new Error(`Unknown method: ${request.method}`);
-    }
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
-  }
-});
-```
-
-### Python 示例
-
-```python
-import sys
-import json
-
-def handle_request(request):
-    method = request.get('method')
-    
-    if method == 'status':
-        status = get_status()
-        print(json.dumps(status))
-        sys.exit(0)
-        
-    elif method == 'start':
-        success = start_module()
-        print(json.dumps({'success': success}))
-        sys.exit(0 if success else 1)
-        
-    elif method == 'stop':
-        force = request.get('force', False)
-        success = stop_module(force)
-        print(json.dumps({'success': success}))
-        sys.exit(0 if success else 1)
-        
-    elif method == 'logs':
-        lines = request.get('lines', 100)
-        logs = get_logs(lines)
-        print(json.dumps({'logs': logs}))
-        sys.exit(0)
-        
-    elif method == 'settings':
-        action = request.get('action')
-        if action == 'get':
-            settings = get_settings()
-            print(json.dumps({'settings': settings}))
-            sys.exit(0)
-        elif action == 'set':
-            key = request.get('key')
-            value = request.get('value')
-            success = set_setting(key, value)
-            print(json.dumps({'success': success}))
-            sys.exit(0 if success else 1)
-    
-    else:
-        raise ValueError(f'Unknown method: {method}')
-
-if __name__ == '__main__':
-    try:
-        line = sys.stdin.readline()
-        request = json.loads(line)
-        handle_request(request)
-    except Exception as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
-```
-
-### Shell 示例
-
-```bash
-#!/bin/bash
-
-# 读取 stdin
-read -r input
-
-# 解析 JSON（使用 jq）
-method=$(echo "$input" | jq -r '.method')
-
-case "$method" in
-  status)
-    status=$(get_status)
-    echo "$status"
-    exit 0
-    ;;
-    
-  start)
-    if start_module; then
-      echo '{"success":true}'
-      exit 0
-    else
-      echo "Failed to start module" >&2
-      exit 1
-    fi
-    ;;
-    
-  stop)
-    force=$(echo "$input" | jq -r '.force // false')
-    if stop_module "$force"; then
-      echo '{"success":true}'
-      exit 0
-    else
-      echo "Failed to stop module" >&2
-      exit 1
-    fi
-    ;;
-    
-  logs)
-    lines=$(echo "$input" | jq -r '.lines // 100')
-    logs=$(get_logs "$lines")
-    echo "{\"logs\":$logs}"
-    exit 0
-    ;;
-    
-  settings)
-    action=$(echo "$input" | jq -r '.action')
-    if [ "$action" = "get" ]; then
-      settings=$(get_settings)
-      echo "{\"settings\":$settings}"
-      exit 0
-    elif [ "$action" = "set" ]; then
-      key=$(echo "$input" | jq -r '.key')
-      value=$(echo "$input" | jq -r '.value')
-      if set_setting "$key" "$value"; then
-        echo '{"success":true}'
-        exit 0
-      else
-        echo "Failed to set setting" >&2
-        exit 1
-      fi
-    fi
-    ;;
-    
-  *)
-    echo "Unknown method: $method" >&2
-    exit 1
-    ;;
-esac
-```
-
----
-
-## 模块元数据
-
-每个模块需要提供元数据，用于中控台识别和管理：
-
-```typescript
-{
-  id: string;              // 模块唯一标识
-  name: string;            // 模块名称
-  description?: string;    // 模块描述
-  type: 'nodejs' | 'python' | 'shell';  // 脚本类型
-  scriptPath: string;      // 脚本路径
-  autoStart: boolean;      // 是否开机自启
-  enabled: boolean;        // 是否已启用
-}
-```
-
----
-
-## 测试建议
-
-### 单元测试
-
-- 测试每个接口的正常流程
-- 测试错误处理（无效参数、超时等）
-- 测试边界条件（空日志、重复启动等）
-
-### 集成测试
-
-- 测试完整的启动-运行-停止流程
-- 测试配置变更后的行为
-- 测试异常情况下的恢复能力
-
-### 性能测试
-
-- 测试高频调用下的响应时间
-- 测试资源占用（内存、CPU）
-- 测试并发调用的稳定性
-
----
-
-## 版本历史
-
-- v1.0.0 (2026-05-22) - 初始版本，定义 5 个核心接口
+新增语言适配器应在 HubKit 内实现 `ModuleProtocol`、由 `adapter-factory.ts` 接入，并覆盖生命周期测试。内置适配器不提供可直接启用的 stdio 协议模式；未来如果需要 RPC，应先单独定义通信、超时和兼容契约。
